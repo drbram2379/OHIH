@@ -318,18 +318,23 @@ footer code{font-family:var(--mono)}
 .st-sel[data-s="Blocked"]{color:var(--crit);border-color:var(--crit-line)}
 .st-sel[data-s="Done"]{color:var(--ok);border-color:var(--ok-line)}
 tr.prow-flash td{background:var(--ok-bg)!important;transition:background .3s}
+.brandbar{background:#fff;border-bottom:1px solid var(--line)}
+.brandbar-in{max-width:1480px;margin:0 auto;padding:9px 28px;display:flex;align-items:center;gap:14px}
+.brandlogos{height:34px;width:auto;display:block}
+@media(max-width:640px){.brandbar-in{padding:7px 14px}.brandlogos{height:24px}}
 </style>
 </head>
 <body>
 
 <div id="loading">Loading compliance data…</div>
 
+<div class="brandbar"><div class="brandbar-in"><img class="brandlogos" src="data:image/png;base64,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" alt="Merdeka Copper Gold, Merdeka Battery Materials, Merdeka Gold Resources" title="A member of the Merdeka group"></div></div>
 <header>
   <div class="h-top">
     <div>
       <div class="h-eyebrow">Occupational Health &amp; Industrial Hygiene</div>
       <h1>OHIH License Compliance</h1>
-      <div class="h-sub">Operating-license &amp; credential monitor — clinics and medical personnel across 5 sites</div>
+      <div class="h-sub">Operating-license &amp; credential monitor — clinics &amp; medical personnel across the Merdeka group sites</div>
     </div>
     <div class="h-meta">
       <span id="srcBadge" title="Where the data on screen came from">LIVE · GOOGLE SHEETS</span>
@@ -400,7 +405,7 @@ tr.prow-flash td{background:var(--ok-bg)!important;transition:background .3s}
     </section>
 
     <section>
-      <h2>Compliance Monitoring</h2>
+      <div class="actions-head"><h2 style="margin:0;flex:1">Compliance Monitoring</h2><button class="btn" id="btnExportMon" type="button">⬇ Export CSV</button></div>
       <div id="insightCards"></div>
       <div class="card chart-card" style="margin-top:12px">
         <h3>Impact–Effort prioritization <span style="font-weight:400;color:var(--ink-soft);font-size:.76rem">— top-left acts first</span></h3>
@@ -423,6 +428,7 @@ tr.prow-flash td{background:var(--ok-bg)!important;transition:background .3s}
             <button id="tlByDate"   aria-selected="false" type="button">By urgency</button>
           </div>
           <span class="tl-cap" style="margin:0" id="tlCap"></span>
+          <button class="btn" id="btnExportTl" type="button" style="margin-left:auto">⬇ Export CSV</button>
         </div>
         <div class="tl-wrap"><div class="tl" id="timeline"></div></div>
         <div class="tl-legend">
@@ -459,7 +465,7 @@ tr.prow-flash td{background:var(--ok-bg)!important;transition:background .3s}
     </section>
 
     <section>
-      <h2>Personnel credentials</h2>
+      <div class="actions-head"><h2 style="margin:0;flex:1">Personnel credentials</h2><button class="btn" id="btnExportPpl" type="button">⬇ Export CSV</button></div>
       <div class="tabs" id="roleTabs" role="tablist"></div>
       <div id="personnelTable"></div>
     </section>
@@ -473,7 +479,7 @@ tr.prow-flash td{background:var(--ok-bg)!important;transition:background .3s}
     </section>
 
     <section>
-      <h2>Data quality</h2>
+      <div class="actions-head"><h2 style="margin:0;flex:1">Data quality</h2><button class="btn" id="btnExportQa" type="button">⬇ Export CSV</button></div>
       <div class="qa-list" id="quality"></div>
     </section>
   </div>
@@ -494,7 +500,7 @@ tr.prow-flash td{background:var(--ok-bg)!important;transition:background .3s}
    CONFIG — everything an administrator may need to change is here
    ════════════════════════════════════════════════════════════════════ */
 const SHEET_ID = '1S5uEiuSV1bDtjJtoQNuHFetFEVUuQTQr4MkJref5OV4';
-const REFRESH_MINUTES = 15;                    // auto-refresh interval
+const REFRESH_MINUTES = 5;                    // auto-refresh interval (polls Google Sheets)
 const THRESHOLDS = { critical: 30, warning: 90 }; // days before expiry
 
 /* Credential definition helper.
@@ -595,6 +601,15 @@ const $  = s => document.querySelector(s);
    when the file is downloaded or hosted they persist in the browser.          */
 const lsGet = (k, d) => { try { const v = window.localStorage.getItem(k); return v == null ? d : v; } catch(e){ return d; } };
 const lsSet = (k, v) => { try { window.localStorage.setItem(k, v); } catch(e){} };
+/* default owner suggestion per monitoring-card type */
+const picDefault = id =>
+    id === 'sites'        ? 'Clinic PIC / HSE'
+  : /practice/.test(id)   ? 'Site Doctor / HSE'
+  : /refresher/.test(id)  ? 'Training & Competency'
+  : /ohcomp/.test(id)     ? 'Site HSE / OH'
+  : id === 'gaps'         ? 'Site Admin / HR'
+  : id === 'conc'         ? 'Site PIC'
+  :                         'Site PIC / HSE';
 const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const normKey = s => String(s || '').toLowerCase()
@@ -714,7 +729,7 @@ const STATE = { people: [], sites: [], errors: [], sample:false, activeTab: 0, h
                 sort: { key:'days', dir:1 }, charts: {} };
 
 function gvizUrl(tab){
-  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
+  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}&t=${Date.now()}`;
 }
 function parseCsv(text){
   const res = Papa.parse(text, { header:true, skipEmptyLines:'greedy' });
@@ -750,7 +765,7 @@ function fetchTabJsonp(tab){
         return reject(new Error((resp && resp.errors && resp.errors[0] && resp.errors[0].detailed_message) || 'gviz error'));
       try { resolve(gvizToRows(resp)); } catch(e){ reject(e); }
     };
-    script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&headers=1&sheet=${encodeURIComponent(tab)}`;
+    script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&headers=1&sheet=${encodeURIComponent(tab)}&t=${Date.now()}`;
     script.onerror = () => { cleanup(); reject(new Error('not reachable or not link-shared')); };
     document.head.appendChild(script);
   });
@@ -1234,13 +1249,13 @@ function buildActions(){
     if (c.code === 'EXPIRED' || c.code === 'CRITICAL' || c.code === 'WARNING' ||
        (c.code === 'MISSING' && c.def.mandatory)){
       items.push({ sev: SEVERITY[c.code], code: c.code, who: p.name, company: p.company || '—',
-        role: p.role.replace(/s$/,''), what: c.def.label, days: c.days, expiry: c.expiry });
+        clinic: p.clinic || '', role: p.role.replace(/s$/,''), what: c.def.label, days: c.days, expiry: c.expiry });
     }
   }));
   fSites().forEach(s => s.licenses.forEach(c => {
     if (c.code !== 'VALID'){
       items.push({ sev: SEVERITY[c.code], code: c.code, who: s.company, company: s.company,
-        role: 'Site', what: c.def.label, days: c.days, expiry: c.expiry });
+        clinic: s.clinic || s.location || '', role: 'Site', what: c.def.label, days: c.days, expiry: c.expiry });
     }
   }));
   items.sort((a,b) => a.sev - b.sev || (a.days ?? 1e9) - (b.days ?? 1e9));
@@ -1269,34 +1284,86 @@ function renderActions(){
   }).join('');
 }
 
-function exportActions(){
-  const items = buildActions();
-  const head = ['Priority','Status','Entity','Role','Company','Credential','Expiry date','Days remaining'];
-  const lines = [head.join(',')].concat(items.map((it,i) => [
-    i + 1, STATUS_META[it.code].label, it.who, it.role, it.company, it.what,
-    it.expiry ? fmtDate(it.expiry) : '', it.days != null ? it.days : ''
-  ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')));
-  const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type:'text/csv;charset=utf-8' });
+/* ── CSV export helpers (shared by every table) ── */
+function downloadCsv(name, rows){
+  const esc = v => `"${String(v == null ? '' : v).replace(/"/g,'""')}"`;
+  const body = rows.map(r => r.map(esc).join(',')).join('\r\n');
+  const blob = new Blob(['\uFEFF' + body], { type:'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'ohih-action-list-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.download = name + '-' + new Date().toISOString().slice(0,10) + '.csv';
   document.body.appendChild(a); a.click(); a.remove();
   URL.revokeObjectURL(a.href);
 }
 
-function renderQuality(){
-  const issues = [];
-  const check = (ownerLabel, where, creds) => creds.forEach(c => {
-    if (c.unparseable) issues.push(`${where} · <b>${esc(ownerLabel)}</b> — ${esc(c.def.label)}: date “${esc(c.dateRaw)}” could not be read`);
+function exportActions(){
+  const items = buildActions();
+  const head = ['Priority','Status','Entity','Role','Company','Clinic','Credential','Expiry date','Days remaining'];
+  const rows = [head].concat(items.map((it,i) => [
+    i + 1, STATUS_META[it.code].label, it.who, it.role, it.company, it.clinic || '',
+    it.what, it.expiry ? fmtDate(it.expiry) : '', it.days != null ? it.days : ''
+  ]));
+  downloadCsv('ohih-action-list', rows);
+}
+
+/* Compliance Monitoring table (page 1) — includes the saved PIC/Status/Remarks */
+function exportMonitoring(){
+  const I = computeInsights();
+  const head = ['Priority','Findings','Summary','Why it matters','Recommended action','Due date','PIC','Status','Urgency','Remarks'];
+  const rows = [head].concat(I.cards.map((c,i) => [
+    'P' + (i + 1), c.title, c.summary, c.implication, c.sowhat, c.due,
+    lsGet('ohih-pic-' + c.id, picDefault(c.id)), lsGet('ohih-st-' + c.id, 'Open'), c.urg,
+    lsGet('ohih-rm-' + c.id, '')
+  ]));
+  downloadCsv('ohih-compliance-monitoring', rows);
+}
+
+/* Renewal timeline (page 2) — the dated renewals currently in view */
+function exportTimeline(){
+  const items = timelineItems().sort((a,b) => a.days - b.days);
+  const head = ['Profession','Clinic','Item','Credential','Expiry date','Days to expiry','Status'];
+  const rows = [head].concat(items.map(it => [
+    it.role, it.clinic, it.who, it.cred, fmtDate(it.expiry), it.days, STATUS_META[it.code].label
+  ]));
+  downloadCsv('ohih-renewal-timeline', rows);
+}
+
+/* Personnel credentials (page 3) — one row per credential, all roles, current filters */
+function exportPersonnel(){
+  const head = ['Role','Name','Company','Clinic','Compliance','Credential','Mandatory','Status','Number','Sheet date','Expiry date','Days to expiry'];
+  const rows = [head];
+  fPeople().forEach(p => p.creds.forEach(c => rows.push([
+    p.role, p.name, p.company, p.clinic, VERDICT_META[p.verdict].label, c.def.label,
+    c.def.mandatory ? 'Yes' : 'No', STATUS_META[c.code].label, c.number, c.dateRaw,
+    c.expiry ? fmtDate(c.expiry) : (c.lifetime ? 'Lifetime' : ''), c.days != null ? c.days : ''
+  ])));
+  downloadCsv('ohih-personnel-credentials', rows);
+}
+
+/* Data quality (page 3) */
+function exportQuality(){
+  const head = ['Scope','Entity','Credential','Issue'];
+  const rows = [head].concat(qualityItems().map(q => [q.scope, q.entity, q.credential, q.issue]));
+  downloadCsv('ohih-data-quality', rows);
+}
+
+function qualityItems(){
+  const out = [];
+  const check = (entity, scope, creds) => creds.forEach(c => {
+    if (c.unparseable) out.push({ scope, entity, credential:c.def.label, issue:`Date "${c.dateRaw}" could not be read` });
     else if (c.def.numCol && c.number && !c.dateRaw && c.code === 'MISSING')
-      issues.push(`${where} · <b>${esc(ownerLabel)}</b> — ${esc(c.def.label)}: number recorded but date missing`);
+      out.push({ scope, entity, credential:c.def.label, issue:'Number recorded but date missing' });
     else if (c.def.numCol && c.dateRaw && !c.number)
-      issues.push(`${where} · <b>${esc(ownerLabel)}</b> — ${esc(c.def.label)}: date recorded but number missing`);
+      out.push({ scope, entity, credential:c.def.label, issue:'Date recorded but number missing' });
   });
   STATE.people.forEach(p => check(p.name, p.role, p.creds));
   STATE.sites.forEach(s => check(s.company, 'Site', s.licenses));
+  return out;
+}
+function renderQuality(){
+  const issues = qualityItems();
   $('#quality').innerHTML = issues.length
-    ? issues.map(i => `<div class="qa">${i}</div>`).join('')
+    ? issues.map(q => `<div class="qa">${esc(q.scope)} · <b>${esc(q.entity)}</b> — ${esc(q.credential)}: ${esc(q.issue)}</div>`).join('')
     : '<div class="qa" style="border-left-color:var(--ok-line)">No data-quality issues detected in the loaded rows.</div>';
 }
 
@@ -1305,13 +1372,8 @@ function renderQuality(){
    its 90-day renewal runway (the bar) ending at expiry (the dot). A TODAY
    line is recomputed on every render, so the picture moves by itself as time
    passes and as the sheet changes — nothing to maintain by hand.            */
-function renderTimeline(){
-  const PAST = 30, FUT = 365, TOT = PAST + FUT;
-  const xPct = d => Math.max(0, Math.min(100, (d + PAST) / TOT * 100));
-  const todayPct = xPct(0);
-  const wrap = $('#timeline'), cap = $('#tlCap');
-
-  const items = [];
+function timelineItems(){
+  const FUT = 365, items = [];
   fPeople().forEach(p => p.creds.forEach(c => {
     if (c.expiry && c.days != null && c.days <= FUT)
       items.push({ code:c.code, days:c.days, expiry:c.expiry, who:p.name,
@@ -1323,6 +1385,15 @@ function renderTimeline(){
         who:s.company + ' — clinic licence', clinic:s.clinic || s.location || '—',
         cred:c.def.label, role:'Clinic / site licences' });
   }));
+  return items;
+}
+function renderTimeline(){
+  const PAST = 30, FUT = 365, TOT = PAST + FUT;
+  const xPct = d => Math.max(0, Math.min(100, (d + PAST) / TOT * 100));
+  const todayPct = xPct(0);
+  const wrap = $('#timeline'), cap = $('#tlCap');
+
+  const items = timelineItems();
 
   if (!items.length){
     wrap.innerHTML = '<div class="tl-empty"><b>No dated renewals in the next 12 months for this selection.</b><br>' +
@@ -1572,14 +1643,6 @@ function renderInsights(){
 
   /* priorities → monitoring table (sorted by priority/urgency: P1 = act first) */
   const STATUS_OPTS = ['Open','In progress','Blocked','Done'];
-  const picDefault = id =>
-      id === 'sites'        ? 'Clinic PIC / HSE'
-    : /practice/.test(id)   ? 'Site Doctor / HSE'
-    : /refresher/.test(id)  ? 'Training & Competency'
-    : /ohcomp/.test(id)     ? 'Site HSE / OH'
-    : id === 'gaps'         ? 'Site Admin / HR'
-    : id === 'conc'         ? 'Site PIC'
-    :                         'Site PIC / HSE';
 
   if (!I.cards.length){
     $('#insightCards').innerHTML =
@@ -1741,6 +1804,10 @@ $('#fStatus').addEventListener('change',  e => { STATE.filters.status  = e.targe
 $('#fSearch').addEventListener('input',   e => { STATE.filters.q       = e.target.value; renderTabs(); renderTable(); });
 $('#btnRefresh').addEventListener('click', () => loadData(STATE.sample));
 $('#btnExport').addEventListener('click', exportActions);
+$('#btnExportMon').addEventListener('click', exportMonitoring);
+$('#btnExportTl').addEventListener('click', exportTimeline);
+$('#btnExportPpl').addEventListener('click', exportPersonnel);
+$('#btnExportQa').addEventListener('click', exportQuality);
 
 /* page navigation */
 document.querySelectorAll('#pageNav button').forEach(b =>
