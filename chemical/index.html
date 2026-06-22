@@ -159,7 +159,7 @@ const WHYITEMS = {
    ============================================================ */
 const LIVE = {
   sheetId : '1OPCdYET1g9c9I4hAyIX2QphAHyIMLP-Mg45t0WhlXII',
-  refreshMin : 5,                       // check cadence
+  refreshMin : 5,
   mapTab  : 'Chemical Mapping',
   demoTab : 'Data Demografi',
   siteTabs : [
@@ -174,7 +174,6 @@ const LIVE = {
 const gvizUrl = tab =>
   `https://docs.google.com/spreadsheets/d/${LIVE.sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`;
 
-/* Dual Strategy Fetcher to eliminate CORS blocks */
 async function fetchTabCsv(tab){
   const r = await fetch(gvizUrl(tab), {cache:'no-store'});
   if(!r.ok) throw new Error('HTTP '+r.status);
@@ -219,7 +218,6 @@ async function fetchTab(tab){
   catch(e) { return await fetchTabJsonp(tab); }
 }
 
-/* ---- RFC-4180 CSV parser → array of row-arrays ---- */
 function parseCSV(text){
   const rows=[]; let row=[], val='', q=false;
   for(let i=0;i<text.length;i++){const c=text[i];
@@ -231,7 +229,7 @@ function parseCSV(text){
   if(val.length||row.length){row.push(val);rows.push(row);}
   return rows.filter(r=>r.some(x=>x!==''));
 }
-/* ---- header → list of {get(name)} record objects ---- */
+
 function toRecords(rows){
   if(!rows.length) return [];
   const head=rows[0].map(h=>h.trim().toLowerCase());
@@ -240,12 +238,11 @@ function toRecords(rows){
     get:(name)=>{const i=idx(name); return i<0?'':(r[i]||'').trim();}
   }));
 }
-/* ---- helpers ---- */
+
 const num = v => {const m=String(v).match(/-?\d+(\.\d+)?/); return m?parseFloat(m[0]):NaN;};
 const clamp15 = v => Math.max(1,Math.min(5, isNaN(v)?3:Math.round(v)));
 function isCMR(ghs){ return /carcinog|mutagen|repro|h3(40|45|50|51|60|61)/i.test(ghs||''); }
 
-/* ---- governed monitoring-gap factor (MGF) from cadence + last date ---- */
 function cadenceDays(freq){
   const f=(freq||'').toLowerCase();
   if(f.includes('daily'))return 1; if(f.includes('shift'))return 1;
@@ -263,7 +260,7 @@ function mgfFor(required, lastDate, freq){
   if(ageRatio>1)   return 4;
   if(ageRatio>0.66)return 3; if(ageRatio>0.33)return 2; return 1;
 }
-/* ---- FROZEN CEPI (S1 §7.8) with governance MGF=5∧HWF≥4 floor (S1 §7.9) ---- */
+
 function cepiOf(HWF,ELF,MGF,SGF,SPF){
   let v = 0.25*HWF + 0.25*ELF + 0.25*MGF + 0.125*SGF + 0.125*SPF;
   if(MGF===5 && HWF>=4) v=Math.max(v,2.7);
@@ -271,7 +268,6 @@ function cepiOf(HWF,ELF,MGF,SGF,SPF){
 }
 const bandOf = v => v<1.8?'Low':v<2.7?'Moderate':v<3.5?'Significant':v<4.3?'High':'Critical';
 
-/* ---- build one governed pairing record from a raw register row ---- */
 function pairingFromRow(rec, siteId){
   const HWF=clamp15(num(rec.get('hazard severity')));
   const ELF=clamp15(num(rec.get('exposure potential')));
@@ -289,7 +285,6 @@ function pairingFromRow(rec, siteId){
   };
 }
 
-/* ---- population per site from Data Demografi ---- */
 function popBySite(demoRecs){
   const counts={};
   demoRecs.forEach(r=>{
@@ -299,7 +294,6 @@ function popBySite(demoRecs){
   return counts;
 }
 
-/* ---- transform live pairings → dashboard data model ---- */
 function transform(allPairings, pop){
   const bands=['Low','Moderate','Significant','High','Critical'];
   const sites = LIVE.siteTabs.map((s,i)=>{
@@ -355,7 +349,7 @@ function transform(allPairings, pop){
     criticalAgents:{t1:agentArr.filter(a=>a.tier===1).length, t2:agentArr.filter(a=>a.tier===2).length,
       coverage:Math.round(sites.reduce((a,s)=>a+s.coverage*s.pop,0)/Math.max(1,sites.reduce((a,s)=>a+s.pop,0)))},
     maturity:Math.min(...sites.map(s=>s.maturity)),
-    coverage:Math.round(sites.reduce((a,s)=>a+s.coverage*s.pop,0)/sites.reduce((a,s)=>a+s.pop,0)),
+    coverage:Math.round(sites.reduce((a,s)=>a+s.coverage*s.pop,0)/Math.max(1,sites.reduce((a,s)=>a+s.pop,0))),
     overdue:sites.reduce((a,s)=>a+s.overdue,0),
     due30:sites.reduce((a,s)=>a+s.due30,0),
     due60:totReq.filter(p=>p.MGF===3).length+totReq.filter(p=>p.MGF===2).length,
@@ -367,7 +361,6 @@ function transform(allPairings, pop){
   return {sites, agents:agentArr, segs:segArr, enterprise:ent};
 }
 
-/* ---- ORCHESTRATION: load → transform → assign → render ---- */
 async function loadLive(){
   setBadge('loading');
   try{
@@ -416,7 +409,7 @@ function setBadge(state, msg){
    RENDER HELPERS
    ============================================================ */
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
-const bandColor={Low:'ok',Moderate:'ok',Significant:'warn',High:'crit',Critical:'exp';
+const bandColor={Low:'ok',Moderate:'ok',Significant:'warn',High:'crit',Critical:'exp'};
 const cssvar=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 
 let scope={company:'ALL',site:'ALL',cycle:'2026Q2',family:'ALL'};
@@ -434,7 +427,7 @@ function aggCepi(sites){
 function kpiCard({ttl,val,sub,cls,band,arrow,stack,link}){
   let st='';
   if(stack){const tot=Object.values(stack).reduce((a,b)=>a+b,0);
-    st='<div class="mini-stack">'+Object.entries(stack).map(([k,v])=>`<span style="width:${(v/tot*100)}%;background:var(--${bandColor[k]})"></span>`).join('')+'</div>';}
+    st='<div class="mini-stack">'+Object.entries(stack).map(([k,v])=>`<span style="width:${tot?(v/tot*100):0}%;background:var(--${bandColor[k]})"></span>`).join('')+'</div>';}
   return `<div class="kpi k-${cls} ${link?'link':''}" ${link?`data-link="${link}"`:''}>
     <div class="ttl">${ttl}</div>
     <div class="v">${val}${arrow?`<span class="arrow" style="font-size:1.1rem"> ${arrow}</span>`:''}</div>
@@ -703,7 +696,7 @@ function renderAlerts(){
   const sites=activeSites();
   const overdue=sites.reduce((a,s)=>a+s.overdue,0);
   const critPair=aggCepi(sites).Critical;
-  $('#execAlert .txt').innerHTML=`<b>Executive attention:</b> ${critPair} SEG–agent pairings are at Critical Priority and ${ENTERPRISE.caOverdue} Tier-1 critical-agent campaigns are overdue. CEBI is rising for a second consecutive cycle — an Executive resourcing review is the governed response Mom.`;
+  $('#execAlert .txt').innerHTML=`<b>Executive attention:</b> ${critPair} SEG–agent pairings are at Critical Priority and ${ENTERPRISE.caOverdue} Tier-1 critical-agent campaigns are overdue. CEBI is rising for a second consecutive cycle — an Executive resourcing review is the governed response.`;
   $('#situationText').textContent=NARRATIVE.p1[0][1];
   $('#situationText2').textContent=NARRATIVE.p2[0][1];
 }
