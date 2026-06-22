@@ -735,14 +735,40 @@ function parseCSV(text){
   if(val.length||row.length){row.push(val);rows.push(row);}
   return rows.filter(r=>r.some(x=>x!==''));
 }
-/* ---- header → list of {get(name)} record objects ---- */
+/* ---- header → list of {get(name)} record objects ----
+   Stage 10A.1: robust header handling.
+   (1) Header-row detection — scans the first few rows for the row that actually
+       carries the register columns (handles banner / preamble rows in the
+       published CSV that would otherwise cause every data row to be discarded).
+   (2) get(name) matches case-insensitively: exact header match first, then a
+       substring fallback. ---- */
 function toRecords(rows){
   if(!rows.length) return [];
-  const head=rows[0].map(h=>h.trim().toLowerCase());
-  const idx=name=>head.findIndex(h=>h.includes(name));
-  return rows.slice(1).map(r=>({
-    get:(name)=>{const i=idx(name); return i<0?'':(r[i]||'').trim();}
+  // locate the real header row (one containing a 'chemical name' column)
+  let hIdx=0;
+  for(let k=0;k<Math.min(rows.length,8);k++){
+    if(rows[k].some(c=>String(c).trim().toLowerCase().includes('chemical name'))){ hIdx=k; break; }
+  }
+  const head=rows[hIdx].map(h=>String(h).trim().toLowerCase());
+  const locate=name=>{
+    const key=String(name).trim().toLowerCase();
+    let i=head.indexOf(key);                       // exact match first
+    if(i<0) i=head.findIndex(h=>h.includes(key));  // substring fallback
+    return i;
+  };
+  return rows.slice(hIdx+1).map(r=>({
+    get:(name)=>{const i=locate(name); return i<0?'':(r[i]||'').trim();},
+    _head:head
   }));
+}
+/* ---- Stage 10A.1 robust header normalization: try each alias in turn and
+   return the first non-empty match. Aliases may be given in any case. ---- */
+function getField(rec, aliases){
+  for(const a of aliases){
+    const v=rec.get(a);
+    if(v!=='' && v!=null) return v;
+  }
+  return '';
 }
 /* ---- helpers ---- */
 const num = v => {const m=String(v).match(/-?\d+(\.\d+)?/); return m?parseFloat(m[0]):NaN;};
@@ -777,19 +803,26 @@ const bandOf = v => v<1.8?'Low':v<2.7?'Moderate':v<3.5?'Significant':v<4.3?'High
 
 /* ---- build one governed pairing record from a raw register row ---- */
 function pairingFromRow(rec, siteId){
-  const HWF=clamp15(num(rec.get('hazard severity')));
-  const ELF=clamp15(num(rec.get('exposure potential')));
+  const ghs      = getField(rec,['ghs','GHS Classification']);
+  const required = getField(rec,['monitoring required','Monitoring Required']);
+  const lastDate = getField(rec,['last date','Last Date Updated']);
+  const freq     = getField(rec,['sampling frequency','Sampling Frequency','Sampling Freq']);
+  const HWF=clamp15(num(getField(rec,['hazard severity','Hazard Severity Score (Auto)','Hazard Severity Score GHS'])));
+  const ELF=clamp15(num(getField(rec,['exposure potential','Exposure Potential Score (Auto)','Exposure Potential Score GHS'])));
   const SGF=3, SPF=3;                                  // governed defaults (surveillance/scenario) — documented
-  const MGF=mgfFor(rec.get('monitoring required'), rec.get('last date'), rec.get('sampling frequency'));
+  const MGF=mgfFor(required, lastDate, freq);
   const cepi=cepiOf(HWF,ELF,MGF,SGF,SPF);
   return {
-    site:siteId, agent:rec.get('chemical name')||'Unspecified', cas:rec.get('cas')||'—',
-    family:rec.get('chemical category')||'Unclassified', ghs:rec.get('ghs'),
-    seg:rec.get('similar exposure group')||rec.get('department')||'Unassigned',
-    cmr:isCMR(rec.get('ghs')), HWF,ELF,MGF,SGF,SPF, cepi, band:bandOf(cepi),
-    required:/y|required|exposure|dust|volatile|gas|fume|mist|vapor|true/i.test(rec.get('monitoring required')||''),
-    last:rec.get('last date'), freq:rec.get('sampling frequency'), mtype:rec.get('monitoring type'),
-    risk:rec.get('risk level')
+    site:siteId,
+    agent:getField(rec,['chemical name','Chemical Name'])||'Unspecified',
+    cas:getField(rec,['cas','CAS Number'])||'—',
+    family:getField(rec,['chemical category','Chemical Category'])||'Unclassified',
+    ghs,
+    seg:getField(rec,['similar exposure group','Similar Exposure Group (SEG)'])||getField(rec,['department','Department'])||'Unassigned',
+    cmr:isCMR(ghs), HWF,ELF,MGF,SGF,SPF, cepi, band:bandOf(cepi),
+    required:/y|required|exposure|dust|volatile|gas|fume|mist|vapor|true/i.test(required||''),
+    last:lastDate, freq, mtype:getField(rec,['monitoring type','Monitoring Type']),
+    risk:getField(rec,['risk level','Risk Level (Auto)'])
   };
 }
 
@@ -895,8 +928,13 @@ async function loadLive(){
     siteTxts.forEach((txt,i)=>{
       if(!txt) return;
       const recs=toRecords(parseCSV(txt));
-      recs.forEach(r=>{ if(r.get('chemical name')) pairings.push(pairingFromRow(r, LIVE.siteTabs[i].id)); });
+      const before=pairings.length;
+      recs.forEach(r=>{ if(getField(r,['chemical name','Chemical Name'])) pairings.push(pairingFromRow(r, LIVE.siteTabs[i].id)); });
+      const added=pairings.length-before;
+      console.log(`[10A.1] ${LIVE.siteTabs[i].id} — Rows parsed: ${recs.length} · Valid pairings: ${added}`);
+      if(added) console.log('[10A.1] Sample pairing:', pairings[before]);
     });
+    console.log(`[10A.1] TOTAL valid pairings: ${pairings.length}`);
     if(!pairings.length) throw new Error('Register sheets contained no readable rows');
     const t=transform(pairings, pop);
     SITES=t.sites; AGENTS=t.agents; SEGS=t.segs; ENTERPRISE=t.enterprise;
