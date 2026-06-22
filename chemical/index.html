@@ -594,7 +594,7 @@ const WHYITEMS = {
 const LIVE = {
   sheetId : '1OPCdYET1g9c9I4hAyIX2QphAHyIMLP-Mg45t0WhlXII',
   refreshMin : 15,                       // auto re-fetch cadence
-  mapTab  : 'Chemical_Mapping',   // 10A.5: verified exact sheet name (underscore)
+  mapTab  : 'Chemical_Mapping',   // 10A.6: DEPRECATED — summary/resume sheet only, NOT used in ETL pipeline
   demoTab : 'Data_Demografi',     // 10A.5: verified exact sheet name (underscore)
   // site register tabs → governed site id used across the dashboard
   siteTabs : [
@@ -744,11 +744,30 @@ function parseCSV(text){
        substring fallback. ---- */
 function toRecords(rows){
   if(!rows.length) return [];
-  // locate the real header row (one containing a 'chemical name' column)
-  let hIdx=0;
-  for(let k=0;k<Math.min(rows.length,8);k++){
-    if(rows[k].some(c=>String(c).trim().toLowerCase().includes('chemical name'))){ hIdx=k; break; }
+  /* FIX 5 — robust register-header detection.
+     Scans the first 20 rows and selects the genuine register header row,
+     ignoring title rows, merged banner rows and blank rows that the
+     published CSV may carry above the data. A row qualifies as the header
+     when it contains the 'chemical name' column AND at least one other
+     register signature column. */
+  const SIGS=['cas number','chemical category','similar exposure group',
+              'monitoring required','sampling frequency','hazard severity',
+              'exposure potential','risk level','site','department'];
+  let hIdx=-1;
+  for(let k=0;k<Math.min(rows.length,20);k++){
+    const cells=rows[k].map(c=>String(c).trim().toLowerCase());
+    if(!cells.some(x=>x))           continue;                 // ignore blank rows
+    const hasName=cells.some(c=>c.includes('chemical name'));
+    if(!hasName)                    continue;                 // ignore title/banner rows
+    const sigCount=SIGS.filter(s=>cells.some(c=>c.includes(s))).length;
+    if(sigCount>=1){ hIdx=k; break; }                         // genuine register header
   }
+  if(hIdx<0){                                                 // fallback: first row mentioning chemical name
+    for(let k=0;k<Math.min(rows.length,20);k++){
+      if(rows[k].some(c=>String(c).trim().toLowerCase().includes('chemical name'))){ hIdx=k; break; }
+    }
+  }
+  if(hIdx<0) hIdx=0;
   const head=rows[hIdx].map(h=>String(h).trim().toLowerCase());
   const locate=name=>{
     const key=String(name).trim().toLowerCase();
@@ -807,22 +826,29 @@ function pairingFromRow(rec, siteId){
   const required = getField(rec,['monitoring required','Monitoring Required']);
   const lastDate = getField(rec,['last date','Last Date Updated']);
   const freq     = getField(rec,['sampling frequency','Sampling Frequency','Sampling Freq']);
-  const HWF=clamp15(num(getField(rec,['hazard severity','Hazard Severity Score (Auto)','Hazard Severity Score GHS'])));
-  const ELF=clamp15(num(getField(rec,['exposure potential','Exposure Potential Score (Auto)','Exposure Potential Score GHS'])));
+  /* FIX 4 — explicit field mapping using the EXACT site-sheet header names
+     first (with legacy aliases as fallback). Auto-computed score columns:
+       Hazard Severity Score (Auto)
+       Exposure Potential Score (Auto)
+       Risk Ranking Score (Auto)
+       Risk Level (Auto)                                                */
+  const HWF=clamp15(num(getField(rec,['Hazard Severity Score (Auto)','hazard severity','Hazard Severity Score GHS'])));
+  const ELF=clamp15(num(getField(rec,['Exposure Potential Score (Auto)','exposure potential','Exposure Potential Score GHS'])));
+  const riskRank=getField(rec,['Risk Ranking Score (Auto)','risk ranking']);
   const SGF=3, SPF=3;                                  // governed defaults (surveillance/scenario) — documented
   const MGF=mgfFor(required, lastDate, freq);
   const cepi=cepiOf(HWF,ELF,MGF,SGF,SPF);
   return {
     site:siteId,
-    agent:getField(rec,['chemical name','Chemical Name'])||'Unspecified',
-    cas:getField(rec,['cas','CAS Number'])||'—',
-    family:getField(rec,['chemical category','Chemical Category'])||'Unclassified',
+    agent:getField(rec,['Chemical Name','chemical name'])||'Unspecified',
+    cas:getField(rec,['CAS Number','cas'])||'—',
+    family:getField(rec,['Chemical Category','chemical category'])||'Unclassified',
     ghs,
-    seg:getField(rec,['similar exposure group','Similar Exposure Group (SEG)'])||getField(rec,['department','Department'])||'Unassigned',
+    seg:getField(rec,['Similar Exposure Group (SEG)','similar exposure group'])||getField(rec,['Department','department'])||'Unassigned',
     cmr:isCMR(ghs), HWF,ELF,MGF,SGF,SPF, cepi, band:bandOf(cepi),
     required:/y|required|exposure|dust|volatile|gas|fume|mist|vapor|true/i.test(required||''),
-    last:lastDate, freq, mtype:getField(rec,['monitoring type','Monitoring Type']),
-    risk:getField(rec,['risk level','Risk Level (Auto)'])
+    last:lastDate, freq, mtype:getField(rec,['Monitoring Type','monitoring type']),
+    risk:getField(rec,['Risk Level (Auto)','risk level']), riskRank
   };
 }
 
@@ -930,9 +956,12 @@ async function loadLive(){
   CONN.reset();
   setBadge('loading');
   try{
-    /* Describe every tab once so failures can be logged by name. */
+    /* FIX 1 — Chemical_Mapping REMOVED from the live ETL pipeline.
+       It is only a summary/resume sheet and is NOT the source of truth.
+       The pipeline now loads ONLY the demographics tab + the five site
+       register tabs, which are the sole source of truth for pairings,
+       CEPI/CEBI, critical agents, SEGs and monitoring. */
     const tabSpecs = [
-      { name: LIVE.mapTab,  kind:'map'  },
       { name: LIVE.demoTab, kind:'demo' },
       ...LIVE.siteTabs.map(s=>({ name:s.tab, kind:'site', site:s }))
     ];
@@ -947,9 +976,10 @@ async function loadLive(){
       return '';
     });
 
-    const mapTxt  = txts[0];
-    const demoTxt = txts[1];
-    const siteTxts = txts.slice(2);
+    /* FIX 2 — indexing rebuilt after removing Chemical_Mapping.
+       demo = txts[0]; site sheets = txts[1..]. */
+    const demoTxt  = txts[0];
+    const siteTxts = txts.slice(1);
 
     const loaded = siteTxts.filter(t=>t).length;
     console.log(`[10A.3] Site sheets reachable: ${loaded}/${LIVE.siteTabs.length}`);
@@ -968,34 +998,29 @@ async function loadLive(){
       const site = LIVE.siteTabs[i];
       if(!txt){ console.warn('TAB EMPTY', site.tab); return; }   // CHANGE 3 — empty tab never throws
 
-      /* ---- MANDATORY FIX #3 — per-tab raw forensics ---- */
-      console.group('[10A.5 FORENSICS]');
-      console.log('REQUESTED TAB', site.tab);
-      console.log('CSV LENGTH', txt.length);
-      console.log('ROW COUNT', parseCSV(txt).length);
-      console.log('RAW CSV PREVIEW', txt.substring(0,2000));
-      console.groupEnd();
-
       try{
         const recs = toRecords(parseCSV(txt));
-
-        /* ---- MANDATORY FIX #4 — parsed-record forensics ---- */
-        console.log('HEADERS', recs[0]?._head);
-        console.log('FIRST RECORD', recs[0]);
-        console.log('ROWS PARSED', recs.length);
-
-        /* ---- MANDATORY FIX #5 — wrong-feed guard (<20 rows) ---- */
-        if(recs.length < 20){
-          console.error('WRONG FEED DETECTED', site.tab);
-          console.error('FULL RAW CSV', txt);
-        }
-
         const before = pairings.length;
-        recs.forEach(r=>{ if(getField(r,['chemical name','Chemical Name'])) pairings.push(pairingFromRow(r, site.id)); });
+        recs.forEach(r=>{ if(getField(r,['Chemical Name','chemical name'])) pairings.push(pairingFromRow(r, site.id)); });
         const added = pairings.length-before;
-        console.log('VALID PAIRINGS', added);
-        console.log(`[10A.5] ${site.id} — Rows parsed: ${recs.length} · Valid pairings: ${added}`);
-        if(added) console.log('[10A.5] Sample pairing:', pairings[before]);
+        const first = added ? pairings[before] : null;
+
+        /* FIX 6 — standardized per-site forensic block. */
+        console.group(`[10A.6 FORENSICS] ${site.id}`);
+        console.log('SITE',          site.id);
+        console.log('TAB NAME',      site.tab);
+        console.log('ROWS PARSED',   recs.length);
+        console.log('VALID PAIRINGS',added);
+        if(first){
+          console.log('FIRST PAIRING:');
+          console.log('  Chemical Name =', first.agent);
+          console.log('  CAS =',           first.cas);
+          console.log('  SEG =',           first.seg);
+        }else{
+          console.warn('FIRST PAIRING: none — header detection or empty register');
+          console.log('HEADERS', recs[0]?._head);
+        }
+        console.groupEnd();
       }catch(e){
         console.warn('TAB FAILED', site.tab, e);   // parse exception → skip this site, keep going
       }
@@ -1034,7 +1059,13 @@ async function loadLive(){
       agents:   AGENTS.length,
       segs:     SEGS.length
     });
-    console.log(`[10A.3] Refresh complete — mode: ${liveOk ? CONN.state.toUpperCase() : 'GOVERNED BASELINE'}`);
+
+    /* FIX 7 — explicit live-connectivity diagnostic for every refresh cycle. */
+    const diag = !liveOk ? 'OFFLINE'
+                : (CONN.usedJsonp ? 'JSONP FALLBACK' : 'LIVE DATA');
+    console.log('%c[10A.6] CONNECTIVITY: '+diag,
+      'font-weight:bold;color:'+(diag==='LIVE DATA'?'green':diag==='JSONP FALLBACK'?'orange':'red'));
+    console.log(`[10A.6] Refresh complete — mode: ${liveOk ? CONN.state.toUpperCase() : 'GOVERNED BASELINE'}`);
 
   }catch(err){
     /* Last-resort guard: anything unforeseen degrades gracefully, never crashes. */
