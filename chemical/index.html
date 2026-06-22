@@ -15,6 +15,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- STAGE 10B: export engine libraries (SheetJS · jsPDF · autoTable). Loaded from CDN; graceful no-op if unavailable. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" defer></script>
 <style>
 /* ============ DESIGN SYSTEM — authoritative tokens, Stage 8 §9.1–9.2 ============ */
 :root{
@@ -205,6 +209,54 @@ footer .gov{font-family:var(--mono);font-size:.68rem}
   .cal{grid-template-columns:repeat(3,1fr)}.beat{grid-template-columns:1fr}
   .h-meta{text-align:left;align-items:flex-start}.matrix{font-size:.6rem}
 }
+
+/* ============ STAGE 10B — enterprise enhancements ============ */
+.exp-toolbar{display:flex;gap:6px;align-items:center;margin-left:auto}
+.exp-toolbar .btn.exp-b{padding:6px 11px;font-size:.78rem}
+.view-btn{font-family:var(--mono);font-size:.62rem;font-weight:700;letter-spacing:.08em;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:6px;padding:2px 8px;margin-left:6px;text-transform:uppercase;line-height:1.5;cursor:pointer}
+.view-btn:hover{background:var(--accent);color:#fff}
+.kpi .view-btn{position:absolute;top:10px;right:10px;margin:0}
+.kpi{padding-top:30px}
+section.block h2 .view-btn{margin-left:auto}
+/* detail slicer bar */
+.detail-slicers{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:4px}
+.detail-slicers label{font-size:.68rem;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;margin-left:6px}
+.detail-slicers label:first-child{margin-left:0}
+.detail-slicers select{font-family:var(--sans);font-size:.82rem;padding:5px 8px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink)}
+.detail-slicers .ds-reset{margin-left:auto}
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(8,18,16,.55);backdrop-filter:blur(2px);display:none;align-items:flex-start;justify-content:center;z-index:1000;padding:34px 18px;overflow:auto}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:14px;max-width:1040px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.3);overflow:hidden}
+.modal-head{background:linear-gradient(135deg,var(--brand-deep),var(--brand));color:#EAF4EF;padding:16px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.modal-head .mt{font-family:var(--disp);font-weight:700;font-size:1.15rem;line-height:1.15}
+.modal-head .ms{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:#9FC4B8;margin-bottom:5px}
+.modal-x{background:rgba(255,255,255,.14);border:none;color:#fff;border-radius:8px;font-size:1rem;padding:4px 11px;cursor:pointer}
+.modal-x:hover{background:rgba(255,255,255,.28)}
+.modal-body{padding:18px 20px;max-height:68vh;overflow:auto}
+.modal-body h4{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+.modal-body h4:first-child{margin-top:0}
+.modal-body h4::after{content:"";flex:1;height:1px;background:var(--line)}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px}
+.mkv{display:flex;gap:8px;font-size:.84rem;padding:3px 0;border-bottom:1px dashed var(--line)}
+.mkv .k{font-family:var(--mono);font-size:.7rem;color:var(--ink-soft);min-width:150px;text-transform:uppercase;letter-spacing:.03em}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--mono);font-size:.7rem;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:3px 9px}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;background:var(--surface-2)}
+.modal-foot .lbl{font-family:var(--mono);font-size:.66rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em;margin-right:2px}
+/* MERP severity pills */
+.merp-sev{font-family:var(--mono);font-size:.66rem;font-weight:700;padding:3px 10px;border-radius:99px;letter-spacing:.05em}
+.sev-Low{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-line)}
+.sev-Moderate{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-line)}
+.sev-High{background:var(--crit-bg);color:var(--crit);border:1px solid var(--crit-line)}
+.sev-Critical{background:var(--exp-bg);color:var(--exp);border:1px solid var(--exp-line)}
+.merp-block{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:10px;background:var(--surface-2)}
+.merp-block .bh{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
+.merp-block p{font-size:.86rem;line-height:1.45;margin:2px 0}
+.cycle-note{display:none;border:1px solid var(--warn-line);background:var(--warn-bg);color:var(--warn);border-radius:var(--radius);padding:11px 16px;font-size:.85rem;font-weight:600}
+.cycle-note.show{display:block}
+.sds-Valid{color:var(--ok)} .sds-Expired{color:var(--exp)} .sds-Missing{color:var(--miss)}
+@media(max-width:760px){.modal-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -228,18 +280,25 @@ footer .gov{font-family:var(--mono);font-size:.68rem}
   </div>
 
   <div class="toolbar">
-    <label for="fCompany">Company</label>
-    <select id="fCompany"><option value="ALL">All companies</option></select>
+    <label for="fCompany">Company Group</label>
+    <select id="fCompany"><option value="ALL">All company groups</option></select>
     <label for="fSite">Site</label>
     <select id="fSite"><option value="ALL">All sites</option></select>
     <label for="fCycle">Reporting cycle</label>
     <select id="fCycle">
+      <option value="2026Q3">2026 · Q3</option>
       <option value="2026Q2" selected>2026 · Q2 (current)</option>
       <option value="2026Q1">2026 · Q1</option>
       <option value="2025Q4">2025 · Q4</option>
     </select>
     <label for="fFamily">Agent family</label>
     <select id="fFamily"><option value="ALL">All families</option></select>
+    <div class="exp-toolbar">
+      <span class="badge" style="border-color:rgba(255,255,255,.3)">EXPORT</span>
+      <button class="btn ghost exp-b" id="expCSV">CSV</button>
+      <button class="btn ghost exp-b" id="expXLSX">XLSX</button>
+      <button class="btn ghost exp-b" id="expPDF">PDF</button>
+    </div>
   </div>
 
   <nav class="tabs" role="tablist">
@@ -250,6 +309,7 @@ footer .gov{font-family:var(--mono);font-size:.68rem}
 </header>
 
 <main>
+  <div class="cycle-note" id="cycleNote">No records available for the selected reporting cycle. Showing the most recent governed snapshot; KPI calculations are unaffected.</div>
   <!-- ================= PAGE 1 — EXECUTIVE SUMMARY ================= -->
   <div class="page active" id="p1">
 
@@ -410,6 +470,28 @@ footer .gov{font-family:var(--mono);font-size:.68rem}
       </div>
     </section>
 
+    <!-- STAGE 10B: advanced Details slicers + chemical / MERP register -->
+    <section class="block" id="merpSection">
+      <h2>Chemical register &amp; Medical Emergency Response Plan (MERP)</h2>
+      <div class="detail-slicers" id="detailSlicers">
+        <label for="dArea">Area</label><select id="dArea"><option value="ALL">All areas</option></select>
+        <label for="dDept">Department</label><select id="dDept"><option value="ALL">All departments</option></select>
+        <label for="dLoc">Location detail</label><select id="dLoc"><option value="ALL">All locations</option></select>
+        <label for="dSDS">SDS status</label><select id="dSDS"><option value="ALL">All SDS</option></select>
+        <label for="dStore">Storage location</label><select id="dStore"><option value="ALL">All storage</option></select>
+        <button class="btn ds-reset" id="dReset">Reset detail filters</button>
+      </div>
+      <div class="card" style="margin-top:10px">
+        <div class="table-scroll" style="max-height:520px">
+          <table id="chemRegTbl"><thead><tr>
+            <th>Chemical</th><th>CAS</th><th>Category</th><th>Site</th><th>Area</th><th>Department</th>
+            <th>SEG</th><th>Risk</th><th>SDS</th><th>Storage</th><th>MERP</th>
+          </tr></thead><tbody id="chemRegBody"></tbody></table>
+        </div>
+        <div class="cap" id="chemRegCap">Filtered chemical register. MERP column opens the governed Medical Emergency Response Plan for each agent (Details → Governed Registers). Derived only from existing SDS-sourced fields — no new framework introduced.</div>
+      </div>
+    </section>
+
     <div class="grid2">
       <section class="block">
         <h2>Details narrative (Stage 8 §8.3)</h2>
@@ -422,6 +504,24 @@ footer .gov{font-family:var(--mono);font-size:.68rem}
     </div>
   </div>
 </main>
+
+<!-- STAGE 10B: universal governed VIEW / MERP modal -->
+<div class="modal-bg" id="modalBg" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head">
+      <div><div class="ms" id="modalKicker">Governed detail</div><div class="mt" id="modalTitle"></div></div>
+      <button class="modal-x" id="modalX" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot">
+      <span class="lbl">Export this view</span>
+      <button class="btn" data-mx="csv">CSV</button>
+      <button class="btn" data-mx="xlsx">XLSX</button>
+      <button class="btn" data-mx="pdf">PDF</button>
+      <span class="lbl" style="margin-left:auto" id="modalLineageHint"></span>
+    </div>
+  </div>
+</div>
 
 <footer>
   <div>Merdeka Group · OH Chemical Exposure Intelligence Platform · Executive Dashboard v1.0</div>
@@ -444,17 +544,17 @@ const REF = {
 // Sites: CEPI band distribution (pairings), CEBI rank, maturity level, exposed population, coverage%, overdue
 // STAGE 9: governed fallback baseline — used only when the live Google Sheet is unreachable.
 const DEFAULT_SITES = [
-  {id:'KON', co:'PT SCM',  name:'Konawe Nickel Smelter', cebiRank:1, maturity:3, pop:2840, coverage:58, overdue:14, due30:9,
+  {id:'KON', co:'MBM', grp:'MBM', name:'PT Sulawesi Cahaya Mineral · Konawe (SCM-KNW)', cebiRank:1, maturity:3, pop:2840, coverage:58, overdue:14, due30:9,
     cepi:{Low:18,Moderate:31,Significant:24,High:13,Critical:6}},
-  {id:'MOR', co:'PT SCM',  name:'Morowali Processing',   cebiRank:2, maturity:4, pop:2110, coverage:71, overdue:8,  due30:6,
+  {id:'MOR', co:'MBM', grp:'MBM', name:'PT Merdeka Tsingshan Indonesia · Morowali (MTI-MOR)',   cebiRank:2, maturity:4, pop:2110, coverage:71, overdue:8,  due30:6,
     cepi:{Low:22,Moderate:35,Significant:19,High:9, Critical:3}},
-  {id:'WET', co:'PT BSI',  name:'Wetar Copper',          cebiRank:3, maturity:4, pop:1240, coverage:79, overdue:5,  due30:7,
+  {id:'WET', co:'MCG', grp:'MCG', name:'PT Batutua Tembaga Raya · Wetar Copper (BTR-BKP)',          cebiRank:3, maturity:4, pop:1240, coverage:79, overdue:5,  due30:7,
     cepi:{Low:26,Moderate:33,Significant:14,High:6, Critical:2}},
-  {id:'PAN', co:'PT Pani', name:'Pani Gold Project',     cebiRank:4, maturity:2, pop:980,  coverage:44, overdue:11, due30:4,
+  {id:'PAN', co:'MGR', grp:'MGR', name:'Pani Gold Mine (PGM)',     cebiRank:4, maturity:2, pop:980,  coverage:44, overdue:11, due30:4,
     cepi:{Low:12,Moderate:24,Significant:18,High:8, Critical:4}},
-  {id:'TUJ', co:'PT BSI',  name:'Tujuh Bukit Mine',      cebiRank:5, maturity:5, pop:1620, coverage:88, overdue:3,  due30:5,
+  {id:'TUJ', co:'MCG', grp:'MCG', name:'PT Bumi Suksesindo · Tujuh Bukit Operations (BSI-TBO)',      cebiRank:5, maturity:5, pop:1620, coverage:88, overdue:3,  due30:5,
     cepi:{Low:30,Moderate:31,Significant:11,High:4, Critical:1}},
-  {id:'HQ',  co:'Group',   name:'Group Technical Centre',cebiRank:6, maturity:5, pop:410,  coverage:92, overdue:1,  due30:2,
+  {id:'HQ',  co:'Group', grp:'Group',   name:'Group Technical Centre',cebiRank:6, maturity:5, pop:410,  coverage:92, overdue:1,  due30:2,
     cepi:{Low:34,Moderate:22,Significant:6, High:2, Critical:0}}
 ];
 
@@ -492,6 +592,7 @@ let AGENTS = DEFAULT_AGENTS;
 let SEGS = DEFAULT_SEGS;
 let ENTERPRISE = DEFAULT_ENTERPRISE;
 let DATA_SOURCE = 'fallback';   // 'live' | 'fallback'
+let PAIRINGS = [];              // STAGE 10B: full governed pairing rows for Details/MERP filtering
 let DATA_AS_OF = null;          // Date of last successful live load
 let DATA_COMPLETENESS = null;   // 0..100 share of expected sheets that loaded
 
@@ -544,7 +645,10 @@ function buildRegisters(){ return {
   'Medical Intelligence':{cols:['Domain (OM custody)','Aggregate','Trend','Note'],
     rows:[['Referrals (de-id)','aggregate only','flat','OM custody — not in mgmt view'],['Fitness-for-task','governed aggregate','stable','SEG-linked, pseudonymised'],['Abnormal findings','High-CEPI tracked sep.','watch','feeds reassessment loop']]},
   'Action':{cols:['Action','Owner','Priority','Due','Status'],
-    rows:ACTIONS.map(a=>[a.cmd,a.owner,a.c==='exp'?'Critical':a.c==='crit'?'High':'Medium',a.when,'Open'])}
+    rows:ACTIONS.map(a=>[a.cmd,a.owner,a.c==='exp'?'Critical':a.c==='crit'?'High':'Medium',a.when,'Open'])},
+  /* STAGE 10B: Medical Emergency Response Plan register (derived from existing SDS fields) */
+  'Medical Emergency Response':{cols:['Chemical','CAS','Category','Risk Level','Escalation','MERP'],
+    rows:merpRegisterRows()}
 }; }
 let REGISTERS = buildRegisters();
 
@@ -598,11 +702,11 @@ const LIVE = {
   demoTab : 'Data_Demografi',     // 10A.5: verified exact sheet name (underscore)
   // site register tabs → governed site id used across the dashboard
   siteTabs : [
-    {id:'TUJ', co:'PT BSI',  name:'Tujuh Bukit Mine',       tab:'1. BSI_BWX',        loc:['banyuwangi','bwx']},
-    {id:'WET', co:'PT BSI',  name:'Wetar Copper',           tab:'2. BTR-BKP_Wetar',  loc:['wetar']},
-    {id:'KON', co:'PT SCM',  name:'Konawe Nickel Smelter',  tab:'3. SCM_Konawe',     loc:['konawe']},
-    {id:'MOR', co:'PT SCM',  name:'Morowali Processing',    tab:'4. MTI_Morowali',   loc:['morowali']},
-    {id:'PAN', co:'PT Pani', name:'Pani Gold Project',      tab:'5. Pani_Gold_Mine', loc:['pohuwato','pani','gorontalo']}
+    {id:'TUJ', co:'MCG', grp:'MCG', name:'PT Bumi Suksesindo · Tujuh Bukit Operations (BSI-TBO)',       tab:'1. BSI_BWX',        loc:['banyuwangi','bwx']},
+    {id:'WET', co:'MCG', grp:'MCG', name:'PT Batutua Tembaga Raya · Wetar Copper (BTR-BKP)',           tab:'2. BTR-BKP_Wetar',  loc:['wetar']},
+    {id:'KON', co:'MBM', grp:'MBM', name:'PT Sulawesi Cahaya Mineral · Konawe (SCM-KNW)',  tab:'3. SCM_Konawe',     loc:['konawe']},
+    {id:'MOR', co:'MBM', grp:'MBM', name:'PT Merdeka Tsingshan Indonesia · Morowali (MTI-MOR)',    tab:'4. MTI_Morowali',   loc:['morowali']},
+    {id:'PAN', co:'MGR', grp:'MGR', name:'Pani Gold Mine (PGM)',      tab:'5. Pani_Gold_Mine', loc:['pohuwato','pani','gorontalo']}
   ],
   csvRetries : 3,                        // CSV attempts before falling back to JSONP
   csvBackoff : [1000, 2000]              // wait between attempt 1→2 and 2→3 (ms)
@@ -841,14 +945,28 @@ function pairingFromRow(rec, siteId){
   return {
     site:siteId,
     agent:getField(rec,['Chemical Name','chemical name'])||'Unspecified',
+    product:getField(rec,['Product Name','product name']),
     cas:getField(rec,['CAS Number','cas'])||'—',
     family:getField(rec,['Chemical Category','chemical category'])||'Unclassified',
     ghs,
+    area:getField(rec,['Area','area'])||'Unassigned',
+    dept:getField(rec,['Department','department'])||'Unassigned',
+    locDetail:getField(rec,['Location Detail','location detail'])||'—',
     seg:getField(rec,['Similar Exposure Group (SEG)','similar exposure group'])||getField(rec,['Department','department'])||'Unassigned',
     cmr:isCMR(ghs), HWF,ELF,MGF,SGF,SPF, cepi, band:bandOf(cepi),
     required:/y|required|exposure|dust|volatile|gas|fume|mist|vapor|true/i.test(required||''),
     last:lastDate, freq, mtype:getField(rec,['Monitoring Type','monitoring type']),
-    risk:getField(rec,['Risk Level (Auto)','risk level']), riskRank
+    risk:getField(rec,['Risk Level (Auto)','risk level']), riskRank,
+    /* STAGE 10B: governed MERP + governance fields (SDS-sourced, read-only) */
+    sdsExpiry:getField(rec,['SDS Expiry','sds expiry']),
+    storage:getField(rec,['Site Storage Location','site storage location'])||'Unassigned',
+    ppe:getField(rec,['PPE Required (Based on SDS)','ppe required']),
+    faInh:getField(rec,['First Aid – Inhalation','first aid – inhalation','first aid inhalation']),
+    faSkin:getField(rec,['First Aid – Skin','first aid – skin','first aid skin']),
+    faEye:getField(rec,['First Aid – Eye','first aid – eye','first aid eye']),
+    faIng:getField(rec,['First Aid – Ingestion','first aid – ingestion','first aid ingestion']),
+    spill:getField(rec,['Spill Response','spill response']),
+    fire:getField(rec,['Fire Fighting Measures','fire fighting measures'])
   };
 }
 
@@ -941,6 +1059,7 @@ function transform(allPairings, pop){
    Keeps CEPI / CEBI / Maturity / Visuals / Governance logic untouched. ---- */
 function applyGovernedBaseline(reason){
   SITES=DEFAULT_SITES; AGENTS=DEFAULT_AGENTS; SEGS=DEFAULT_SEGS; ENTERPRISE=DEFAULT_ENTERPRISE;
+  PAIRINGS=synthFallbackPairings();   // STAGE 10B: governed offline pairings for Details/MERP
   REGISTERS=buildRegisters(); regKeys=Object.keys(REGISTERS);
   DATA_SOURCE='fallback';
   initFilters(); renderRegisters(); renderAll();
@@ -1039,6 +1158,7 @@ async function loadLive(){
       try{
         const t=transform(pairings, pop);
         SITES=t.sites; AGENTS=t.agents; SEGS=t.segs; ENTERPRISE=t.enterprise;
+        PAIRINGS=pairings;   // STAGE 10B: expose live pairings to Details/MERP layer
         REGISTERS=buildRegisters(); regKeys=Object.keys(REGISTERS);
         DATA_SOURCE='live'; DATA_AS_OF=new Date();
         DATA_COMPLETENESS=Math.round(loaded/LIVE.siteTabs.length*100);
@@ -1109,10 +1229,11 @@ const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
 const bandColor={Low:'ok',Moderate:'ok',Significant:'warn',High:'crit',Critical:'exp'};
 const cssvar=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 
-let scope={company:'ALL',site:'ALL',cycle:'2026Q2',family:'ALL'};
+let scope={company:'ALL',site:'ALL',cycle:'2026Q2',family:'ALL',
+            area:'ALL',dept:'ALL',loc:'ALL',sds:'ALL',storage:'ALL'};  // STAGE 10B detail slicers
 
 function activeSites(){
-  return SITES.filter(s=>(scope.company==='ALL'||s.co===scope.company)&&(scope.site==='ALL'||s.id===scope.site));
+  return SITES.filter(s=>(scope.company==='ALL'||siteGroupCode(s)===scope.company)&&(scope.site==='ALL'||s.id===scope.site));
 }
 
 function aggCepi(sites){
@@ -1401,10 +1522,14 @@ function renderRef(){
 
 /* ---- breadcrumb ---- */
 function renderBreadcrumb(){
-  const s=activeSites();
-  const co=scope.company==='ALL'?'All companies':scope.company;
-  const site=scope.site==='ALL'?'All sites':SITES.find(x=>x.id===scope.site).name;
-  $('#breadcrumb').textContent=`${co} › ${site} › Department › SEG › Agent › Assessment › Monitoring › Health Outcome › Medical Outcome`;
+  const co=scope.company==='ALL'?'All company groups':(GROUPS[scope.company]?GROUPS[scope.company].name:scope.company);
+  const sObj=SITES.find(x=>x.id===scope.site);
+  const site=scope.site==='ALL'?'All sites':(sObj?sObj.name:scope.site);
+  const bc=$('#breadcrumb');
+  bc.innerHTML=`Company Group: <b>${co}</b> › Site: <b>${site}</b> › Area › Department › SEG › Agent › Assessment › Monitoring › Health Outcome › `+
+    `<button class="view-btn" id="bcMerp" style="margin-left:4px">▸ MERP</button>`;
+  const b=document.getElementById('bcMerp');
+  if(b) b.onclick=()=>{ selectRegister('Medical Emergency Response'); document.getElementById('merpSection').scrollIntoView({behavior:'smooth'}); };
 }
 
 /* ---- alert + situation ---- */
@@ -1425,7 +1550,8 @@ function renderAll(){
   renderNarrative('#narrative1',NARRATIVE.p1);renderNarrative('#narrative3',NARRATIVE.p3);
   renderActions();renderCalendar();renderCATracker();renderTrends();renderSitePerf();
   renderActionRegister();renderBreadcrumb();renderAlerts();
-  renderNarrative=renderNarrative; // keep ref
+  try{ refreshSlicers(); renderDetails10B(); injectViews(); renderCycleNote(); }
+  catch(e){ console.warn('[10B] post-render hook', e); }
 }
 
 function goPage(id){
@@ -1436,20 +1562,21 @@ function goPage(id){
 
 /* init selectors */
 function initFilters(){
-  const cos=[...new Set(SITES.map(s=>s.co))];
-  $('#fCompany').innerHTML='<option value="ALL">All companies</option>'+cos.map(c=>`<option>${c}</option>`).join('');
-  function fillSites(){
-    const list=SITES.filter(s=>scope.company==='ALL'||s.co===scope.company);
-    $('#fSite').innerHTML='<option value="ALL">All sites</option>'+list.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-  }
-  fillSites();
+  /* STAGE 10B: company GROUP-based slicers. Options are seeded here and then
+     reduced to valid records by the cascading engine (refreshSlicers). */
+  const grpCodes=[...new Set(SITES.map(s=>s.co))].filter(c=>GROUPS[c]);
+  $('#fCompany').innerHTML='<option value="ALL">All company groups</option>'+
+    grpCodes.map(c=>`<option value="${c}">${GROUPS[c].name} (${c})</option>`).join('');
+  $('#fCompany').value=scope.company;
   const fams=[...new Set(AGENTS.map(a=>a.family))];
   $('#fFamily').innerHTML='<option value="ALL">All families</option>'+fams.map(f=>`<option>${f}</option>`).join('');
+  $('#fFamily').value=scope.family;
 
-  $('#fCompany').onchange=e=>{scope.company=e.target.value;scope.site='ALL';fillSites();renderAll();};
-  $('#fSite').onchange=e=>{scope.site=e.target.value;renderAll();};
-  $('#fCycle').onchange=e=>{scope.cycle=e.target.value;renderAll();};
-  $('#fFamily').onchange=e=>{scope.family=e.target.value;renderAgents();};
+  $('#fCompany').onchange=e=>{scope.company=e.target.value;scope.site='ALL';scope.area='ALL';scope.dept='ALL';scope.loc='ALL';renderAll();};
+  $('#fSite').onchange   =e=>{scope.site=e.target.value;scope.area='ALL';scope.dept='ALL';scope.loc='ALL';renderAll();};
+  $('#fCycle').onchange  =e=>{scope.cycle=e.target.value;renderAll();};
+  $('#fFamily').onchange =e=>{scope.family=e.target.value;renderAll();};
+  refreshSlicers();
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
@@ -1478,6 +1605,412 @@ document.addEventListener('DOMContentLoaded',()=>{
    uncaught error so silent async failures become visible in the console. */
 window.addEventListener('unhandledrejection', e=>{ console.error('UNHANDLED PROMISE', e.reason); });
 window.addEventListener('error', e=>{ console.error('GLOBAL ERROR', e.error); });
+
+/* ============================================================
+   STAGE 10B — ENTERPRISE GOVERNANCE · CASCADING FILTERS ·
+   MERP · UNIVERSAL VIEW · UNIVERSAL EXPORT ENGINE
+   Extends existing functionality only. CEPI/CEBI/Maturity/
+   Critical-Agent/Narrative/ingestion/pairing logic untouched.
+   ============================================================ */
+
+/* ---- company group taxonomy ---- */
+const GROUPS = {
+  MCG:{name:'Merdeka Copper Gold', sites:['TUJ','WET']},
+  MBM:{name:'Merdeka Battery Materials', sites:['KON','MOR']},
+  MGR:{name:'Merdeka Gold Resources', sites:['PAN']},
+  Group:{name:'Group Technical Centre', sites:['HQ']}
+};
+function siteGroupCode(siteObj){ return (siteObj && siteObj.co) ? siteObj.co : 'Group'; }
+
+/* ---- cycles with governed data present (Q3 has none yet → graceful empty) ---- */
+const CYCLES_WITH_DATA = {'2025Q4':true,'2026Q1':true,'2026Q2':true,'2026Q3':false};
+function cycleHasData(c){ return !!CYCLES_WITH_DATA[c]; }
+
+/* ---- SDS status derivation (Enhancement 3) from SDS Expiry ---- */
+function sdsStatus(expiry){
+  if(!expiry || !String(expiry).trim()) return 'Missing';
+  const d=Date.parse(expiry);
+  if(isNaN(d)) return 'Missing';
+  const days=(d-Date.now())/864e5;
+  if(days<0) return 'Expired';
+  if(days<90) return 'Expiring <90 days';
+  return 'Valid';
+}
+function sdsClass(st){ return st==='Valid'?'ok':st==='Expired'?'exp':st==='Missing'?'miss':'warn'; }
+
+/* ---- medical escalation priority from CEPI band / risk (Enhancement 5) ---- */
+function merpEscalation(p){
+  const b=p.band||'';
+  if(b==='Critical') return 'Critical';
+  if(b==='High') return 'High';
+  if(b==='Significant') return 'Moderate';
+  return 'Low';
+}
+
+/* ---- governed offline pairings so Details/MERP work without live sheet ---- */
+function synthFallbackPairings(){
+  const out=[];
+  const tpl=[
+    {agent:'Nickel & insol. compounds',cas:'7440-02-0',family:'Metals',area:'Smelter',dept:'Smelting & Refining',loc:'Furnace bay',seg:'Smelter Tappers',band:'Critical',risk:'High',cmr:true,store:'Process bulk store',sds:''},
+    {agent:'Crystalline Silica (resp.)',cas:'14808-60-7',family:'Mineral dusts',area:'Process Plant',dept:'Crushing',loc:'Primary crusher',seg:'Silica Crushing Op.',band:'Critical',risk:'High',cmr:true,store:'N/A (process dust)',sds:''},
+    {agent:'Sulphuric Acid Mist',cas:'7664-93-9',family:'Acid mists',area:'Acid Plant',dept:'Acid Plant',loc:'Absorption tower',seg:'Acid Plant Operators',band:'High',risk:'High',cmr:true,store:'Acid farm',sds:'2026-03-01'},
+    {agent:'Inorganic Lead',cas:'7439-92-1',family:'Metals',area:'Smelter',dept:'Furnace Maintenance',loc:'Maintenance bay',seg:'Furnace Maintenance',band:'High',risk:'High',cmr:true,store:'Reagent store A',sds:'2026-08-10'},
+    {agent:'Diesel Particulate Matter',cas:'\u2014',family:'Combustion',area:'Underground',dept:'Haulage',loc:'Decline drive',seg:'Underground Haul',band:'Significant',risk:'Medium',cmr:true,store:'Fuel bay',sds:'2027-01-05'},
+    {agent:'Mercury (elemental)',cas:'7439-97-6',family:'Metals',area:'Refinery',dept:'Laboratory',loc:'Assay lab',seg:'Refinery Lab',band:'Moderate',risk:'Medium',cmr:false,store:'Lab cabinet',sds:'2026-12-01'}
+  ];
+  const siteByGrp={MCG:['TUJ','WET'],MBM:['KON','MOR'],MGR:['PAN'],Group:['HQ']};
+  const allSites=['KON','MOR','WET','PAN','TUJ'];
+  tpl.forEach((t,i)=>{
+    const st=sdsStatus(t.sds);
+    allSites.forEach((sid,k)=>{
+      if((i+k)%2===0 || i<3){
+        out.push({site:sid,agent:t.agent,product:t.agent,cas:t.cas,family:t.family,ghs:t.cmr?'H350':'',
+          area:t.area,dept:t.dept,locDetail:t.loc,seg:t.seg,cmr:t.cmr,
+          HWF:t.band==='Critical'?5:t.band==='High'?4:3,ELF:3,MGF:t.band==='Critical'?5:t.band==='High'?4:2,SGF:3,SPF:3,
+          cepi:t.band==='Critical'?4.6:t.band==='High'?3.8:t.band==='Significant'?2.9:2.3,band:t.band,
+          required:true,last:'\u2014',freq:'Quarterly',mtype:'Personal',risk:t.risk,riskRank:'',
+          sdsExpiry:t.sds,storage:t.store,ppe:'Per SDS',
+          faInh:'Move to fresh air; keep at rest; seek medical attention if symptoms persist.',
+          faSkin:'Remove contaminated clothing; wash skin with soap and water.',
+          faEye:'Rinse cautiously with water for several minutes; remove contact lenses; continue rinsing.',
+          faIng:'Rinse mouth; do NOT induce vomiting; seek medical attention.',
+          spill:'Isolate area; eliminate ignition sources; contain with inert absorbent; collect into labelled container.',
+          fire:'Use dry chemical, CO2, or alcohol-resistant foam. Firefighters: full PPE + SCBA. Hazard: toxic fumes on combustion.'});
+      }
+    });
+  });
+  return out;
+}
+
+/* ---- the single filter context applied across the dashboard ---- */
+function activeSiteIds(){ return activeSites().map(s=>s.id); }
+function filteredPairings(opts){
+  opts=opts||{};
+  const ids=activeSiteIds();
+  return PAIRINGS.filter(p=>{
+    if(!ids.includes(p.site)) return false;
+    if(scope.family!=='ALL' && p.family!==scope.family) return false;
+    if(opts.ignore!=='area'   && scope.area!=='ALL'   && p.area!==scope.area) return false;
+    if(opts.ignore!=='dept'   && scope.dept!=='ALL'   && p.dept!==scope.dept) return false;
+    if(opts.ignore!=='loc'    && scope.loc!=='ALL'    && p.locDetail!==scope.loc) return false;
+    if(opts.ignore!=='sds'    && scope.sds!=='ALL'    && sdsStatus(p.sdsExpiry)!==scope.sds) return false;
+    if(opts.ignore!=='storage'&& scope.storage!=='ALL'&& p.storage!==scope.storage) return false;
+    return true;
+  });
+}
+
+/* ---- TRUE CASCADING FILTER ENGINE (Enhancement 2 + 3) ----
+   Every slicer is repopulated from records valid under all OTHER active
+   filters, so no slicer can show a value absent from the filtered set. */
+function fillSelect(sel, values, current, allLabel){
+  if(!sel) return;
+  const uniq=[...new Set(values.filter(v=>v && v!=='Unassigned' || v==='Unassigned'))].sort();
+  const valid = current==='ALL' || uniq.includes(current);
+  sel.innerHTML=`<option value="ALL">${allLabel}</option>`+uniq.map(v=>`<option value="${String(v).replace(/"/g,'&quot;')}">${v}</option>`).join('');
+  sel.value = valid ? current : 'ALL';
+  if(!valid){ // selection no longer valid under new context → drop it
+    return false;
+  }
+  return true;
+}
+function refreshSlicers(){
+  // SITE options cascade from selected company group
+  const siteList=SITES.filter(s=>scope.company==='ALL'||s.co===scope.company);
+  const fs=$('#fSite');
+  if(fs){
+    const ok=scope.site==='ALL'||siteList.some(s=>s.id===scope.site);
+    fs.innerHTML='<option value="ALL">All sites</option>'+siteList.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+    fs.value= ok?scope.site:'ALL'; if(!ok) scope.site='ALL';
+  }
+  // FAMILY options cascade from current site/group context
+  const ctx=filteredPairings({ignore:'family'});
+  const ff=$('#fFamily');
+  if(ff && PAIRINGS.length){
+    const fams=[...new Set(ctx.map(p=>p.family))].sort();
+    const ok=scope.family==='ALL'||fams.includes(scope.family);
+    ff.innerHTML='<option value="ALL">All families</option>'+fams.map(f=>`<option>${f}</option>`).join('');
+    ff.value=ok?scope.family:'ALL'; if(!ok) scope.family='ALL';
+  }
+  // DETAIL slicers cascade (each ignores only itself)
+  if(!fillSelect($('#dArea'),  filteredPairings({ignore:'area'}).map(p=>p.area),       scope.area,   'All areas'))       scope.area='ALL';
+  if(!fillSelect($('#dDept'),  filteredPairings({ignore:'dept'}).map(p=>p.dept),       scope.dept,   'All departments')) scope.dept='ALL';
+  if(!fillSelect($('#dLoc'),   filteredPairings({ignore:'loc'}).map(p=>p.locDetail),   scope.loc,    'All locations'))   scope.loc='ALL';
+  if(!fillSelect($('#dSDS'),   filteredPairings({ignore:'sds'}).map(p=>sdsStatus(p.sdsExpiry)), scope.sds, 'All SDS'))   scope.sds='ALL';
+  if(!fillSelect($('#dStore'), filteredPairings({ignore:'storage'}).map(p=>p.storage), scope.storage,'All storage'))    scope.storage='ALL';
+}
+
+/* ---- MERP register rows (deduped by agent within current context) ---- */
+function merpRegisterRows(){
+  const seen={}, rows=[];
+  (PAIRINGS.length?PAIRINGS:[]).forEach(p=>{
+    if(seen[p.agent]) return; seen[p.agent]=1;
+    const esc=merpEscalation(p);
+    rows.push([p.agent,p.cas||'\u2014',p.family,p.risk||p.band,
+      `<span class="merp-sev sev-${esc}">${esc}</span>`,
+      `<button class="view-btn merp-open" data-agent="${String(p.agent).replace(/"/g,'&quot;')}">VIEW</button>`]);
+  });
+  if(!rows.length) rows.push(['No chemicals in context','\u2014','\u2014','\u2014','\u2014','\u2014']);
+  return rows;
+}
+
+/* ---- Details tab: chemical register table + slicer wiring ---- */
+function renderDetails10B(){
+  const body=$('#chemRegBody'); if(!body) return;
+  const rows=filteredPairings();
+  $('#chemRegCap').textContent=`${rows.length} chemical records in current filter context. MERP column opens the governed Medical Emergency Response Plan. Derived only from existing SDS-sourced fields.`;
+  if(!rows.length){
+    body.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--ink-soft);padding:18px">No records available for the active filter context.</td></tr>';
+  } else {
+    const siteName=id=>{const o=SITES.find(x=>x.id===id);return o?o.name.split('\u00b7').pop().trim():id;};
+    body.innerHTML=rows.slice(0,400).map((p,i)=>{
+      const st=sdsStatus(p.sdsExpiry);
+      return `<tr><td>${p.agent}</td><td>${p.cas||'\u2014'}</td><td>${p.family}</td>`+
+        `<td>${siteName(p.site)}</td><td>${p.area}</td><td>${p.dept}</td><td>${p.seg}</td>`+
+        `<td>${fmtCell(p.band)}</td><td><span class="tag t-${sdsClass(st)}">${st}</span></td>`+
+        `<td>${p.storage}</td>`+
+        `<td><button class="view-btn merp-open" data-rowidx="${i}" data-agent="${String(p.agent).replace(/"/g,'&quot;')}">VIEW</button></td></tr>`;
+    }).join('');
+  }
+  // refresh MERP register panel (it lives in Governed Registers)
+  if(REGISTERS['Medical Emergency Response']){
+    REGISTERS['Medical Emergency Response'].rows=merpRegisterRows();
+    const panel=document.querySelector('.reg-panel[data-panel="Medical Emergency Response"] tbody');
+    if(panel){ const R=REGISTERS['Medical Emergency Response'];
+      panel.innerHTML=R.rows.map(row=>`<tr>${row.map(c=>`<td>${fmtCell(c)}</td>`).join('')}</tr>`).join(''); }
+  }
+  // wire MERP open buttons + detail rows pool
+  window.__merpPool=rows;
+  document.querySelectorAll('.merp-open').forEach(b=>b.onclick=()=>{
+    const agent=b.dataset.agent;
+    const p=rows.find(x=>x.agent===agent)||PAIRINGS.find(x=>x.agent===agent);
+    if(p) openMERP(p);
+  });
+}
+
+/* ============================================================
+   UNIVERSAL VIEW (Enhancement 6) — governed detail modal,
+   ≤3-click lineage preserved.
+   ============================================================ */
+function kvRows(pairs){ return pairs.map(([k,v])=>`<div class="mkv"><span class="k">${k}</span><span>${v}</span></div>`).join(''); }
+function chipset(arr){ return `<div class="chips">${arr.length?arr.map(a=>`<span class="chip">${a}</span>`).join(''):'<span class="chip">none in context</span>'}</div>`; }
+
+let MODAL_TABLE=null, MODAL_NAME='view';
+function openModal(title,kicker,bodyHTML,tableForExport,name){
+  $('#modalTitle').textContent=title;
+  $('#modalKicker').textContent=kicker||'Governed detail';
+  $('#modalBody').innerHTML=bodyHTML;
+  MODAL_TABLE=tableForExport||null; MODAL_NAME=name||'view';
+  $('#modalLineageHint').textContent='Lineage resolves to source record \u00b7 \u22643 clicks';
+  $('#modalBg').classList.add('open');
+  // wire any nested lineage button
+  const ln=document.getElementById('modalToLineage');
+  if(ln) ln.onclick=()=>{ closeModal(); goPage('p3'); renderWhy(); document.getElementById('whyPick')?.scrollIntoView({behavior:'smooth'}); };
+}
+function closeModal(){ $('#modalBg').classList.remove('open'); }
+
+function affectedContext(){
+  const sites=activeSites().map(s=>s.id);
+  const fp=filteredPairings();
+  const segs=[...new Set(fp.map(p=>p.seg))].slice(0,12);
+  const agents=[...new Set(fp.map(p=>p.agent))].slice(0,12);
+  return {sites,segs,agents};
+}
+
+/* generic governed VIEW for a widget/section */
+function openWidgetView(title){
+  const ctx=affectedContext();
+  const fp=filteredPairings();
+  const mix={Low:0,Moderate:0,Significant:0,High:0,Critical:0};
+  fp.forEach(p=>{ if(mix[p.band]!=null) mix[p.band]++; });
+  const grp=scope.company==='ALL'?'All company groups':(GROUPS[scope.company]?.name||scope.company);
+  const siteObj=SITES.find(s=>s.id===scope.site);
+  const body=
+    `<h4>Calculation explanation</h4>`+
+    kvRows([
+      ['Measure',title],
+      ['Definition basis','Frozen Stage 1 / 1.5 governed measures \u2014 CEPI (prioritisation), CEBI (corporate burden), Monitoring Maturity (capability).'],
+      ['CEPI formula','0.25\u00b7HWF + 0.25\u00b7ELF + 0.25\u00b7MGF + 0.125\u00b7SGF + 0.125\u00b7SPF; MGF=5\u2227HWF\u22654 floored \u2265 Significant.'],
+      ['SEG rule','SEG CEPI = MAX of its pairings (non-dilution).'],
+      ['Definition version','v1.0 \u00b7 figures carry definition version + lineage handle.']
+    ])+
+    `<h4>Active filter context</h4>`+
+    kvRows([
+      ['Company Group',grp],
+      ['Site',scope.site==='ALL'?'All sites':(siteObj?siteObj.name:scope.site)],
+      ['Reporting cycle',cycleLabel(scope.cycle)+(cycleHasData(scope.cycle)?'':' \u2014 no records available')],
+      ['Agent family',scope.family],
+      ['Records in context',fp.length]
+    ])+
+    `<h4>Band distribution (pairings in context)</h4>`+
+    kvRows(Object.entries(mix).map(([k,v])=>[k,String(v)]))+
+    `<h4>Affected sites</h4>`+chipset(ctx.sites)+
+    `<h4>Affected SEGs</h4>`+chipset(ctx.segs)+
+    `<h4>Affected agents</h4>`+chipset(ctx.agents)+
+    `<h4>Lineage</h4>`+
+    `<div class="cap">Company Group \u203a Site \u203a Area \u203a Department \u203a SEG \u203a Agent \u203a Assessment \u203a Monitoring \u203a Source record.</div>`+
+    `<div style="margin-top:8px"><button class="btn" id="modalToLineage">Open full WHY-THIS-FIGURE lineage \u2192</button></div>`;
+  // export table = source records in context
+  const tbl=[['Site','Area','Department','SEG','Agent','CAS','Band','CEPI','MGF','HWF','SDS Status','Storage']]
+    .concat(fp.map(p=>[p.site,p.area,p.dept,p.seg,p.agent,p.cas,p.band,(p.cepi||'').toString(),p.MGF,p.HWF,sdsStatus(p.sdsExpiry),p.storage]));
+  openModal(title,'Governed VIEW \u00b7 source \u00b7 calculation \u00b7 lineage',body,tbl,'view_'+title.replace(/[^a-z0-9]+/gi,'_'));
+}
+function cycleLabel(c){ return ({'2026Q3':'2026 \u00b7 Q3','2026Q2':'2026 \u00b7 Q2','2026Q1':'2026 \u00b7 Q1','2025Q4':'2025 \u00b7 Q4'})[c]||c; }
+
+/* MERP modal (Enhancement 5) */
+function openMERP(p){
+  const esc=merpEscalation(p);
+  const na=v=> (v && String(v).trim()) ? v : '<span style="color:var(--ink-soft)">Refer to SDS \u2014 not specified in register.</span>';
+  const st=sdsStatus(p.sdsExpiry);
+  const body=
+    `<h4>Chemical profile</h4>`+
+    kvRows([
+      ['Chemical name',p.agent],
+      ['CAS number',p.cas||'\u2014'],
+      ['Category',p.family],
+      ['Risk level',`${fmtCell(p.band)} ${p.risk?('\u00b7 '+p.risk):''}`],
+      ['CMR',p.cmr?'<span class="tag t-crit">CMR flagged</span>':'\u2014'],
+      ['SDS status',`<span class="tag t-${sdsClass(st)}">${st}</span>`]
+    ])+
+    `<h4>Medical escalation priority</h4>`+
+    `<div><span class="merp-sev sev-${esc}">${esc}</span> &nbsp;<span class="cap" style="display:inline">auto-derived from CEPI band / risk level \u2014 governs response urgency.</span></div>`+
+    `<h4>Emergency response</h4>`+
+    `<div class="merp-block"><div class="bh">Inhalation</div><p>${na(p.faInh)}</p></div>`+
+    `<div class="merp-block"><div class="bh">Skin</div><p>${na(p.faSkin)}</p></div>`+
+    `<div class="merp-block"><div class="bh">Eye</div><p>${na(p.faEye)}</p></div>`+
+    `<div class="merp-block"><div class="bh">Ingestion</div><p>${na(p.faIng)}</p></div>`+
+    `<h4>Spill response</h4>`+
+    `<div class="merp-block"><div class="bh">Immediate action \u00b7 containment \u00b7 escalation</div><p>${na(p.spill)}</p></div>`+
+    `<h4>Fire response</h4>`+
+    `<div class="merp-block"><div class="bh">Suitable extinguishing media \u00b7 firefighter PPE \u00b7 special hazards</div><p>${na(p.fire)}</p></div>`+
+    `<h4>Lineage</h4><div class="cap">Site register row \u2192 SDS-sourced first-aid / spill / fire fields \u2192 governed MERP. No new framework introduced.</div>`;
+  const tbl=[
+    ['Field','Value'],
+    ['Chemical',p.agent],['CAS',p.cas||'\u2014'],['Category',p.family],
+    ['Risk level',p.band],['Escalation priority',esc],['SDS status',st],
+    ['Inhalation',p.faInh||''],['Skin',p.faSkin||''],['Eye',p.faEye||''],['Ingestion',p.faIng||''],
+    ['Spill response',p.spill||''],['Fire fighting measures',p.fire||'']
+  ];
+  openModal('MERP \u2014 '+p.agent,'Medical Emergency Response Plan',body,tbl,'MERP_'+String(p.agent).replace(/[^a-z0-9]+/gi,'_'));
+}
+
+/* inject [VIEW] buttons onto every section header + KPI card */
+function injectViews(){
+  document.querySelectorAll('main section.block > h2').forEach(h=>{
+    if(h.querySelector('.view-btn')) return;
+    const b=document.createElement('button');
+    b.className='view-btn'; b.textContent='VIEW';
+    const title=h.textContent.trim().replace(/\s+/g,' ');
+    b.onclick=()=>openWidgetView(title);
+    h.appendChild(b);
+  });
+  document.querySelectorAll('.kpi').forEach(k=>{
+    if(k.querySelector('.view-btn')) return;
+    const b=document.createElement('button'); b.className='view-btn'; b.textContent='VIEW';
+    const ttl=(k.querySelector('.ttl')?.textContent||'KPI').trim();
+    b.onclick=ev=>{ ev.stopPropagation(); openWidgetView(ttl); };
+    k.appendChild(b);
+  });
+}
+
+/* cycle handling (Enhancement 4) */
+function renderCycleNote(){
+  const n=$('#cycleNote'); if(!n) return;
+  if(!cycleHasData(scope.cycle)){ n.classList.add('show');
+    n.textContent=`No records available for ${cycleLabel(scope.cycle)}. Showing the most recent governed snapshot; KPI calculations are unaffected.`; }
+  else n.classList.remove('show');
+}
+
+/* ============================================================
+   UNIVERSAL EXPORT ENGINE (Enhancement 7) — CSV · XLSX · PDF
+   ============================================================ */
+function activeFilterSummary(){
+  const parts=[];
+  parts.push('Company Group: '+(scope.company==='ALL'?'All':(GROUPS[scope.company]?.name||scope.company)));
+  const so=SITES.find(s=>s.id===scope.site); parts.push('Site: '+(scope.site==='ALL'?'All':(so?so.name:scope.site)));
+  parts.push('Cycle: '+cycleLabel(scope.cycle));
+  parts.push('Family: '+scope.family);
+  if(scope.area!=='ALL')parts.push('Area: '+scope.area);
+  if(scope.dept!=='ALL')parts.push('Dept: '+scope.dept);
+  if(scope.loc!=='ALL')parts.push('Location: '+scope.loc);
+  if(scope.sds!=='ALL')parts.push('SDS: '+scope.sds);
+  if(scope.storage!=='ALL')parts.push('Storage: '+scope.storage);
+  return parts.join('  |  ');
+}
+function currentExportTable(){
+  // context-aware: Details → chemical register; else governed pairing context
+  const fp=filteredPairings();
+  const head=['Site','Area','Department','Location Detail','SEG','Chemical','Product','CAS','Category','Band','CEPI','HWF','MGF','Risk','SDS Status','SDS Expiry','Storage'];
+  const rows=fp.map(p=>[p.site,p.area,p.dept,p.locDetail,p.seg,p.agent,p.product||'',p.cas,p.family,p.band,
+    (p.cepi||'').toString(),p.HWF,p.MGF,p.risk||'',sdsStatus(p.sdsExpiry),p.sdsExpiry||'',p.storage]);
+  return {name:'Merdeka_OHIH_Chemical_Register', table:[head].concat(rows)};
+}
+function exportCSV(table,name){
+  const esc=v=>{v=v==null?'':String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const csv='\ufeff'+table.map(r=>r.map(esc).join(',')).join('\r\n'); // UTF-8 BOM, comma, header included
+  dl(new Blob([csv],{type:'text/csv;charset=utf-8'}), (name||'export')+'.csv');
+}
+function exportXLSX(sheets,name){
+  if(typeof XLSX==='undefined'){ alert('XLSX engine still loading \u2014 please retry in a moment.'); return; }
+  const wb=XLSX.utils.book_new();
+  sheets.forEach(sh=>{
+    const ws=XLSX.utils.aoa_to_sheet(sh.table);
+    // auto column width
+    const w=sh.table[0].map((_,c)=>({wch:Math.min(60,Math.max(10,...sh.table.map(r=>String(r[c]==null?'':r[c]).length)))}));
+    ws['!cols']=w;
+    ws['!freeze']={xSplit:0,ySplit:1,topLeftCell:'A2',activePane:'bottomLeft',state:'frozen'}; // frozen header
+    XLSX.utils.book_append_sheet(wb,ws,sh.sheet.slice(0,31));
+  });
+  XLSX.writeFile(wb,(name||'export')+'.xlsx');
+}
+function exportPDF(table,title,name){
+  const J=window.jspdf&&window.jspdf.jsPDF; 
+  if(!J||!J.API.autoTable){ alert('PDF engine still loading \u2014 please retry in a moment.'); return; }
+  const doc=new J({orientation:'landscape',unit:'pt',format:'a4'});
+  const W=doc.internal.pageSize.getWidth();
+  const filt=activeFilterSummary();
+  doc.autoTable({
+    head:[table[0]], body:table.slice(1), startY:74, styles:{fontSize:7,cellPadding:3},
+    headStyles:{fillColor:[13,58,52]}, margin:{left:24,right:24},
+    didDrawPage:function(d){
+      doc.setFontSize(13); doc.setTextColor(13,58,52);
+      doc.text(title||'Merdeka OH Chemical Exposure Intelligence',24,30);
+      doc.setFontSize(7); doc.setTextColor(90);
+      doc.text('Exported: '+new Date().toLocaleString(),24,44);
+      doc.text('Active filters: '+filt,24,56,{maxWidth:W-48});
+      const pg='Page '+doc.internal.getNumberOfPages();
+      doc.text(pg,W-70,doc.internal.pageSize.getHeight()-16);
+    }
+  });
+  doc.save((name||'export')+'.pdf');
+}
+function dl(blob,fname){ const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1500); }
+
+/* wire global export toolbar + modal export + detail slicers + modal close */
+document.addEventListener('DOMContentLoaded',()=>{
+  const g=()=>currentExportTable();
+  $('#expCSV') &&($('#expCSV').onclick =()=>{const e=g();exportCSV(e.table,e.name);});
+  $('#expXLSX')&&($('#expXLSX').onclick=()=>{const e=g();exportXLSX([{sheet:'Register',table:e.table},
+        {sheet:'Active Filters',table:[['Filter','Value']].concat(activeFilterSummary().split('  |  ').map(x=>x.split(': ')))}],e.name);});
+  $('#expPDF') &&($('#expPDF').onclick =()=>{const e=g();exportPDF(e.table,'Merdeka OHIH \u2014 Chemical Register',e.name);});
+
+  // modal export buttons
+  document.querySelectorAll('#modalBg [data-mx]').forEach(b=>b.onclick=()=>{
+    if(!MODAL_TABLE)return;
+    const k=b.dataset.mx;
+    if(k==='csv') exportCSV(MODAL_TABLE,MODAL_NAME);
+    else if(k==='xlsx') exportXLSX([{sheet:'Detail',table:MODAL_TABLE}],MODAL_NAME);
+    else exportPDF(MODAL_TABLE,$('#modalTitle').textContent,MODAL_NAME);
+  });
+  $('#modalX')&&($('#modalX').onclick=closeModal);
+  $('#modalBg')&&($('#modalBg').onclick=e=>{ if(e.target===$('#modalBg')) closeModal(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+  // detail slicers
+  const wire=(id,key)=>{ const el=$(id); if(el) el.onchange=e=>{ scope[key]=e.target.value; renderAll(); }; };
+  wire('#dArea','area'); wire('#dDept','dept'); wire('#dLoc','loc'); wire('#dSDS','sds'); wire('#dStore','storage');
+  $('#dReset')&&($('#dReset').onclick=()=>{ scope.area='ALL';scope.dept='ALL';scope.loc='ALL';scope.sds='ALL';scope.storage='ALL'; renderAll(); });
+});
+
 </script>
 </body>
 </html>
