@@ -910,48 +910,118 @@ function transform(allPairings, pop){
   return {sites, agents:agentArr, segs:segArr, enterprise:ent};
 }
 
-/* ---- ORCHESTRATION: load → transform → assign → render ---- */
+/* ---- Stage 10A.3 helper: render the governed baseline without throwing.
+   Used both as a deliberate degrade path and as the last-resort catch path.
+   Keeps CEPI / CEBI / Maturity / Visuals / Governance logic untouched. ---- */
+function applyGovernedBaseline(reason){
+  SITES=DEFAULT_SITES; AGENTS=DEFAULT_AGENTS; SEGS=DEFAULT_SEGS; ENTERPRISE=DEFAULT_ENTERPRISE;
+  REGISTERS=buildRegisters(); regKeys=Object.keys(REGISTERS);
+  DATA_SOURCE='fallback';
+  initFilters(); renderRegisters(); renderAll();
+  CONN.state='offline';
+  setBadge('offline', reason);
+}
+
+/* ---- ORCHESTRATION: load → transform → assign → render ----
+   Stage 10A.3: resilient against promise rejection, partial/empty/missing
+   tabs, JSONP failures and parsing exceptions. One bad tab never kills the
+   refresh; the cycle only degrades to the governed baseline as a last resort. */
 async function loadLive(){
   CONN.reset();
   setBadge('loading');
   try{
-    const [mapTxt, demoTxt, ...siteTxts] = await Promise.all([
-      fetchTab(LIVE.mapTab).catch(()=>''),
-      fetchTab(LIVE.demoTab).catch(()=>''),
-      ...LIVE.siteTabs.map(s=>fetchTab(s.tab).catch(e=>{console.warn(e);return '';}))
-    ]);
+    /* Describe every tab once so failures can be logged by name. */
+    const tabSpecs = [
+      { name: LIVE.mapTab,  kind:'map'  },
+      { name: LIVE.demoTab, kind:'demo' },
+      ...LIVE.siteTabs.map(s=>({ name:s.tab, kind:'site', site:s }))
+    ];
+
+    /* CHANGE 1 — Promise.allSettled: a single failed tab cannot abort the
+       whole refresh cycle. CHANGE 2 — every rejection is logged by name. */
+    const settled = await Promise.allSettled(tabSpecs.map(spec=>fetchTab(spec.name)));
+    const txts = settled.map((res,i)=>{
+      const tabName = tabSpecs[i].name;
+      if(res.status==='fulfilled') return res.value || '';
+      console.warn('TAB FAILED', tabName, res.reason);   // continue with remaining tabs
+      return '';
+    });
+
+    const mapTxt  = txts[0];
+    const demoTxt = txts[1];
+    const siteTxts = txts.slice(2);
+
     const loaded = siteTxts.filter(t=>t).length;
-    if(loaded===0) throw new Error('No site register sheets reachable');
-    const demoRecs = demoTxt ? toRecords(parseCSV(demoTxt)) : [];
-    const pop = popBySite(demoRecs);
+    console.log(`[10A.3] Site sheets reachable: ${loaded}/${LIVE.siteTabs.length}`);
+
+    /* Demographics — guarded so a malformed demo tab cannot throw the cycle. */
+    let pop={};
+    try{
+      const demoRecs = demoTxt ? toRecords(parseCSV(demoTxt)) : [];
+      pop = popBySite(demoRecs);
+    }catch(e){ console.warn('TAB FAILED', LIVE.demoTab, e); pop={}; }
+
+    /* Per-site parsing with header diagnostics. Each site is isolated in its
+       own try so a parse exception on one register skips that site only. */
     let pairings=[];
     siteTxts.forEach((txt,i)=>{
-      if(!txt) return;
-      const recs=toRecords(parseCSV(txt));
-      const before=pairings.length;
-      recs.forEach(r=>{ if(getField(r,['chemical name','Chemical Name'])) pairings.push(pairingFromRow(r, LIVE.siteTabs[i].id)); });
-      const added=pairings.length-before;
-      console.log(`[10A.1] ${LIVE.siteTabs[i].id} — Rows parsed: ${recs.length} · Valid pairings: ${added}`);
-      if(added) console.log('[10A.1] Sample pairing:', pairings[before]);
+      const site = LIVE.siteTabs[i];
+      if(!txt){ console.warn('TAB EMPTY', site.tab); return; }   // CHANGE 3 — empty tab never throws
+      try{
+        const recs = toRecords(parseCSV(txt));
+        const before = pairings.length;
+        recs.forEach(r=>{ if(getField(r,['chemical name','Chemical Name'])) pairings.push(pairingFromRow(r, site.id)); });
+        const added = pairings.length-before;
+        /* CHANGE 6 — header diagnostics for every site sheet */
+        console.log('HEADERS', recs[0]?._head);
+        console.log('ROWS', recs.length);
+        console.log('VALID PAIRINGS', added);
+        console.log(`[10A.3] ${site.id} — Rows parsed: ${recs.length} · Valid pairings: ${added}`);
+        if(added) console.log('[10A.3] Sample pairing:', pairings[before]);
+      }catch(e){
+        console.warn('TAB FAILED', site.tab, e);   // parse exception → skip this site, keep going
+      }
     });
-    console.log(`[10A.1] TOTAL valid pairings: ${pairings.length}`);
-    if(!pairings.length) throw new Error('Register sheets contained no readable rows');
-    const t=transform(pairings, pop);
-    SITES=t.sites; AGENTS=t.agents; SEGS=t.segs; ENTERPRISE=t.enterprise;
-    REGISTERS=buildRegisters(); regKeys=Object.keys(REGISTERS);
-    DATA_SOURCE='live'; DATA_AS_OF=new Date();
-    DATA_COMPLETENESS=Math.round(loaded/LIVE.siteTabs.length*100);
-    initFilters(); renderRegisters(); renderAll();
-    CONN.state = CONN.usedJsonp ? 'fallback' : 'live';
-    setBadge(CONN.state);
+
+    console.log(`[10A.3] TOTAL valid pairings: ${pairings.length}`);
+
+    let liveOk = false;
+    if(!pairings.length){
+      /* CHANGE 3 — never throw on no readable rows; warn and continue diagnostics. */
+      console.warn('No pairings generated');
+      applyGovernedBaseline('no readable register rows');
+    }else{
+      /* Transform is the only place CEPI / CEBI / Maturity maths runs — left
+         untouched. Guarded so a maths exception degrades instead of crashing. */
+      try{
+        const t=transform(pairings, pop);
+        SITES=t.sites; AGENTS=t.agents; SEGS=t.segs; ENTERPRISE=t.enterprise;
+        REGISTERS=buildRegisters(); regKeys=Object.keys(REGISTERS);
+        DATA_SOURCE='live'; DATA_AS_OF=new Date();
+        DATA_COMPLETENESS=Math.round(loaded/LIVE.siteTabs.length*100);
+        initFilters(); renderRegisters(); renderAll();
+        CONN.state = CONN.usedJsonp ? 'fallback' : 'live';
+        setBadge(CONN.state);
+        liveOk = true;
+      }catch(e){
+        console.error('TRANSFORM/RENDER FAILURE', e);
+        applyGovernedBaseline('transform/render exception');
+      }
+    }
+
+    /* CHANGE 7 — final summary, always printed regardless of outcome. */
+    console.table({
+      pairings: pairings.length,
+      sites:    SITES.length,
+      agents:   AGENTS.length,
+      segs:     SEGS.length
+    });
+    console.log(`[10A.3] Refresh complete — mode: ${liveOk ? CONN.state.toUpperCase() : 'GOVERNED BASELINE'}`);
+
   }catch(err){
-    console.warn('STAGE 9 live load failed → governed fallback:', err.message);
-    SITES=DEFAULT_SITES; AGENTS=DEFAULT_AGENTS; SEGS=DEFAULT_SEGS; ENTERPRISE=DEFAULT_ENTERPRISE;
-    REGISTERS=buildRegisters(); regKeys=Object.keys(REGISTERS);
-    DATA_SOURCE='fallback';
-    initFilters(); renderRegisters(); renderAll();
-    CONN.state = 'offline';
-    setBadge('offline', err.message);
+    /* Last-resort guard: anything unforeseen degrades gracefully, never crashes. */
+    console.error('LOADLIVE FAILURE', err);
+    applyGovernedBaseline(err && err.message ? err.message : 'unexpected error');
   }
 }
 /* ---- Stage 10A connectivity badges: LIVE · FALLBACK · OFFLINE ----
@@ -1343,11 +1413,22 @@ document.addEventListener('DOMContentLoaded',()=>{
     h.dataset.theme=h.dataset.theme==='dark'?'light':'dark';
     setTimeout(()=>{renderBubble();renderRisk();},10);
   };
-  $('#refreshBtn').onclick=()=>loadLive();
+  /* CHANGE 4 — top-level try/catch around every loadLive() entry point so an
+     exception escaping the orchestrator is surfaced, never silently fatal. */
+  const safeLoadLive=()=>{
+    try{ Promise.resolve(loadLive()).catch(err=>console.error('LOADLIVE FAILURE', err)); }
+    catch(err){ console.error('LOADLIVE FAILURE', err); }
+  };
+  $('#refreshBtn').onclick=()=>safeLoadLive();
   /* STAGE 9: fetch the live Google Sheet on load, then on the auto-refresh cadence */
-  loadLive();
-  setInterval(loadLive, LIVE.refreshMin*60*1000);
+  safeLoadLive();
+  setInterval(safeLoadLive, LIVE.refreshMin*60*1000);
 });
+
+/* CHANGE 5 — global diagnostics: surface any unhandled promise rejection or
+   uncaught error so silent async failures become visible in the console. */
+window.addEventListener('unhandledrejection', e=>{ console.error('UNHANDLED PROMISE', e.reason); });
+window.addEventListener('error', e=>{ console.error('GLOBAL ERROR', e.error); });
 </script>
 </body>
 </html>
