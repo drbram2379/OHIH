@@ -594,15 +594,15 @@ const WHYITEMS = {
 const LIVE = {
   sheetId : '1OPCdYET1g9c9I4hAyIX2QphAHyIMLP-Mg45t0WhlXII',
   refreshMin : 15,                       // auto re-fetch cadence
-  mapTab  : 'Chemical Mapping',
-  demoTab : 'Data Demografi',
+  mapTab  : 'Chemical_Mapping',   // 10A.5: verified exact sheet name (underscore)
+  demoTab : 'Data_Demografi',     // 10A.5: verified exact sheet name (underscore)
   // site register tabs → governed site id used across the dashboard
   siteTabs : [
-    {id:'TUJ', co:'PT BSI',  name:'Tujuh Bukit Mine',       tab:'1. BSI BWX',        loc:['banyuwangi','bwx']},
-    {id:'WET', co:'PT BSI',  name:'Wetar Copper',           tab:'2. BTR-BKP Wetar',  loc:['wetar']},
-    {id:'KON', co:'PT SCM',  name:'Konawe Nickel Smelter',  tab:'3. SCM Konawe',     loc:['konawe']},
-    {id:'MOR', co:'PT SCM',  name:'Morowali Processing',    tab:'4. MTI Morowali',   loc:['morowali']},
-    {id:'PAN', co:'PT Pani', name:'Pani Gold Project',      tab:'5. Pani Gold Mine', loc:['pohuwato','pani','gorontalo']}
+    {id:'TUJ', co:'PT BSI',  name:'Tujuh Bukit Mine',       tab:'1. BSI_BWX',        loc:['banyuwangi','bwx']},
+    {id:'WET', co:'PT BSI',  name:'Wetar Copper',           tab:'2. BTR-BKP_Wetar',  loc:['wetar']},
+    {id:'KON', co:'PT SCM',  name:'Konawe Nickel Smelter',  tab:'3. SCM_Konawe',     loc:['konawe']},
+    {id:'MOR', co:'PT SCM',  name:'Morowali Processing',    tab:'4. MTI_Morowali',   loc:['morowali']},
+    {id:'PAN', co:'PT Pani', name:'Pani Gold Project',      tab:'5. Pani_Gold_Mine', loc:['pohuwato','pani','gorontalo']}
   ],
   csvRetries : 3,                        // CSV attempts before falling back to JSONP
   csvBackoff : [1000, 2000]              // wait between attempt 1→2 and 2→3 (ms)
@@ -967,17 +967,35 @@ async function loadLive(){
     siteTxts.forEach((txt,i)=>{
       const site = LIVE.siteTabs[i];
       if(!txt){ console.warn('TAB EMPTY', site.tab); return; }   // CHANGE 3 — empty tab never throws
+
+      /* ---- MANDATORY FIX #3 — per-tab raw forensics ---- */
+      console.group('[10A.5 FORENSICS]');
+      console.log('REQUESTED TAB', site.tab);
+      console.log('CSV LENGTH', txt.length);
+      console.log('ROW COUNT', parseCSV(txt).length);
+      console.log('RAW CSV PREVIEW', txt.substring(0,2000));
+      console.groupEnd();
+
       try{
         const recs = toRecords(parseCSV(txt));
+
+        /* ---- MANDATORY FIX #4 — parsed-record forensics ---- */
+        console.log('HEADERS', recs[0]?._head);
+        console.log('FIRST RECORD', recs[0]);
+        console.log('ROWS PARSED', recs.length);
+
+        /* ---- MANDATORY FIX #5 — wrong-feed guard (<20 rows) ---- */
+        if(recs.length < 20){
+          console.error('WRONG FEED DETECTED', site.tab);
+          console.error('FULL RAW CSV', txt);
+        }
+
         const before = pairings.length;
         recs.forEach(r=>{ if(getField(r,['chemical name','Chemical Name'])) pairings.push(pairingFromRow(r, site.id)); });
         const added = pairings.length-before;
-        /* CHANGE 6 — header diagnostics for every site sheet */
-        console.log('HEADERS', recs[0]?._head);
-        console.log('ROWS', recs.length);
         console.log('VALID PAIRINGS', added);
-        console.log(`[10A.3] ${site.id} — Rows parsed: ${recs.length} · Valid pairings: ${added}`);
-        if(added) console.log('[10A.3] Sample pairing:', pairings[before]);
+        console.log(`[10A.5] ${site.id} — Rows parsed: ${recs.length} · Valid pairings: ${added}`);
+        if(added) console.log('[10A.5] Sample pairing:', pairings[before]);
       }catch(e){
         console.warn('TAB FAILED', site.tab, e);   // parse exception → skip this site, keep going
       }
