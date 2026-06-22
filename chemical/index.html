@@ -603,8 +603,22 @@ const LIVE = {
     {id:'KON', co:'PT SCM',  name:'Konawe Nickel Smelter',  tab:'3. SCM Konawe',     loc:['konawe']},
     {id:'MOR', co:'PT SCM',  name:'Morowali Processing',    tab:'4. MTI Morowali',   loc:['morowali']},
     {id:'PAN', co:'PT Pani', name:'Pani Gold Project',      tab:'5. Pani Gold Mine', loc:['pohuwato','pani','gorontalo']}
-  ]
+  ],
+  csvRetries : 3,                        // CSV attempts before falling back to JSONP
+  csvBackoff : [1000, 2000]              // wait between attempt 1→2 and 2→3 (ms)
 };
+
+/* ---- Stage 10A: connectivity state machine ---------------------------------
+   Tracks, per refresh cycle, how each tab's data actually arrived so the badges
+   can report LIVE (all CSV) · FALLBACK (any JSONP) · OFFLINE (baseline shown).  */
+const CONN = {
+  state   : 'loading',   // 'loading' | 'live' | 'fallback' | 'offline'
+  methods : {},          // tab → 'CSV' | 'JSONP' | 'FAILED'
+  usedJsonp : false,
+  reset(){ this.methods = {}; this.usedJsonp = false; this.state = 'loading'; },
+  mark(tab, method){ this.methods[tab] = method; if(method === 'JSONP') this.usedJsonp = true; }
+};
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 const gvizUrl = tab =>
   `https://docs.google.com/spreadsheets/d/${LIVE.sheetId}` +
   `/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}` +
@@ -630,34 +644,84 @@ function gvizToRows(resp){
   });
 }
 
-function fetchTabJsonp(tab){
+/* ---- Strategy 2 primitive: gviz JSONP via dynamic <script> injection.
+   Script loads are CORS-exempt, so this survives transient CSV/CORS failures.
+   Returns normalized row OBJECTS (identical fields to the CSV path). ---- */
+function loadViaGvizJsonp(tab){
   return new Promise((resolve,reject)=>{
     const cb='__gviz_'+Math.random().toString(36).slice(2);
     const script=document.createElement('script');
     const timer=setTimeout(()=>{cleanup();reject(new Error('JSONP timeout'));},20000);
     function cleanup(){clearTimeout(timer);delete window[cb];script.remove();}
     window[cb]=resp=>{cleanup(); if(!resp||resp.status==='error') return reject(new Error('gviz error')); resolve(gvizToRows(resp));};
+    // cache-busted JSONP URL (same &t= strategy as CSV) to bypass browser/Pages/CDN cache
     script.src=`https://docs.google.com/spreadsheets/d/${LIVE.sheetId}/gviz/tq?tqx=out:json;responseHandler:${cb}&headers=1&sheet=${encodeURIComponent(tab)}&t=${Date.now()}`;
     script.onerror=()=>{cleanup();reject(new Error('JSONP load failed'));};
     document.head.appendChild(script);
   });
 }
+/* back-compat alias */
+const fetchTabJsonp = loadViaGvizJsonp;
 
-/* ---- resilient fetch with CSV + JSONP fallback ---- */
+/* ---- Strategy 1: plain CSV fetch (cache-busted) → returns CSV text. ---- */
+async function fetchTabCSV(tab){
+  const r = await fetch(gvizUrl(tab), {cache:'no-store'});
+  if(!r.ok) throw new Error('HTTP '+r.status+' on '+tab);
+  const txt = await r.text();
+  if(txt.trim().startsWith('<')) throw new Error('HTML returned (sheet not link-shared?)');
+  return txt;
+}
+
+/* ---- Strategy 2: JSONP → serialized to CSV text so downstream parsing is
+   identical regardless of transport. The rest of the dashboard never knows
+   whether the bytes came from CSV or JSONP. ---- */
+async function fetchTabJSONP(tab){
+  const rows = await loadViaGvizJsonp(tab);
+  const headers = Object.keys(rows[0]||{});
+  const csv=[headers.join(',')];
+  rows.forEach(r=>csv.push(headers.map(h=>'"'+String(r[h]||'').replace(/"/g,'""')+'"').join(',')));
+  return csv.join('\n');
+}
+
+/* ---- Stage 10A resilient orchestrator: CSV with retry/back-off, then JSONP.
+   CSV  attempt #1 → wait 1s → #2 → wait 2s → #3 → JSONP fallback.
+   Records the winning transport per tab and logs the cycle to DevTools. ---- */
 async function fetchTab(tab){
+  let lastErr;
+  for(let attempt=1; attempt<=LIVE.csvRetries; attempt++){
+    try{
+      const txt = await fetchTabCSV(tab);
+      CONN.mark(tab,'CSV');
+      logConn(tab,'CSV','Success',`attempt ${attempt}`);
+      return txt;
+    }catch(err){
+      lastErr = err;
+      logConn(tab,'CSV','Failed',`attempt ${attempt}: ${err.message}`);
+      const wait = LIVE.csvBackoff[attempt-1];
+      if(attempt < LIVE.csvRetries && wait) await sleep(wait);
+    }
+  }
+  // CSV exhausted → JSONP fallback
   try{
-    const r = await fetch(gvizUrl(tab), {cache:'no-store'});
-    if(!r.ok) throw new Error('HTTP '+r.status+' on '+tab);
-    const txt = await r.text();
-    if(txt.trim().startsWith('<')) throw new Error('HTML returned');
+    const txt = await fetchTabJSONP(tab);
+    CONN.mark(tab,'JSONP');
+    logConn(tab,'JSONP','Success',`after ${LIVE.csvRetries} CSV attempts`);
     return txt;
   }catch(err){
-    const rows = await fetchTabJsonp(tab);
-    const headers = Object.keys(rows[0]||{});
-    const csv=[headers.join(',')];
-    rows.forEach(r=>csv.push(headers.map(h=>'"'+String(r[h]||'').replace(/"/g,'""')+'"').join(',')));
-    return csv.join('\n');
+    CONN.mark(tab,'FAILED');
+    logConn(tab,'JSONP','Failed',err.message);
+    throw new Error(`${tab}: CSV(${lastErr&&lastErr.message}) + JSONP(${err.message})`);
   }
+}
+
+/* ---- structured DevTools logging (Stage 10A §6) ---- */
+function logConn(tab, method, status, detail){
+  console.group('CEPI Live Data');
+  console.log('Sheet:',  LIVE.sheetId);
+  console.log('Tab:',    tab);
+  console.log('Method:', method);
+  console.log('Status:', status + (detail ? ' — ' + detail : ''));
+  console.groupEnd();
 }
 /* ---- RFC-4180 CSV parser → array of row-arrays ---- */
 function parseCSV(text){
@@ -815,6 +879,7 @@ function transform(allPairings, pop){
 
 /* ---- ORCHESTRATION: load → transform → assign → render ---- */
 async function loadLive(){
+  CONN.reset();
   setBadge('loading');
   try{
     const [mapTxt, demoTxt, ...siteTxts] = await Promise.all([
@@ -839,23 +904,45 @@ async function loadLive(){
     DATA_SOURCE='live'; DATA_AS_OF=new Date();
     DATA_COMPLETENESS=Math.round(loaded/LIVE.siteTabs.length*100);
     initFilters(); renderRegisters(); renderAll();
-    setBadge('live');
+    CONN.state = CONN.usedJsonp ? 'fallback' : 'live';
+    setBadge(CONN.state);
   }catch(err){
     console.warn('STAGE 9 live load failed → governed fallback:', err.message);
     SITES=DEFAULT_SITES; AGENTS=DEFAULT_AGENTS; SEGS=DEFAULT_SEGS; ENTERPRISE=DEFAULT_ENTERPRISE;
     REGISTERS=buildRegisters(); regKeys=Object.keys(REGISTERS);
     DATA_SOURCE='fallback';
     initFilters(); renderRegisters(); renderAll();
-    setBadge('fallback', err.message);
+    CONN.state = 'offline';
+    setBadge('offline', err.message);
   }
 }
-/* ---- data-freshness intelligence badge (Section 9) ---- */
+/* ---- Stage 10A connectivity badges: LIVE · FALLBACK · OFFLINE ----
+   #srcBadge  → transport health  (● LIVE DATA / ● LIVE DATA (FALLBACK) / ● OFFLINE)
+   #freshBadge→ freshness + completeness detail                                   */
 function setBadge(state, msg){
-  const el=$('#freshBadge'); if(!el) return;
+  const src=$('#srcBadge'), fresh=$('#freshBadge');
   const t=DATA_AS_OF?DATA_AS_OF.toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
-  if(state==='loading'){ el.textContent='Data freshness: connecting to Google Sheet…'; el.style.color=''; }
-  else if(state==='live'){ el.textContent=`● LIVE · Google Sheet · as of ${t} · completeness ${DATA_COMPLETENESS}%`; el.style.color='var(--ok)'; }
-  else { el.textContent=`▲ Sheet unreachable — showing governed baseline (${msg||'offline'})`; el.style.color='var(--warn)'; }
+
+  if(src){ src.classList.toggle('live', state==='live'||state==='fallback'); }
+
+  if(state==='loading'){
+    if(src){ src.textContent='● CONNECTING…'; src.style.color=''; }
+    if(fresh){ fresh.textContent='Data freshness: connecting to Google Sheet…'; fresh.style.color=''; }
+    return;
+  }
+  if(state==='live'){
+    if(src){ src.textContent='● LIVE DATA'; src.style.color='var(--ok)'; }
+    if(fresh){ fresh.textContent=`● LIVE · Google Sheet · as of ${t} · completeness ${DATA_COMPLETENESS}%`; fresh.style.color='var(--ok)'; }
+    return;
+  }
+  if(state==='fallback'){
+    if(src){ src.textContent='● LIVE DATA (FALLBACK)'; src.style.color='var(--warn)'; }
+    if(fresh){ fresh.textContent=`● LIVE (JSONP fallback) · as of ${t} · completeness ${DATA_COMPLETENESS}%`; fresh.style.color='var(--warn)'; }
+    return;
+  }
+  // offline → governed baseline shown
+  if(src){ src.textContent='● OFFLINE'; src.style.color='var(--miss)'; }
+  if(fresh){ fresh.textContent=`▲ Sheet unreachable — showing governed baseline (${msg||'offline'})`; fresh.style.color='var(--warn)'; }
 }
 
 /* ============================================================
