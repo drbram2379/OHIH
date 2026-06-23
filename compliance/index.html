@@ -150,6 +150,7 @@ section h2::after{content:"";flex:1;height:1px;background:var(--line)}
 .st-CRITICAL{background:var(--crit-bg);color:var(--crit);border-color:var(--crit-line)}
 .st-EXPIRED {background:var(--exp-bg); color:var(--exp); border-color:var(--exp-line)}
 .st-MISSING {background:var(--miss-bg);color:var(--miss);border-color:var(--miss-line)}
+.st-NA      {background:#F0F2F4;color:#9AA4AB;border-color:#D7DCE0;font-style:italic}
 
 /* ── personnel tables ───────────────────────────────── */
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
@@ -370,6 +371,7 @@ tr.prow-flash td{background:var(--ok-bg)!important;transition:background .3s}
     <span class="lg"><span class="dot" style="background:var(--crit)"></span>⚠ ≤30 d</span>
     <span class="lg"><span class="dot" style="background:var(--exp)"></span>✕ Expired</span>
     <span class="lg"><span class="dot" style="background:var(--miss)"></span>◌ Missing</span>
+    <span class="lg"><span class="dot" style="background:#AEB7BD"></span>– N/A</span>
   </div>
 </div>
 
@@ -492,7 +494,7 @@ tr.prow-flash td{background:var(--ok-bg)!important;transition:background .3s}
   Validity rules, thresholds and mandatory credentials are set in the <code>CONFIG</code> block inside this file —
   confirm them with your HSE/regulatory team (e.g. STR is treated as lifetime per UU 17/2023).
   Data refreshes automatically every <span id="refMin"></span> minutes from Google Sheets.
-  <div style="margin-top:8px;font-family:var(--mono);font-size:.66rem;opacity:.7">Dashboard build <b id="buildTag">2026-06-15b</b> · logos + CSV export + 6-clinic live</div>
+  <div style="margin-top:8px;font-family:var(--mono);font-size:.66rem;opacity:.7">Dashboard build <b id="buildTag">2026-06-15c</b> · logos + CSV export + 6-clinic live + N/A excluded</div>
 </footer>
 
 <script>
@@ -591,9 +593,10 @@ const STATUS_META = {
   WARNING:  { label:'≤90 d',    icon:'⚠', color:'#D9A50F' },
   CRITICAL: { label:'≤30 d',    icon:'⚠', color:'#BC4A00' },
   EXPIRED:  { label:'Expired',  icon:'✕', color:'#B3261E' },
-  MISSING:  { label:'Missing',  icon:'◌', color:'#8A949C' }
+  MISSING:  { label:'Missing',  icon:'◌', color:'#8A949C' },
+  NA:       { label:'N/A',      icon:'–', color:'#AEB7BD' }   // not applicable — excluded from all counts
 };
-const SEVERITY = { EXPIRED:0, MISSING:1, CRITICAL:2, WARNING:3, VALID:4 };
+const SEVERITY = { EXPIRED:0, MISSING:1, CRITICAL:2, WARNING:3, VALID:4, NA:5 };
 
 /* ════════════════════════════ utilities ═══════════════════════════ */
 const $  = s => document.querySelector(s);
@@ -620,6 +623,10 @@ const cleanVal = v => {
   const s = String(v == null ? '' : v).trim();
   return (!s || /^n\/?a$/i.test(s) || s === '-' ) ? '' : s;
 };
+/* explicit "Not Applicable" marker — the requirement doesn't apply to this entity,
+   so it must be excluded from every count and from the compliance verdict.        */
+const NA_RE = /^(not\s*applicable|tidak\s*berlaku|tidak\s*ada|n\.?\s*\/?\s*a\.?)$/i;
+const isNA = v => NA_RE.test(String(v == null ? '' : v).trim());
 const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_IDX = { jan:0,feb:1,mar:2,mar_:2,apr:3,may:4,mei:4,jun:5,jul:6,aug:7,agu:7,agt:7,
                     sep:8,oct:9,okt:9,nov:10,dec:11,des:11 };
@@ -686,6 +693,11 @@ function evalCredential(def, row){
   const numRaw  = def.numCol  ? row[normKey(def.numCol)]  : '';
   const number  = cleanVal(numRaw);
   const rawStr  = cleanVal(dateRaw);
+  /* "Not Applicable" → the requirement doesn't apply: neutral status, never counted */
+  if (isNA(dateRaw) || (rawStr === '' && isNA(numRaw))){
+    return { def, number:'', dateRaw:'', issue:null, expiry:null, days:null,
+             lifetime:false, na:true, unparseable:false, code:'NA' };
+  }
   const date    = parseFlexibleDate(dateRaw);
   const lifeVal = /valid\s*for\s*life|seumur\s*hidup|lifetime|berlaku\s*seumur/i.test(rawStr);
   const out = { def, number, dateRaw: rawStr, issue:null, expiry:null, days:null, lifetime:false,
@@ -898,10 +910,10 @@ function fPeople(extra){
     return true;
   });
 }
-function allStatuses(){            // every credential of filtered people + site licenses
+function allStatuses(){            // every COUNTED credential (N/A is excluded from all metrics)
   const list = [];
-  fPeople().forEach(p => p.creds.forEach(c => list.push({ ...c, owner:p })));
-  fSites().forEach(s => s.licenses.forEach(c => list.push({ ...c, owner:s, isSite:true })));
+  fPeople().forEach(p => p.creds.forEach(c => { if (c.code !== 'NA') list.push({ ...c, owner:p }); }));
+  fSites().forEach(s => s.licenses.forEach(c => { if (c.code !== 'NA') list.push({ ...c, owner:s, isSite:true }); }));
   return list;
 }
 
@@ -1130,7 +1142,8 @@ function chip(c){
     c.issue ? 'Issued: ' + fmtDate(c.issue) : null,
     c.expiry ? 'Expires: ' + fmtDate(c.expiry) + (c.days != null ? ` (${c.days >= 0 ? 'in ' + c.days + ' d' : Math.abs(c.days) + ' d overdue'})` : '') : null,
     c.lifetime ? 'No expiry (lifetime)' : null,
-    c.code === 'MISSING' ? 'No record in sheet' : null
+    c.code === 'MISSING' ? 'No record in sheet' : null,
+    c.code === 'NA' ? 'Not applicable — excluded from compliance' : null
   ].filter(Boolean).join('\n');
   return `<span class="chip st-${c.code}" title="${esc(tip)}"><span class="ic">${m.icon}</span>${esc(c.def.label)} ${extra}</span>`;
 }
@@ -1146,6 +1159,7 @@ function renderMatrix(){
     const lic = s.licenses.map(l => {
       const m = STATUS_META[l.code];
       const right = l.code === 'MISSING' ? '—'
+        : l.code === 'NA' ? 'N/A'
         : l.lifetime ? '∞'
         : l.expiry ? fmtDate(l.expiry) : '—';
       return `<div class="lic"><span class="chip st-${l.code}" style="padding:2px 6px"><span class="ic">${m.icon}</span></span>
@@ -1254,7 +1268,7 @@ function buildActions(){
     }
   }));
   fSites().forEach(s => s.licenses.forEach(c => {
-    if (c.code !== 'VALID'){
+    if (c.code !== 'VALID' && c.code !== 'NA'){
       items.push({ sev: SEVERITY[c.code], code: c.code, who: s.company, company: s.company,
         clinic: s.clinic || s.location || '', role: 'Site', what: c.def.label, days: c.days, expiry: c.expiry });
     }
@@ -1351,6 +1365,7 @@ function exportQuality(){
 function qualityItems(){
   const out = [];
   const check = (entity, scope, creds) => creds.forEach(c => {
+    if (c.code === 'NA') return;
     if (c.unparseable) out.push({ scope, entity, credential:c.def.label, issue:`Date "${c.dateRaw}" could not be read` });
     else if (c.def.numCol && c.number && !c.dateRaw && c.code === 'MISSING')
       out.push({ scope, entity, credential:c.def.label, issue:'Number recorded but date missing' });
@@ -1493,9 +1508,9 @@ function computeInsights(){
 
   /* ---- gather findings ---- */
   const pf = [];
-  people.forEach(p => p.creds.forEach(c => pf.push({ ...c, who:p.name, role:p.role, company:p.company })));
+  people.forEach(p => p.creds.forEach(c => { if (c.code !== 'NA') pf.push({ ...c, who:p.name, role:p.role, company:p.company }); }));
   const sf = [];
-  sites.forEach(s => s.licenses.forEach(c => sf.push({ ...c, who:s.company, company:s.company })));
+  sites.forEach(s => s.licenses.forEach(c => { if (c.code !== 'NA') sf.push({ ...c, who:s.company, company:s.company }); }));
 
   /* ---- affinity clusters ---- */
   const clusters = AFFINITY.map(g => {
