@@ -494,7 +494,7 @@ tr.prow-flash td{background:var(--ok-bg)!important;transition:background .3s}
   Validity rules, thresholds and mandatory credentials are set in the <code>CONFIG</code> block inside this file —
   confirm them with your HSE/regulatory team (e.g. STR is treated as lifetime per UU 17/2023).
   Data refreshes automatically every <span id="refMin"></span> minutes from Google Sheets.
-  <div style="margin-top:8px;font-family:var(--mono);font-size:.66rem;opacity:.7">Dashboard build <b id="buildTag">2026-06-15c</b> · logos + CSV export + 6-clinic live + N/A excluded</div>
+  <div style="margin-top:8px;font-family:var(--mono);font-size:.66rem;opacity:.7">Dashboard build <b id="buildTag">2026-06-15f</b> · IH HIMU/HIMA/HIU = hold at least one</div>
 </footer>
 
 <script>
@@ -510,6 +510,8 @@ const THRESHOLDS = { critical: 30, warning: 90 }; // days before expiry
    mode: 'expiry'   = sheet date IS the expiry date
          'issue'    = sheet date is issue date → expiry = date + years
          'lifetime' = never expires; valid if a date or number is present
+         'filled'   = header has no "(Expiry)" (e.g. company assignment letters) →
+                      counts as complete when a date/number is present, never expires
    mandatory: drives the per-person compliance verdict.
    ⚠️ All modes/years below are sensible defaults — confirm with HSE.      */
 function C(label, dateCol, numCol, mode, years, mandatory){
@@ -536,31 +538,33 @@ const ROLES = [
   { tab:'NURSES', role:'Nurses', creds:[
       C('STR','STR Date','STR Number','expiry',null,true),
       C('SIP','SIP Date','SIP Number','expiry',null,true),
-      C('Penugasan','Surat Penugasan Perawat Perusahaan date','Surat Penugasan Perawat Perusahaan number','expiry',null,false),
+      C('Penugasan','Surat Penugasan Perawat Perusahaan date','Surat Penugasan Perawat Perusahaan number','filled',null,false),
       C('Hiperkes','Hiperkes Date','Hiperkes Number','expiry',null,true),
       C('BTCLS','BTCLS Date',null,'expiry',null,false),
       C('ACLS (Nurse)','ACLS for Nurse Date',null,'expiry',null,false)
   ]},
-  { tab:'INDUSTRIAL HYGIENIST', role:'Industrial Hygienists', creds:[
-      C('Penugasan','Surat Penugasan Industrial Hygienist Perusahaan date','Surat Penugasan Industrial Hygienist Perusahaan number','expiry',null,true),
+  { tab:'INDUSTRIAL HYGIENIST', role:'Industrial Hygienists', atLeastOne:[['HIMU','HIMA','HIU']], creds:[
+      C('Penugasan','Surat Penugasan Industrial Hygienist Perusahaan date','Surat Penugasan Industrial Hygienist Perusahaan number','filled',null,true),
       C('Hiperkes','Hiperkes Date','Hiperkes Number','expiry',null,true),
       C('HIMU','HIMU Date','HIMU Number','expiry',null,false),
+      C('HIMA','HIMA Date','HIMA Number','expiry',null,false),
+      C('HIU','HIU Date','HIU Number','expiry',null,false),
       C('AK3 Lingker','AK3 Muda Lingker Date','AK3 Muda Lingker Number','expiry',null,false)
   ]},
   { tab:'ANALYST TECHNICIANS', role:'Analyst Technicians', creds:[
       C('STR','STR Date','STR Number','expiry',null,true),
       C('SIP','SIP Date','SIP Number','expiry',null,true),
-      C('Penugasan','Surat Penugasan Analis Teknisi Perusahaan date','Surat Penugasan Analis Teknisi Perusahaan Number','expiry',null,true)
+      C('Penugasan','Surat Penugasan Analis Teknisi Perusahaan date','Surat Penugasan Analis Teknisi Perusahaan Number','filled',null,true)
   ]},
   { tab:'PHARMACYST', role:'Pharmacists', creds:[
       C('STR','STR Date','STR Number','expiry',null,true),
       C('SIP','SIP Date','SIP Number','expiry',null,true),
-      C('Penugasan','Surat Penugasan Apoteker Perusahaan date','Surat Penugasan Apoteker Perusahaan Number','expiry',null,true)
+      C('Penugasan','Surat Penugasan Apoteker Perusahaan date','Surat Penugasan Apoteker Perusahaan Number','filled',null,true)
   ]},
   { tab:'Radiographer', role:'Radiographers', creds:[
       C('STR','STR Date','STR Number','expiry',null,true),
       C('SIP','SIP Date','SIP Number','expiry',null,true),
-      C('Penugasan','Surat Penugasan Radiografer Perusahaan date','Surat Penugasan Radiografer Perusahaan Number','expiry',null,true)
+      C('Penugasan','Surat Penugasan Radiografer Perusahaan date','Surat Penugasan Radiografer Perusahaan Number','filled',null,true)
   ]}
 ];
 
@@ -707,6 +711,11 @@ function evalCredential(def, row){
   }
   if (def.mode === 'lifetime'){
     out.lifetime = true; out.issue = date;
+    out.code = (date || number) ? 'VALID' : 'MISSING';
+    return out;
+  }
+  if (def.mode === 'filled'){          // header has no "(Expiry)" (e.g. assignment letters) → present = complete, never expires
+    out.issue = date; out.filled = true;
     out.code = (date || number) ? 'VALID' : 'MISSING';
     return out;
   }
@@ -870,6 +879,16 @@ function buildModel(raw){
       const name = cleanVal(row[normKey('Name')]);
       if (!name) continue;
       const creds = R.creds.map(def => evalCredential(def, row));
+      /* "hold at least one" groups (e.g. IH: HIMU / HIMA / HIU are tiered levels):
+         if any level in the group is actually held, the blank siblings are not a
+         gap — reclassify them to N/A so they're shown neutrally and not counted.   */
+      (R.atLeastOne || []).forEach(group => {
+        const members = creds.filter(c => group.includes(c.def.label));
+        const held = members.some(c => c.code === 'VALID' || c.code === 'WARNING' || c.code === 'CRITICAL' || c.code === 'EXPIRED');
+        if (held) members.forEach(c => {
+          if (c.code === 'MISSING'){ c.code = 'NA'; c.na = true; c.grouped = true; }
+        });
+      });
       const expDays = creds.filter(c => c.days != null).map(c => c.days);
       let clinic = canonicalLocation(row[normKey('Working Location')]);
       if (!clinic){                                   // fall back to the Clinic Site column
@@ -1137,13 +1156,14 @@ function chip(c){
   let extra = '';
   if (c.lifetime && c.code === 'VALID') extra = '<small>∞</small>';
   else if (c.expiry) extra = `<small>${fmtDate(c.expiry).replace(/\d{4}$/, y => y.slice(2))}</small>`;
+  else if (c.issue) extra = `<small>${fmtDate(c.issue).replace(/\d{4}$/, y => y.slice(2))}</small>`;
   const tip = [c.def.label,
     c.number ? 'No: ' + c.number : null,
     c.issue ? 'Issued: ' + fmtDate(c.issue) : null,
     c.expiry ? 'Expires: ' + fmtDate(c.expiry) + (c.days != null ? ` (${c.days >= 0 ? 'in ' + c.days + ' d' : Math.abs(c.days) + ' d overdue'})` : '') : null,
     c.lifetime ? 'No expiry (lifetime)' : null,
     c.code === 'MISSING' ? 'No record in sheet' : null,
-    c.code === 'NA' ? 'Not applicable — excluded from compliance' : null
+    c.code === 'NA' ? (c.grouped ? 'Not required — another level in this group is held' : 'Not applicable — excluded from compliance') : null
   ].filter(Boolean).join('\n');
   return `<span class="chip st-${c.code}" title="${esc(tip)}"><span class="ic">${m.icon}</span>${esc(c.def.label)} ${extra}</span>`;
 }
@@ -1460,7 +1480,7 @@ function renderTimeline(){
     } else if (STATE.tlGroup === 'licence'){
       keyf = it => it.cred;
       order = ['Izin Operasional Klinik (Dinkes)','Lisensi Pos P3K (Disnaker)','Kerjasama Limbah B3 Medis',
-               'STR','SIP','Penugasan','Hiperkes','BTCLS','ACLS','ACLS (Nurse)','ATLS','SKP','HIMU','AK3 Lingker'];
+               'STR','SIP','Penugasan','Hiperkes','BTCLS','ACLS','ACLS (Nurse)','ATLS','SKP','HIMU','HIMA','HIU','AK3 Lingker'];
     } else { /* clinic */
       keyf = it => it.clinic;
       order = ['Banyuwangi','Wetar Island','Konawe','Morowali','Gorontalo','Jakarta'];
@@ -1498,7 +1518,7 @@ const AFFINITY = [
   { key:'practice',  label:'Practice licenses',   creds:['STR','SIP','SKP'] },
   { key:'refresher', label:'Clinical refreshers', creds:['ATLS','ACLS','BTCLS','ACLS (Nurse)'] },
   { key:'ohcomp',    label:'OH competency & assignment',
-    creds:['Hiperkes','HIMU','AK3 Lingker','Dr. MCU & FTW','Dr. PAK','Komp. Dr. Perusahaan','Penugasan'] }
+    creds:['Hiperkes','HIMU','HIMA','HIU','AK3 Lingker','Dr. MCU & FTW','Dr. PAK','Komp. Dr. Perusahaan','Penugasan'] }
 ];
 
 function computeInsights(){
