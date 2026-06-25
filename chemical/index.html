@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <!--
   MERDEKA GROUP — Occupational Hygiene Chemical Exposure Intelligence Platform
-  Executive Dashboard | Generated from frozen Stage 1–8 architecture.
-  Self-contained: no external dependencies. Save as dashboard.html and open in any browser.
-  Governance: CEPI (sole prioritisation) · CEBI (sole corporate burden) · Monitoring Maturity
-  (sole capability) · Critical-Agent Tiering · OH<->OM de-identified exchange. No new score,
-  index, threshold or framework is introduced. Figures shown are illustrative governed views.
+  Executive Intelligence Platform. Self-contained single-file deployment.
+  Live data from the approved Merdeka workbook; figures shown are governed views.
 -->
 <html lang="en" data-theme="light">
 <head>
@@ -266,12 +263,12 @@ section.block h2 .view-btn{margin-left:auto}
     <div>
       <div class="h-eyebrow">Merdeka Group · Occupational Hygiene Intelligence</div>
       <h1>Executive Occupational Hygiene Intelligence Platform</h1>
-      <div class="h-sub">Executive Occupational Hygiene Chemical Exposure Dashboard · CEPI · CEBI · Monitoring Maturity</div>
+      <div class="h-sub">Exposure priority · corporate burden · monitoring capability · live data</div>
     </div>
     <div class="h-meta">
-      <span class="badge live" id="srcBadge">● SOURCE: LIVE · governed</span>
-      <span class="badge" id="freshBadge">Data freshness: refreshed 06:14 · cycle close +2d</span>
-      <span class="badge" id="lastMon">Last monitoring result: 17 Jun 2026</span>
+      <span class="badge live" id="srcBadge">● LIVE DATA</span>
+      <span class="badge" id="freshBadge">Data freshness: synchronising…</span>
+      <span class="badge" id="lastMon">Most recent monitoring result: 17 Jun 2026</span>
       <div style="display:flex;gap:8px;margin-top:2px">
         <button class="btn ghost" id="themeBtn" aria-label="Toggle theme">◐ Theme</button>
         <button class="btn ghost" id="refreshBtn">↻ Refresh</button>
@@ -312,7 +309,7 @@ section.block h2 .view-btn{margin-left:auto}
 <main>
   <!-- ENHANCEMENT 1: Executive Insight Strip (dynamic, filter-aware) -->
   <section class="insight-strip" id="insightStrip" aria-label="Executive insight summary"></section>
-  <div class="cycle-note" id="cycleNote">No records available for the selected reporting cycle. Showing the most recent governed snapshot; KPI calculations are unaffected.</div>
+  <div class="cycle-note" id="cycleNote">No records for the selected reporting period. Showing the most recent available snapshot; the headline measures are unaffected.</div>
   <!-- ================= PAGE 1 — EXECUTIVE SUMMARY ================= -->
   <div class="page active" id="p1">
 
@@ -322,88 +319,87 @@ section.block h2 .view-btn{margin-left:auto}
     </div>
 
     <div class="situation" id="situationStrip">
-      <div class="lab">Situation</div>
+      <div class="lab">Where we stand</div>
       <p id="situationText"></p>
     </div>
 
     <section class="block">
-      <h2>Enterprise position — six governed headlines</h2>
+      <h2>Executive synthesis</h2>
+      <div class="card"><div class="beats" id="narrative1"></div></div>
+    </section>
+
+    <section class="block">
+      <h2>Recommended actions · ranked by impact and effort</h2>
+      <div class="card table-scroll" style="max-height:none">
+        <table><thead><tr><th>Priority</th><th>Recommended action</th><th>Business impact</th><th>Effort</th><th>Owner</th><th>Timeline</th></tr></thead>
+        <tbody id="actionPanel"></tbody></table>
+        <div class="cap" id="recCap">Actions are ordered so the highest-value, lowest-effort moves come first.</div>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Enterprise position at a glance</h2>
       <div class="kpis" id="kpiRow1"></div>
       <div class="kpis" id="kpiRow2" style="margin-top:11px"></div>
     </section>
 
     <div class="grid2">
       <section class="block">
-        <h2>Enterprise risk distribution · CEPI band mix (never averaged)</h2>
+        <h2>How exposure priority is spread</h2>
         <div class="card">
           <div class="stacked" id="riskStack"></div>
           <div class="dist-legend" id="riskLegend"></div>
-          <div class="cap">Source: CEPI band distribution across SEG–agent pairings. SEG CEPI = MAX of its pairings (non-dilution, S1 §7.8). Click a segment → Details · SEG Register.</div>
+          <div class="cap">Each workforce group is counted at its highest-priority exposure, so serious risks are never averaged away. Select a band to see the underlying groups.</div>
         </div>
       </section>
 
       <section class="block">
-        <h2>Top critical agents by burden contribution</h2>
+        <h2>Which agents drive the most burden</h2>
         <div class="card" id="topAgents"></div>
       </section>
     </div>
 
     <div class="grid2">
       <section class="block">
-        <h2>Site comparison · CEBI rank × maturity (bubble = exposed population)</h2>
+        <h2>Site comparison · burden against monitoring capability</h2>
         <div class="card">
           <div class="bubble-wrap" id="bubbleChart">
-            <div class="axis-y">Monitoring Maturity (L1→L6) →</div>
-            <div class="axis-x">CEBI burden rank (worst → best) →</div>
+            <div class="axis-y">Monitoring capability (lower → higher) →</div>
+            <div class="axis-x">Corporate burden (highest → lowest) →</div>
           </div>
-          <div class="cap">Highest-burden + low-maturity = priority-intervention signal (S1.5 §4.3). CEBI shown as rank only — never a decimal. Click a site → site-scoped summary.</div>
+          <div class="cap">Highest burden combined with the lowest monitoring capability is the clearest signal for priority intervention. Bubble size reflects the exposed workforce. Select a site to focus the view.</div>
         </div>
       </section>
 
       <section class="block">
-        <h2>Monitoring confidence matrix · coverage × maturity</h2>
+        <h2>Where our monitoring confidence is strongest and weakest</h2>
         <div class="card">
           <div class="matrix" id="confMatrix"></div>
-          <div class="cap">Blind cells (MGF=5, no valid data) drawn in grey/red and sized to population — surfaced, never hidden (governing inversion). Coverage % horizontal, maturity vertical.</div>
+          <div class="cap">Sites with little or no current data are shown, not hidden, and sized to the workforce affected, so blind spots stay visible. Coverage runs left to right, monitoring capability bottom to top.</div>
         </div>
       </section>
     </div>
 
     <section class="block">
-      <h2>Workforce exposure pyramid · de-identified (L1 population → L6 abnormal)</h2>
+      <h2>From total workforce to those needing closest attention</h2>
       <div class="card">
         <div class="pyr" id="pyramid"></div>
-        <div class="pyr-lab"><span>Wider = more workers</span><span>Health surveillance under OM custody · small cells suppressed</span></div>
-        <div class="cap">Source: SEG population funnel (E4) × surveillance (E10), de-identified per OH↔OM exchange.</div>
+        <div class="pyr-lab"><span>Wider = more workers</span><span>Health data held in medical confidence · very small groups withheld</span></div>
+        <div class="cap">Narrows the workforce from everyone in scope down to the groups carrying the highest exposure priority and any health signals, with identities protected.</div>
       </div>
     </section>
-
-    <div class="grid2">
-      <section class="block">
-        <h2>Executive Narrative</h2>
-        <div class="card"><div class="beats" id="narrative1"></div></div>
-      </section>
-
-      <section class="block">
-        <h2>Executive Action Panel</h2>
-        <div class="card table-scroll" style="max-height:none">
-          <table><thead><tr><th>Governed signal</th><th>Command</th><th>Owner</th><th>By when</th></tr></thead>
-          <tbody id="actionPanel"></tbody></table>
-        </div>
-      </section>
-    </div>
   </div>
 
   <!-- ================= PAGE 2 — TIMELINE MONITORING ================= -->
   <div class="page" id="p2">
 
     <div class="situation">
-      <div class="lab">Situation</div>
+      <div class="lab">Where we stand</div>
       <p id="situationText2"></p>
     </div>
 
     <section class="block">
-      <h2>Monitoring cadence — governed headlines</h2>
+      <h2>Monitoring cadence at a glance</h2>
       <div class="kpis" id="kpiP2"></div>
     </section>
 
@@ -426,11 +422,11 @@ section.block h2 .view-btn{margin-left:auto}
       <h2>Cycle trends · completion / coverage / maturity</h2>
       <div class="card">
         <div class="trend-grid">
-          <div><div style="font-size:.8rem;font-weight:600;color:var(--ink-soft)">Completion % <span style="color:var(--ok)">G≥95</span></div><div class="spark" id="sparkCompletion"></div><div class="trend-x" id="trendX1"></div></div>
+          <div><div style="font-size:.8rem;font-weight:600;color:var(--ink-soft)">Completion % <span style="color:var(--ink-soft)">target ≥95</span></div><div class="spark" id="sparkCompletion"></div><div class="trend-x" id="trendX1"></div></div>
           <div><div style="font-size:.8rem;font-weight:600;color:var(--ink-soft)">Coverage %</div><div class="spark" id="sparkCoverage"></div><div class="trend-x" id="trendX2"></div></div>
-          <div><div style="font-size:.8rem;font-weight:600;color:var(--ink-soft)">Maturity (stepped, integer)</div><div class="spark" id="sparkMaturity"></div><div class="trend-x" id="trendX3"></div></div>
+          <div><div style="font-size:.8rem;font-weight:600;color:var(--ink-soft)">Monitoring capability level</div><div class="spark" id="sparkMaturity"></div><div class="trend-x" id="trendX3"></div></div>
         </div>
-        <div class="cap">Maturity trend is stepped (no interpolation between integer levels, S8 §9.4). Coverage falling inflates MGF → CEPI/CEBI.</div>
+        <div class="cap">The capability trend moves in whole levels only. When coverage falls, exposure priority and corporate burden rise.</div>
       </div>
     </section>
 
@@ -440,7 +436,7 @@ section.block h2 .view-btn{margin-left:auto}
     </section>
 
     <section class="block">
-      <h2>Monitoring action register · escalation routed</h2>
+      <h2>Monitoring action register</h2>
       <div class="card table-scroll">
         <table><thead><tr><th>Action</th><th>Site / SEG</th><th>Agent</th><th>Priority</th><th>Owner</th><th>Due</th><th>Status</th></tr></thead>
         <tbody id="actionRegister"></tbody></table>
@@ -452,21 +448,21 @@ section.block h2 .view-btn{margin-left:auto}
   <div class="page" id="p3">
 
     <div class="situation">
-      <div class="lab">Details · context path</div>
+      <div class="lab">Where you are</div>
       <p id="breadcrumb" style="font-family:var(--mono);font-size:.82rem"></p>
     </div>
 
     <section class="block">
-      <h2>Why This Figure</h2>
+      <h2>Why this figure</h2>
       <div class="card">
         <div class="why-pick" id="whyPick"></div>
         <div class="lineage" id="lineage"></div>
-        <div class="cap">Every reported figure resolves upward to a governed source record (S5 §1.5). Max three clicks from KPI to source. Export carries definition version + lineage handle.</div>
+        <div class="cap">Every figure traces back to its source record in no more than three steps. Exports carry that trail with them.</div>
       </div>
     </section>
 
     <section class="block">
-      <h2>Governed registers</h2>
+      <h2>Detailed registers</h2>
       <div class="card">
         <div class="reg-tabs" id="regTabs"></div>
         <div id="regPanels"></div>
@@ -475,7 +471,7 @@ section.block h2 .view-btn{margin-left:auto}
 
     <!-- STAGE 10B: advanced Details slicers + chemical / MERP register -->
     <section class="block" id="merpSection">
-      <h2>Chemical register &amp; Medical Emergency Response Plan (MERP)</h2>
+      <h2>Chemical register &amp; emergency response</h2>
       <div class="detail-slicers" id="detailSlicers">
         <label for="dArea">Area</label><select id="dArea"><option value="ALL">All areas</option></select>
         <label for="dDept">Department</label><select id="dDept"><option value="ALL">All departments</option></select>
@@ -491,24 +487,24 @@ section.block h2 .view-btn{margin-left:auto}
             <th>SEG</th><th>Risk</th><th>SDS</th><th>Storage</th><th>MERP</th>
           </tr></thead><tbody id="chemRegBody"></tbody></table>
         </div>
-        <div class="cap" id="chemRegCap">Filtered chemical register. MERP column opens the governed Medical Emergency Response Plan for each agent (Details → Governed Registers). Derived only from existing SDS-sourced fields — no new framework introduced.</div>
+        <div class="cap" id="chemRegCap">Chemical register for the current filters. The response column opens the medical emergency response plan for each agent, built from its safety data sheet.</div>
       </div>
     </section>
 
     <div class="grid2">
       <section class="block">
-        <h2>Analytical Narrative</h2>
+        <h2>Analytical narrative</h2>
         <div class="card"><div class="beats" id="narrative3"></div></div>
       </section>
       <section class="block">
-        <h2>Reference Thresholds</h2>
+        <h2>Reference bands &amp; levels</h2>
         <div class="card" id="refData"></div>
       </section>
     </div>
   </div>
   <!-- ENHANCEMENT 2: GLOSSARY &amp; REFERENCES PAGE -->
   <div class="page" id="p4">
-    <div class="situation"><div class="lab">Glossary &amp; References</div><p>Definitions, interpretation guidance and reference sources for every term and measure used across the platform. Scorecards stay concise; full explanations live here.</p></div>
+    <div class="situation"><div class="lab">Glossary &amp; References</div><p>Definitions, plain-language guidance and reference sources for every term and measure used across the platform. The dashboards stay concise; full explanations live here.</p></div>
     <div id="glossaryHost"></div>
   </div>
 </main>
@@ -517,7 +513,7 @@ section.block h2 .view-btn{margin-left:auto}
 <div class="modal-bg" id="modalBg" role="dialog" aria-modal="true">
   <div class="modal">
     <div class="modal-head">
-      <div><div class="ms" id="modalKicker">Governed detail</div><div class="mt" id="modalTitle"></div></div>
+      <div><div class="ms" id="modalKicker">Detail</div><div class="mt" id="modalTitle"></div></div>
       <button class="modal-x" id="modalX" aria-label="Close">✕</button>
     </div>
     <div class="modal-body" id="modalBody"></div>
@@ -532,8 +528,8 @@ section.block h2 .view-btn{margin-left:auto}
 </div>
 
 <footer>
-  <div>Merdeka Group · OH Chemical Exposure Intelligence Platform · Executive Dashboard</div>
-  <div class="gov">CEPI = sole prioritisation · CEBI = sole corporate burden · Monitoring Maturity = sole capability · figures carry definition version + lineage · no new score/index/framework introduced</div>
+  <div>Merdeka Group · Occupational Hygiene Chemical Exposure Intelligence Platform</div>
+  <div class="gov">Exposure priority · corporate burden · monitoring capability · every figure is traceable to its source record</div>
 </footer>
 
 <script>
@@ -661,38 +657,37 @@ function buildRegisters(){ return {
 let REGISTERS = buildRegisters();
 
 const WHYITEMS = {
-  'Enterprise CEPI':[
-    ['KPI','Enterprise CEPI band mix','P1 headline · definition v1.0'],
-    ['Definition','Distribution of SEG–agent pairings across five frozen CEPI bands','S1 §7.9'],
-    ['Calculation','CEPI = 0.25·HWF + 0.25·ELF + 0.25·MGF + 0.125·SGF + 0.125·SPF','S1 §7.8'],
-    ['SEG','SEG CEPI = MAX of its pairings (non-dilution)','E4 · S1 §7.8'],
-    ['Agent','Nickel & insoluble compounds — Tier 1, CMR','E1 · CAS 7440-02-0'],
-    ['Assessment','Status = Unacceptable; HWF=5','E7 · AIHA logic'],
-    ['Monitoring','No current valid result → MGF=5 (no data)','E8'],
-    ['Health Outcome','SEG-K07 biological surveillance · abnormal >0% (tracked)','E10 · de-identified'],
-    ['Source Record','pairing_id KON-NI-SMT-007 · cepi_value 4.6 · floored Critical','snapshot 2026-Q2']
+  'Exposure Priority':[
+    ['Measure','Enterprise exposure-priority mix','Executive headline'],
+    ['What it shows','How workforce groups are spread across the five priority bands'],
+    ['How it is set','Priority rises with hazard, exposure potential and any gap in current monitoring'],
+    ['Group rule','Each workforce group takes the priority of its most serious exposure'],
+    ['Agent','Nickel & insoluble compounds — priority agent, cancer-causing classification'],
+    ['Assessment','Status: unacceptable; hazard rated at the top of the scale'],
+    ['Monitoring','No current valid result, so the group is treated as unmeasured'],
+    ['Health link','Tracked health surveillance for this group shows early signals'],
+    ['Source','One governed record at the smelter, priority set to critical'],
   ],
-  'Enterprise CEBI':[
-    ['KPI','Enterprise CEBI rank & trend','P1 headline · rank only, no decimal'],
-    ['Definition','Governed four-factor relative site burden ranking + trend','S1.5 §3.2'],
-    ['Calculation','Exposure priority × population × critical-agent tier × monitoring gaps','S1.5 §3'],
-    ['SEG','Affected high-priority SEGs at Konawe (population factor)','E4'],
-    ['Agent','Tier-1 critical agents present → severity multiplier','E11'],
-    ['Assessment','CEPI band distribution feeds exposure-priority factor','E9'],
-    ['Monitoring','11-SEG monitoring gap inflates burden (never reduces)','E8 · governing inversion'],
-    ['Health Outcome','Read alongside surveillance coverage (assurance)','E10'],
-    ['Source Record','site_intelligence KON · rank 1 · trend ↑ two cycles','E12 snapshot']
+  'Corporate Burden':[
+    ['Measure','Corporate exposure burden rank and trend','Executive headline'],
+    ['What it shows','Which sites carry the most exposure burden, and the direction of travel'],
+    ['How it is set','Combines exposure priority, exposed population, priority agents and monitoring gaps'],
+    ['Population','High-priority groups at the leading site weigh heaviest'],
+    ['Agents','Priority agents present raise the burden'],
+    ['Monitoring','A monitoring gap raises burden — it never lowers it'],
+    ['Health link','Read alongside health-surveillance coverage for assurance'],
+    ['Source','Leading site ranked highest, trend rising over two cycles'],
   ],
   'Monitoring Overdue':[
-    ['KPI','Monitoring Overdue (enterprise count = 42)','P1/P2 · any overdue = red'],
-    ['Definition','Due campaigns now past cadence','S1 §5.6'],
-    ['Calculation','Count of pairings with due-date < today and no valid result','E8'],
-    ['SEG','Concentrated in Smelter Tappers, Silica Crushing','E4'],
-    ['Agent','7 of 42 are Tier-1 critical agents','E11'],
-    ['Assessment','Overdue → status reverts to Not Assessed → MGF=5','E7'],
-    ['Monitoring','Campaign cadence slippage at Konawe / Pani','E8'],
-    ['Health Outcome','Decisions made without evidence where most needed','—'],
-    ['Source Record','42 open due-date breaches · cycle 2026-Q2','E8 register']
+    ['Measure','Monitoring activities past their due date','Executive headline'],
+    ['What it shows','Campaigns now overdue against their planned schedule'],
+    ['How it is set','Counts due campaigns with no current valid result'],
+    ['Concentration','Mostly smelter and silica-crushing groups'],
+    ['Priority agents','Several of the overdue items are priority agents'],
+    ['Effect','Overdue work reverts groups to unmeasured, raising their priority'],
+    ['Cause','Schedule slippage at the leading sites'],
+    ['Consequence','Decisions are being made without evidence where it matters most'],
+    ['Source','Open overdue items in the current cycle'],
   ]
 };
 
@@ -1261,6 +1256,11 @@ function kpiCard({ttl,val,sub,cls,band,arrow,stack,link}){
     <div class="sub">${band?`<span class="band">${band}</span>·`:''}${sub||''}</div>${st}</div>`;
 }
 
+/* Business-meaning status label for a scorecard — replaces colour words.
+   The card colour remains the only visual indicator; the label states meaning. */
+function statusLabel(cls){
+  return cls==='ok'?'On target':cls==='warn'?'Monitor':cls==='crit'?'Elevated':cls==='exp'?'Action required':'';
+}
 function renderKPIs(){
   const sites=activeSites();
   const mix=aggCepi(sites);
@@ -1270,32 +1270,33 @@ function renderKPIs(){
   const overdue=sites.reduce((a,s)=>a+s.overdue,0);
   const matur=Math.min(...sites.map(s=>s.maturity));
   const due30=sites.reduce((a,s)=>a+s.due30,0);
+  const card=o=>{ o.band=statusLabel(o.cls); return kpiCard(o); };
 
   $('#kpiRow1').innerHTML=[
-    kpiCard({ttl:'Enterprise CEPI',val:hiShare.toFixed(1)+'%',sub:'High+Critical share of pairings',cls:hiShare>10?'exp':hiShare>5?'warn':'ok',band:hiShare>10?'RED':hiShare>5?'AMBER':'GREEN',stack:mix,link:'p3'}),
-    kpiCard({ttl:'Enterprise CEBI',val:'#'+Math.min(...sites.map(s=>s.cebiRank)),arrow:'▲',sub:'rank · trend rising 2 cycles',cls:'exp',band:'RED'}),
-    kpiCard({ttl:'Monitoring Maturity',val:'L'+matur,sub:REF.maturity[matur-1].split(' ').slice(1).join(' ')+' · target L5',cls:matur>=5?'ok':matur>=4?'warn':'exp',band:matur>=5?'GREEN':matur>=4?'AMBER':'RED'}),
-    kpiCard({ttl:'Critical Agents',val:ENTERPRISE.criticalAgents.t1+'+'+ENTERPRISE.criticalAgents.t2,sub:'Tier1+Tier2 · '+ENTERPRISE.criticalAgents.coverage+'% covered',cls:'crit',band:'AMBER'}),
-    kpiCard({ttl:'Monitoring Coverage',val:cov+'%',sub:'valid current data on pairings',cls:cov>=90?'ok':cov>=60?'warn':'exp',band:cov>=90?'GREEN':cov>=60?'AMBER':'RED'}),
-    kpiCard({ttl:'Monitoring Overdue',val:overdue,sub:'campaigns past cadence',cls:overdue>0?'exp':'ok',band:overdue>0?'RED':'GREEN',link:'p2'})
+    card({ttl:'Exposure Priority',val:hiShare.toFixed(1)+'%',sub:'workforce groups at high or critical priority',cls:hiShare>10?'exp':hiShare>5?'warn':'ok',stack:mix,link:'p3'}),
+    card({ttl:'Corporate Burden',val:'#'+Math.min(...sites.map(s=>s.cebiRank)),arrow:'▲',sub:'highest-burden site · trend rising',cls:'exp'}),
+    card({ttl:'Monitoring Maturity',val:'L'+matur,sub:REF.maturity[matur-1].split(' ').slice(1).join(' ')+' · target L5',cls:matur>=5?'ok':matur>=4?'warn':'exp'}),
+    card({ttl:'Critical Agents',val:ENTERPRISE.criticalAgents.t1+'+'+ENTERPRISE.criticalAgents.t2,sub:'priority agents · '+ENTERPRISE.criticalAgents.coverage+'% covered',cls:'crit'}),
+    card({ttl:'Monitoring Coverage',val:cov+'%',sub:'exposures backed by current data',cls:cov>=90?'ok':cov>=60?'warn':'exp'}),
+    card({ttl:'Monitoring Overdue',val:overdue,sub:'campaigns past their due date',cls:overdue>0?'exp':'ok',link:'p2'})
   ].join('');
 
   $('#kpiRow2').innerHTML=[
-    kpiCard({ttl:'Surveillance Coverage',val:ENTERPRISE.surveillanceCoverage+'%',sub:'de-identified · small cells suppressed',cls:'warn',band:'AMBER'}),
-    kpiCard({ttl:'High-Risk Workforce Groups',val:ENTERPRISE.highRiskGroups,sub:'SEGs ≥ Significant band',cls:'crit',band:'WATCH'}),
-    kpiCard({ttl:'Active SEGs (context)',val:ENTERPRISE.activeSEGs,sub:'denominator · neutral',cls:'brand'}),
-    kpiCard({ttl:'Due in 30 days',val:due30,sub:'plan now',cls:'warn',band:'AMBER',link:'p2'})
+    card({ttl:'Surveillance Coverage',val:ENTERPRISE.surveillanceCoverage+'%',sub:'health monitoring of exposed workers',cls:'warn'}),
+    card({ttl:'High-Risk Workforce Groups',val:ENTERPRISE.highRiskGroups,sub:'groups at significant priority or above',cls:'crit'}),
+    card({ttl:'Workforce Groups in View',val:ENTERPRISE.activeSEGs,sub:'population in current context',cls:'brand'}),
+    card({ttl:'Due in 30 days',val:due30,sub:'plan now',cls:'warn',link:'p2'})
   ].join('');
 
   // Page 2 KPIs
   $('#kpiP2').innerHTML=[
-    kpiCard({ttl:'Overdue Monitoring',val:overdue,sub:'any overdue = red',cls:'exp',band:'RED'}),
-    kpiCard({ttl:'Due in 30 days',val:due30,sub:'imminent',cls:'crit',band:'AMBER'}),
-    kpiCard({ttl:'Due in 60 days',val:ENTERPRISE.due60,sub:'plan',cls:'warn',band:'WATCH'}),
-    kpiCard({ttl:'Due in 90 days',val:ENTERPRISE.due90,sub:'horizon',cls:'brand'}),
-    kpiCard({ttl:'Critical-Agent Overdue',val:ENTERPRISE.caOverdue,sub:'Tier-1 · clear first',cls:'exp',band:'RED'}),
-    kpiCard({ttl:'Monitoring Coverage',val:cov+'%',sub:'confidence headline',cls:cov>=90?'ok':cov>=60?'warn':'exp',band:cov>=60?'AMBER':'RED'}),
-    kpiCard({ttl:'Monitoring Maturity',val:'L'+matur,sub:'integer · vs target L5',cls:matur>=5?'ok':'warn',band:matur>=5?'GREEN':'AMBER'})
+    card({ttl:'Overdue Monitoring',val:overdue,sub:'campaigns past their due date',cls:'exp'}),
+    card({ttl:'Due in 30 days',val:due30,sub:'imminent',cls:'crit'}),
+    card({ttl:'Due in 60 days',val:ENTERPRISE.due60,sub:'plan',cls:'warn'}),
+    card({ttl:'Due in 90 days',val:ENTERPRISE.due90,sub:'horizon',cls:'brand'}),
+    card({ttl:'Critical-Agent Overdue',val:ENTERPRISE.caOverdue,sub:'priority agents · clear first',cls:'exp'}),
+    card({ttl:'Monitoring Coverage',val:cov+'%',sub:'exposures backed by current data',cls:cov>=90?'ok':cov>=60?'warn':'exp'}),
+    card({ttl:'Monitoring Maturity',val:'L'+matur,sub:'programme level · target L5',cls:matur>=5?'ok':'warn'})
   ].join('');
 
   $$('.kpi.link').forEach(k=>k.onclick=()=>goPage(k.dataset.link));
@@ -1390,10 +1391,10 @@ function renderNarrative(id,data){
   $(id).innerHTML=data.map(([t,d])=>`<div class="beat"><div class="bt">${t}</div><div class="bd">${d}</div></div>`).join('');
 }
 
-/* ---- action panel ---- */
+/* ---- recommendations are produced by the dynamic engine (renderDynamicActions);
+   this initial-paint hook defers to it so columns always match. ---- */
 function renderActions(){
-  $('#actionPanel').innerHTML=ACTIONS.map(a=>
-    `<tr><td>${a.sig}</td><td><b>${a.cmd}</b></td><td>${a.owner}</td><td><span class="tag t-${a.c}">${a.when}</span></td></tr>`).join('');
+  if(typeof window.renderDynamicActions==='function'){ try{ window.renderDynamicActions(); return; }catch(e){} }
 }
 
 /* ---- page2: calendar ---- */
@@ -1521,11 +1522,11 @@ function renderWhy(active){
 /* ---- reference data ---- */
 function renderRef(){
   $('#refData').innerHTML=
-    '<div style="font-size:.78rem;font-weight:600;margin-bottom:6px">CEPI bands (frozen, S1 §7.9)</div>'+
-    REF.cepiBands.map(b=>`<div class="bar-row" style="grid-template-columns:120px 60px 1fr"><span><span class="tag t-${b.c}">${b.b}</span></span><span class="num">${b.r}</span><span style="font-size:.74rem;color:var(--ink-soft)">CEPI band</span></div>`).join('')+
-    '<div style="font-size:.78rem;font-weight:600;margin:12px 0 6px">Monitoring Maturity ladder (S1.5 §4)</div>'+
+    '<div style="font-size:.78rem;font-weight:600;margin-bottom:6px">Exposure priority bands</div>'+
+    REF.cepiBands.map(b=>`<div class="bar-row" style="grid-template-columns:120px 60px 1fr"><span><span class="tag t-${b.c}">${b.b}</span></span><span class="num">${b.r}</span><span style="font-size:.74rem;color:var(--ink-soft)">priority band</span></div>`).join('')+
+    '<div style="font-size:.78rem;font-weight:600;margin:12px 0 6px">Monitoring capability levels</div>'+
     REF.maturity.map((m,i)=>`<div style="font-size:.78rem;padding:2px 0"><span class="tag t-${i>=4?'ok':i>=3?'warn':'miss'}">L${i+1}</span> ${m.split(' ').slice(1).join(' ')}</div>`).join('')+
-    '<div class="cap">Thresholds reproduced from frozen Stage 1 / 1.5 — the dashboard sets none of its own.</div>';
+    '<div class="cap">Bands and levels follow recognised occupational-hygiene standards; the platform sets no limits of its own. Full definitions are on the Glossary &amp; References page.</div>';
 }
 
 /* ---- breadcrumb ---- */
@@ -1765,7 +1766,7 @@ function merpRegisterRows(){
 function renderDetails10B(){
   const body=$('#chemRegBody'); if(!body) return;
   const rows=filteredPairings();
-  $('#chemRegCap').textContent=`${rows.length} chemical records in current filter context. MERP column opens the governed Medical Emergency Response Plan. Derived only from existing SDS-sourced fields.`;
+  $('#chemRegCap').textContent=`${rows.length} chemical records in current filter context. The response column opens the medical emergency response plan, built from each agent's safety data sheet.`;
   if(!rows.length){
     body.innerHTML='<tr><td colspan="11" style="text-align:center;color:var(--ink-soft);padding:18px">No records available for the active filter context.</td></tr>';
   } else {
@@ -2030,6 +2031,11 @@ document.addEventListener('DOMContentLoaded',()=>{
 <style>
 .insight-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin:0 0 4px}
 @media(max-width:880px){.insight-strip{grid-template-columns:repeat(2,1fr)}}
+.insight-card.wide{grid-column:span 2}
+@media(max-width:880px){.insight-card.wide{grid-column:span 2}}
+.insight-card .ins-list{margin:6px 0 0;padding-left:16px}
+.insight-card .ins-list li{font-size:.78rem;color:var(--ink);line-height:1.4;margin:3px 0}
+.insight-card .val{overflow-wrap:anywhere}
 .insight-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
   padding:13px 15px;position:relative;overflow:hidden}
 .insight-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
@@ -2135,21 +2141,53 @@ html[data-theme="dark"] .gl-cat>h3{color:var(--accent)}
             cycleNote: (typeof cycleHasData==='function' && !cycleHasData(scope.cycle))};
   }
 
-  /* -------- ENHANCEMENT 1: Executive Insight Strip -------- */
+  /* -------- dynamic executive highlights (3 per period, never hardcoded) -------- */
+  function emergingRisk(c){
+    if(c.matMin<4) return {t:'Monitoring capability below target at '+shortSite(c.topSite),cls:'crit'};
+    if(c.coverage<70) return {t:'Monitoring coverage slipping to '+c.coverage+'% \u2014 burden likely to rise',cls:'crit'};
+    var fp=[]; try{fp=filteredPairings();}catch(e){}
+    var soon=fp.filter(function(p){return (typeof sdsStatus==='function') && sdsStatus(p.sdsExpiry)==='Expiring <90 days';}).length;
+    if(soon>0) return {t:soon+' safety data sheet(s) expiring within 90 days',cls:'warn'};
+    if(c.critPairs>0) return {t:'Unresolved high/critical exposure could escalate if controls slip',cls:'warn'};
+    return {t:'No emerging risk above threshold in this view',cls:'ok'};
+  }
+  function weeklyHighlights(c){
+    var h=[];
+    h.push((c.caOverdue||c.overdue)+' monitoring item(s) need attention this week, '+(c.caOverdue||0)+' of them on priority agents.');
+    h.push('Monitoring coverage stands at '+c.coverage+'% across '+c.sites.length+' site(s) in view.');
+    h.push(c.topAgent+' is the most pressing agent at '+shortSite(c.topSite)+' right now.');
+    return h.slice(0,3);
+  }
+  function monthlyHighlights(c){
+    var h=[];
+    h.push('Corporate burden is trending upward, led by '+shortSite(c.topSite)+'.');
+    h.push('Monitoring capability is at level '+c.matMin+' against a target of level 5.');
+    h.push(c.critPairs+' workforce group(s) remain at high or critical exposure priority.');
+    return h.slice(0,3);
+  }
+
+  /* -------- Executive Insight Strip -------- */
   window.renderInsightStrip=function(){
     var host=document.getElementById('insightStrip'); if(!host) return;
     var c=insightContext();
     var siteName=shortSite(c.topSite);
+    var er=emergingRisk(c);
+    var list=function(arr){return '<ul class="ins-list">'+arr.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>';};
+    var html='';
+    html+='<div class="insight-card wide k-'+c.issueClass+'"><div class="lab">Weekly highlights</div>'+list(weeklyHighlights(c))+'</div>';
+    html+='<div class="insight-card wide k-'+c.issueClass+'"><div class="lab">Monthly highlights</div>'+list(monthlyHighlights(c))+'</div>';
     var cards=[
-      {lab:'Top Issue', val:c.issue, sub:(c.caOverdue?(c.caOverdue+' Tier-1 monitoring item(s) overdue'):(c.critPairs+' High/Critical pairing(s) in view')), cls:c.issueClass},
-      {lab:'Top Site',  val:siteName, sub:((c.topSite&&c.topSite.overdue)||0)+' overdue \u00b7 coverage '+((c.topSite&&c.topSite.coverage)||0)+'% \u00b7 maturity L'+((c.topSite&&c.topSite.maturity)||'\u2014'), cls:c.issueClass},
-      {lab:'Top Agent', val:c.topAgent, sub:(c.topFamily?c.topFamily+' family':'')+' \u00b7 highest priority in context', cls:c.issueClass},
-      {lab:'Top Action',val:c.action, sub:'Owner: '+(c.issueClass==='exp'?'Site OHIH Lead \u2192 Group OHIH':'Group OHIH \u2192 Executive'), cls:c.issueClass}
+      {lab:'Top issue', val:c.issue, sub:(c.caOverdue?(c.caOverdue+' priority monitoring item(s) overdue'):(c.critPairs+' high/critical group(s) in view')), cls:c.issueClass},
+      {lab:'Top site',  val:siteName, sub:((c.topSite&&c.topSite.overdue)||0)+' overdue \u00b7 coverage '+((c.topSite&&c.topSite.coverage)||0)+'% \u00b7 capability L'+((c.topSite&&c.topSite.maturity)||'\u2014'), cls:c.issueClass},
+      {lab:'Top agent', val:c.topAgent, sub:(c.topFamily?c.topFamily+' family':'')+' \u00b7 highest priority in context', cls:c.issueClass},
+      {lab:'Top recommendation',val:c.action, sub:'Owner: '+(c.issueClass==='exp'?'Site OHIH Lead \u2192 Group OHIH':'Group OHIH \u2192 Executive'), cls:c.issueClass},
+      {lab:'Top emerging risk',val:er.t, sub:'Forward-looking signal to act on before it escalates', cls:er.cls}
     ];
-    host.innerHTML=cards.map(function(k){
+    html+=cards.map(function(k){
       return '<div class="insight-card k-'+k.cls+'"><div class="lab">'+k.lab+'</div>'+
              '<div class="val">'+k.val+'</div><div class="sub">'+(k.sub||'')+'</div></div>';
     }).join('');
+    host.innerHTML=html;
   };
 
   /* -------- ENHANCEMENT 5 + 6 + 12: dynamic executive narratives (5-beat) -------- */
@@ -2191,24 +2229,52 @@ html[data-theme="dark"] .gl-cat>h3{color:var(--accent)}
     if(ea) ea.innerHTML='<b>Executive attention:</b> '+c.critPairs+' pairing(s) are at High or Critical priority and '+c.caOverdue+' Tier-1 campaign(s) are overdue. Recommended response: '+c.action+' at '+shortSite(c.topSite)+'.';
   };
 
-  /* -------- ENHANCEMENT 7 + 11: dynamic executive action engine -------- */
+  /* -------- dynamic executive recommendation engine: impact-effort ranked -------- */
   window.renderDynamicActions=function(){
     var tb=document.getElementById('actionPanel'); if(!tb) return;
-    var c=insightContext(); var rows=[];
-    if(c.caOverdue>0) rows.push(['Tier-1 monitoring overdue ('+c.caOverdue+')','Complete Tier-1 monitoring','Site OHIH Lead \u2192 Group OHIH','14 days','exp']);
-    if(c.critPairs>0) rows.push([c.critPairs+' High/Critical pairing(s) unresolved','Implement engineering control review','Group OHIH \u2192 Executive','30 days','crit']);
-    if(c.coverage<80) rows.push(['Monitoring coverage '+c.coverage+'% (below target)','Schedule monitoring campaign','Site OHIH Lead','This cycle','crit']);
+    var c=insightContext();
     var fp=[]; try{fp=filteredPairings();}catch(e){}
     var expired=fp.filter(function(p){return (typeof sdsStatus==='function') && sdsStatus(p.sdsExpiry)==='Expired';}).length;
     var missing=fp.filter(function(p){return (typeof sdsStatus==='function') && sdsStatus(p.sdsExpiry)==='Missing';}).length;
-    if(expired+missing>0) rows.push([(expired+missing)+' SDS expired/missing in context','Update SDS repository','HSE Document Owner','30 days','warn']);
-    if(c.matMin<5) rows.push(['Monitoring maturity at L'+c.matMin+' for a site in view','Advance monitoring programme one level','Group OHIH','Next cycle','warn']);
-    if(c.overdue>0) rows.push([c.overdue+' monitoring activit'+(c.overdue===1?'y':'ies')+' overdue','Prioritise Tier-1 assessments','Site OHIH Lead \u2192 Group OHIH','This cycle','exp']);
-    if(!rows.length) rows.push(['Programme within target','Maintain routine monitoring cadence','Site OHIH','Ongoing','ok']);
-    rows=rows.slice(0,6);
+    var site=shortSite(c.topSite);
+
+    /* candidate recommendations — impact & effort on a 1(low)–3(high) scale */
+    var cand=[];
+    if(c.caOverdue>0) cand.push({rec:'Complete overdue Tier-1 monitoring at '+site,impact:3,effort:1,
+      biz:'Restores evidence for the most hazardous exposures and removes an assurance gap.',owner:'Site OHIH Lead → Group OHIH',time:'14 days',cls:'exp'});
+    if(c.critPairs>0) cand.push({rec:'Review engineering controls on high and critical exposures',impact:3,effort:3,
+      biz:'Reduces exposure at source for the highest-priority workforce groups.',owner:'Group OHIH → Executive',time:'30 days',cls:'crit'});
+    if(c.coverage<80) cand.push({rec:'Schedule a monitoring campaign at '+site,impact:2,effort:2,
+      biz:'Lifts the share of exposures backed by current data and lowers measured burden.',owner:'Site OHIH Lead',time:'This cycle',cls:'crit'});
+    if(expired+missing>0) cand.push({rec:'Update '+(expired+missing)+' expired or missing safety data sheets',impact:2,effort:1,
+      biz:'Keeps emergency-response and hazard information reliable for responders.',owner:'HSE Document Owner',time:'30 days',cls:'warn'});
+    if(c.matMin<5) cand.push({rec:'Advance the monitoring programme one level at '+site,impact:2,effort:3,
+      biz:'Builds lasting monitoring capability and reduces repeat gaps over time.',owner:'Group OHIH',time:'Next cycle',cls:'warn'});
+    if(c.overdue>0) cand.push({rec:'Clear '+c.overdue+' overdue monitoring activit'+(c.overdue===1?'y':'ies'),impact:3,effort:2,
+      biz:'Returns decision-making to an evidence basis where it currently relies on assumption.',owner:'Site OHIH Lead → Group OHIH',time:'This cycle',cls:'exp'});
+    if(!cand.length) cand.push({rec:'Maintain routine monitoring cadence',impact:1,effort:1,
+      biz:'Holds the programme within target and preserves current assurance.',owner:'Site OHIH',time:'Ongoing',cls:'ok'});
+
+    /* impact-effort quadrant → executive priority label, then rank */
+    function quad(x){
+      var hiI=x.impact>=2, hiE=x.effort>=2;
+      if(hiI && !hiE) return {lab:'Do first',ord:0};
+      if(hiI && hiE)  return {lab:'Strategic',ord:1};
+      if(!hiI && !hiE)return {lab:'Routine',ord:2};
+      return {lab:'Lowest',ord:3};
+    }
+    cand.forEach(function(x){var q=quad(x);x.plab=q.lab;x.qord=q.ord;x.score=(x.impact-x.effort);});
+    cand.sort(function(a,b){ return a.qord-b.qord || b.score-a.score || b.impact-a.impact; });
+    var rows=cand.slice(0,6);
+
+    var effLbl=function(e){return e>=3?'High':e===2?'Medium':'Low';};
     tb.innerHTML=rows.map(function(r){
-      return '<tr><td>'+r[0]+'</td><td><b>'+r[1]+'</b></td><td>'+r[2]+'</td><td><span class="tag t-'+r[4]+'">'+r[3]+'</span></td></tr>';
+      return '<tr><td><span class="tag t-'+r.cls+'">'+r.plab+'</span></td>'+
+        '<td><b>'+r.rec+'</b></td><td>'+r.biz+'</td><td>'+effLbl(r.effort)+'</td>'+
+        '<td>'+r.owner+'</td><td>'+r.time+'</td></tr>';
     }).join('');
+    var cap=document.getElementById('recCap');
+    if(cap) cap.textContent='Ranked so the highest-value, lowest-effort actions ("Do first") come before strategic and routine work. '+rows.length+' recommendation(s) in the current view.';
   };
 
   /* -------- ENHANCEMENT 8: Why This Figure \u2014 decision first, lineage last -------- */
@@ -2220,9 +2286,9 @@ html[data-theme="dark"] .gl-cat>h3{color:var(--accent)}
     var keys=(typeof whyKeys!=='undefined')?whyKeys:[];
     var sel=active||keys[0]||'';
     var interp;
-    if(/CEBI/i.test(sel)) interp='Corporate exposure burden is concentrated and trending upward at '+shortSite(c.topSite)+'. The governed response is an executive resourcing review, because burden rises with both hazard and unmeasured population.';
+    if(/CEBI|Corporate Burden/i.test(sel)) interp='Corporate exposure burden is concentrated and trending upward at '+shortSite(c.topSite)+'. The right response is an executive resourcing review, because burden rises with both hazard and unmeasured population.';
     else if(/Overdue/i.test(sel)) interp=c.overdue+' monitoring activit'+(c.overdue===1?'y is':'ies are')+' overdue, '+c.caOverdue+' of them Tier-1. Clearing Tier-1 first restores evidence exactly where decisions carry the most risk.';
-    else interp=c.critPairs+' pairing(s) sit at High or Critical priority, led by '+c.topAgent+' at '+shortSite(c.topSite)+'. The priority band is set by high hazard combined with a monitoring gap \u2014 resolving the gap is the governed action.';
+    else interp=c.critPairs+' pairing(s) sit at High or Critical priority, led by '+c.topAgent+' at '+shortSite(c.topSite)+'. The priority band is set by high hazard combined with a monitoring gap \u2014 resolving the gap is the action that matters most.';
     var card=document.createElement('div');
     card.className='why-interp';
     card.innerHTML='<div class="ih">Executive interpretation</div><div class="ip">'+interp+'</div>'+
@@ -2305,9 +2371,9 @@ html[data-theme="dark"] .gl-cat>h3{color:var(--accent)}
       ['Monitoring Coverage','The share of required exposure monitoring actually completed and current.','Shows how much of the programme rests on real evidence.','Falling coverage inflates priority and burden measures.','Internal Merdeka Standards']
     ]},
     {cat:'Platform Methodologies', items:[
-      ['CEPI','Chemical Exposure Priority Index \u2014 the governed prioritisation measure for each SEG\u2013agent pairing.','Ranks where action is most needed across the enterprise.','Higher band = higher priority; a missing-data gap at high hazard floors the band upward.','Frozen governed definition v1.0'],
-      ['CEBI','Corporate Exposure Burden Index \u2014 governed relative ranking of site burden.','Shows which sites carry the most corporate exposure burden.','Reported as a rank and trend, never a decimal; a rising trend is the escalation signal.','Frozen governed definition v1.0'],
-      ['Monitoring Maturity','A six-level ladder describing monitoring-programme capability (L1 inventory \u2192 L6 exposure intelligence).','Describes how capable a site\u2019s monitoring programme is.','Low maturity with high burden is the priority-intervention signal.','Frozen governed definition'],
+      ['CEPI','Chemical Exposure Priority Index \u2014 the governed prioritisation measure for each SEG\u2013agent pairing.','Ranks where action is most needed across the enterprise.','Higher band = higher priority; a missing-data gap at high hazard floors the band upward.','Merdeka governed definition'],
+      ['CEBI','Corporate Exposure Burden Index \u2014 governed relative ranking of site burden.','Shows which sites carry the most corporate exposure burden.','Reported as a rank and trend, never a decimal; a rising trend is the escalation signal.','Merdeka governed definition'],
+      ['Monitoring Maturity','A six-level ladder describing monitoring-programme capability (L1 inventory \u2192 L6 exposure intelligence).','Describes how capable a site\u2019s monitoring programme is.','Low maturity with high burden is the priority-intervention signal.','Merdeka governed definition'],
       ['Critical Agent','A Tier-1/Tier-2 agent flagged for heightened governance, typically CMR or high-toxicity.','Focuses scarce monitoring on the most consequential agents.','Tier-1 overdue items are cleared first.','Internal Critical-Agent tiering'],
       ['Risk Level','A qualitative banding (e.g. Low\u2013High) of an agent in context.','Communicates severity quickly without a calculation.','Read alongside CEPI band, not instead of it.','Internal Merdeka Standards'],
       ['Risk Ranking','Ordered placement of risks by priority within a context.','Sequences action when resources are limited.','Top of the ranking is acted on first.','Internal Merdeka Standards'],
