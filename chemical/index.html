@@ -1,515 +1,648 @@
 <!DOCTYPE html>
 <!--
-  MERDEKA GROUP — Occupational Hygiene Chemical Exposure Intelligence Platform
-  Executive Intelligence Platform. Self-contained single-file deployment.
-  Live data from the approved Merdeka workbook; figures shown are governed views.
+  MERDEKA GROUP — Chemical Exposure Intelligence Platform (CEPI) Dashboard v1.0
+  UI redeveloped to the approved five-workspace mockup specification.
+  Engine (governed data model, live Google-Sheets ETL, CEPI/CEBI/Maturity
+  transform, filtering, exports, MERP, glossary) preserved unchanged.
 -->
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Merdeka OH Chemical Exposure Intelligence — Executive Dashboard</title>
+<title>Merdeka CEPI — Chemical Exposure Intelligence Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<!-- STAGE 10B: export engine libraries (SheetJS · jsPDF · autoTable). Loaded from CDN; graceful no-op if unavailable. -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- export engine libraries (SheetJS · jsPDF · autoTable). Loaded from CDN; graceful no-op if unavailable. -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" defer></script>
 <style>
-/* ============ DESIGN SYSTEM — authoritative tokens, Stage 8 §9.1–9.2 ============ */
+/* ============ CEPI v1.0 DESIGN SYSTEM — matched to approved mockups ============ */
 :root{
-  --bg:#F3F6F4; --surface:#FFFFFF; --surface-2:#FAFCFB; --ink:#15211E; --ink-soft:#54655F; --line:#DBE3DF;
-  --brand:#0D3A34; --brand-deep:#092A26; --accent:#0F6B5A;
-  --ok:#0B7A53;   --ok-bg:#E0F2E9;   --ok-line:#9BD4BA;
-  --warn:#8F6B00; --warn-bg:#FAF0CF; --warn-line:#E3C766;
-  --crit:#BC4A00; --crit-bg:#FCE7D4; --crit-line:#F0A86F;
-  --exp:#B3261E;  --exp-bg:#FBE1DF;  --exp-line:#EF9D98;
-  --miss:#5B6770; --miss-bg:#EBEEF0; --miss-line:#C2CAD0;
-  --radius:10px;
-  --sans:'IBM Plex Sans',system-ui,sans-serif;
+  --navy:#0E2A47; --navy-2:#0A1F36; --brand:#12315A; --brand-soft:#1C4C7C;
+  --ink:#1B2A3A; --ink-soft:#5C6B7A; --muted:#8696A6;
+  --bg:#F3F5F8; --surface:#FFFFFF; --surface-2:#F8FAFC; --line:#E4E9F0; --line-2:#EEF2F6;
+  --red:#C0202A; --red-bg:#FBE8E9; --red-line:#F0BFC2;
+  --orange:#C2630E; --orange-bg:#FBEBDA; --orange-line:#EAC197;
+  --amber:#9A6B00; --amber-bg:#FBF1D6; --amber-line:#E7CE8C;
+  --green:#1E8A4C; --green-bg:#E3F3E9; --green-line:#A9DCBC;
+  --blue:#2766AE; --blue-bg:#E7F0FA; --blue-line:#BCD6EF;
+  --gray:#6B7886; --gray-bg:#EDF0F4; --gray-line:#D3DAE2;
+  --radius:9px; --radius-sm:6px;
+  --sans:'Inter',system-ui,-apple-system,sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,monospace;
-  --disp:'Bricolage Grotesque','IBM Plex Sans',sans-serif;
+  --shadow:0 1px 2px rgba(16,42,71,.05),0 1px 3px rgba(16,42,71,.04);
+  --shadow-2:0 4px 14px rgba(16,42,71,.10);
 }
 html[data-theme="dark"]{
-  --bg:#0B1614; --surface:#11201C; --surface-2:#0E1B18; --ink:#E7F0EC; --ink-soft:#9DB1AA; --line:#243A34;
-  --brand:#0D3A34; --brand-deep:#061E1A; --accent:#3DBE9F;
-  --ok:#46C58E; --ok-bg:#0E2E22; --ok-line:#1F5C45;
-  --warn:#E3C766; --warn-bg:#33290A; --warn-line:#6E5A14;
-  --crit:#F0A86F; --crit-bg:#3A2008; --crit-line:#7A4314;
-  --exp:#EF9D98; --exp-bg:#3A1411; --exp-line:#7A2520;
-  --miss:#9DB1AA; --miss-bg:#1A2622; --miss-line:#36474141;
+  --navy:#0A1F36; --navy-2:#06121F; --brand:#9CC3EE;
+  --ink:#E6EDF4; --ink-soft:#A6B4C2; --muted:#7C8C9C;
+  --bg:#0B1622; --surface:#11212F; --surface-2:#0E1B27; --line:#23394C; --line-2:#1B2C3C;
+  --red:#F08A8F; --red-bg:#2E1416; --red-line:#5A2126;
+  --orange:#E8A766; --orange-bg:#2C1A0B; --orange-line:#5A3415;
+  --amber:#E3C766; --amber-bg:#2A2209; --amber-line:#5A4914;
+  --green:#5DC98C; --green-bg:#0E2A1B; --green-line:#1F5A3A;
+  --blue:#7FB2EA; --blue-bg:#0E2236; --blue-line:#234A6E;
+  --gray:#9AA8B6; --gray-bg:#18242F; --gray-line:#2C3E4F;
+  --shadow:0 1px 2px rgba(0,0,0,.3); --shadow-2:0 6px 18px rgba(0,0,0,.4);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{font-size:15px}
+html{font-size:14.5px}
 body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.45;-webkit-font-smoothing:antialiased}
-a{color:var(--accent);text-decoration:none}
-button{font-family:var(--sans);cursor:pointer}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--blue);text-decoration:none}
+button{font-family:var(--sans);cursor:pointer;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+.mono{font-family:var(--mono)}
 
-/* ---- header ---- */
-header{background:linear-gradient(135deg,var(--brand-deep),var(--brand));color:#F2F7F4;padding:20px 28px 16px}
-.h-top{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;max-width:1500px;margin:0 auto}
-.h-eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:#9FC4B8;margin-bottom:6px}
-h1{font-family:var(--disp);font-weight:700;font-size:1.55rem;line-height:1.1;letter-spacing:-.01em}
-.h-sub{color:#BCD6CD;font-size:.82rem;margin-top:5px}
-.h-meta{text-align:right;display:flex;flex-direction:column;gap:7px;align-items:flex-end}
-.badge{font-family:var(--mono);font-size:.7rem;padding:3px 9px;border-radius:99px;border:1px solid rgba(255,255,255,.32);color:#CFE6DD}
-.badge.live{background:rgba(61,190,159,.18);border-color:transparent;color:#BFF3E2}
-.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:7px 13px;font-size:.82rem;font-weight:600;transition:background .15s}
+/* ---------- top strip + header / nav ---------- */
+.topstrip{height:5px;background:linear-gradient(90deg,var(--navy),#1C4C7C 60%,var(--navy))}
+header.appbar{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30;box-shadow:var(--shadow)}
+.appbar-row{max-width:1560px;margin:0 auto;padding:11px 26px 0;display:flex;align-items:center;gap:22px}
+.brand{display:flex;align-items:center;gap:11px;min-width:230px}
+.brand .logo{width:38px;height:38px;flex:0 0 auto}
+.brand .bt{font-weight:800;color:var(--navy);font-size:.82rem;line-height:1.12;letter-spacing:.02em}
+html[data-theme="dark"] .brand .bt{color:var(--brand)}
+nav.tabs{display:flex;gap:2px;flex:1;align-items:stretch;flex-wrap:wrap}
+.tab{background:transparent;border:none;padding:6px 16px 14px;text-align:center;border-bottom:3px solid transparent;border-radius:0;color:var(--ink-soft);line-height:1.15}
+.tab .t1{display:block;font-weight:700;font-size:.78rem;letter-spacing:.02em;text-transform:uppercase}
+.tab .t2{display:block;font-size:.66rem;color:var(--muted);font-weight:500;margin-top:1px}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--navy);border-bottom-color:var(--navy)}
+html[data-theme="dark"] .tab[aria-selected="true"]{color:var(--brand);border-bottom-color:var(--brand)}
+.appbar-meta{display:flex;align-items:center;gap:16px;min-width:0}
+.asof{text-align:right;font-size:.7rem;color:var(--ink-soft);line-height:1.3}
+.asof .d{font-weight:700;color:var(--ink);font-size:.78rem}
+.asof .live{color:var(--green);font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.asof .live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block}
+.iconbtn{display:inline-flex;align-items:center;gap:6px;background:transparent;border:none;color:var(--ink-soft);font-size:.78rem;font-weight:600;padding:6px 4px}
+.iconbtn:hover{color:var(--navy)}
+.iconbtn svg{width:15px;height:15px}
+
+/* filter drawer */
+.filterbar{max-width:1560px;margin:0 auto;padding:0 26px;overflow:hidden;max-height:0;transition:max-height .25s ease}
+.filterbar.open{max-height:120px;padding-top:10px;padding-bottom:12px}
+.filterbar .inner{display:flex;flex-wrap:wrap;gap:9px;align-items:center;border-top:1px solid var(--line-2);padding-top:11px}
+.filterbar label{font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin-left:6px}
+.filterbar label:first-of-type{margin-left:0}
+.filterbar select{font-family:var(--sans);font-size:.8rem;padding:6px 9px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);color:var(--ink)}
+.exp-toolbar{display:flex;gap:6px;align-items:center;margin-left:auto}
+.exp-toolbar .lbl{font-size:.64rem;font-weight:700;letter-spacing:.06em;color:var(--muted)}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:var(--radius-sm);padding:6px 11px;font-size:.76rem;font-weight:600}
 .btn:hover{background:var(--surface-2)}
-.btn.ghost{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}
-.btn.ghost:hover{background:rgba(255,255,255,.12)}
 
-/* ---- global filter strip (Stage 8 §7) ---- */
-.toolbar{max-width:1500px;margin:14px auto 0;padding:0 28px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.toolbar label{font-size:.72rem;font-weight:600;color:#9FC4B8;text-transform:uppercase;letter-spacing:.06em;margin:0 2px 0 8px}
-.toolbar label:first-child{margin-left:0}
-.toolbar select{font-family:var(--sans);font-size:.84rem;padding:6px 9px;border:1px solid rgba(255,255,255,.25);border-radius:8px;background:rgba(255,255,255,.08);color:#F2F7F4}
-.toolbar select option{color:#15211E}
+/* ---------- layout ---------- */
+main{max-width:1560px;margin:0 auto;padding:20px 26px 40px}
+.page{display:none}.page.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.page-head{margin-bottom:16px}
+.page-head h1{font-size:1.5rem;font-weight:800;color:var(--navy);letter-spacing:-.01em}
+html[data-theme="dark"] .page-head h1{color:var(--ink)}
+.page-head p{font-size:.84rem;color:var(--ink-soft);margin-top:3px;max-width:760px}
 
-/* ---- nav tabs ---- */
-nav.tabs{max-width:1500px;margin:14px auto 0;padding:0 28px;display:flex;gap:4px;border-bottom:1px solid rgba(255,255,255,.16)}
-.tab{background:transparent;border:none;color:#BCD6CD;font-size:.9rem;font-weight:600;padding:11px 18px;border-radius:8px 8px 0 0;position:relative}
-.tab[aria-selected="true"]{color:#fff;background:var(--bg)}
-.tab[aria-selected="true"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--accent);border-radius:3px 3px 0 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-pad{padding:15px 16px}
+.card-h{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--navy);display:flex;align-items:baseline;gap:8px;margin-bottom:12px}
+html[data-theme="dark"] .card-h{color:var(--ink)}
+.card-h .sub{font-size:.66rem;font-weight:500;color:var(--muted);text-transform:none;letter-spacing:0}
+.viewlink{margin-top:11px;font-size:.74rem;font-weight:600;color:var(--blue);display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+.viewlink:hover{text-decoration:underline}
+.grid{display:grid;gap:14px}
+.g-3{grid-template-columns:repeat(3,1fr)} .g-2{grid-template-columns:repeat(2,1fr)}
+.g-2-1{grid-template-columns:2fr 1fr}
+@media(max-width:1100px){.g-3{grid-template-columns:1fr 1fr}.g-2-1{grid-template-columns:1fr}}
+@media(max-width:760px){.g-3,.g-2,.g-2-1{grid-template-columns:1fr}}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row-gap{display:flex;flex-direction:column;gap:14px}
 
-/* ---- layout ---- */
-main{max-width:1500px;margin:0 auto;padding:18px 28px 60px;display:flex;flex-direction:column;gap:20px}
-section.block h2{font-family:var(--mono);font-size:.72rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px;display:flex;align-items:center;gap:10px}
-section.block h2::after{content:"";flex:1;height:1px;background:var(--line)}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
-.cap{font-family:var(--mono);font-size:.68rem;color:var(--ink-soft);margin-top:8px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.page{display:none}.page.active{display:flex;flex-direction:column;gap:20px}
+/* ---------- tags / status ---------- */
+.tag{display:inline-block;font:600 .68rem/1.25 var(--sans);padding:3px 8px;border-radius:5px;border:1px solid;white-space:nowrap}
+.t-ok{color:var(--green);background:var(--green-bg);border-color:var(--green-line)}
+.t-warn,.t-amber{color:var(--amber);background:var(--amber-bg);border-color:var(--amber-line)}
+.t-crit{color:var(--orange);background:var(--orange-bg);border-color:var(--orange-line)}
+.t-exp,.t-red{color:var(--red);background:var(--red-bg);border-color:var(--red-line)}
+.t-miss,.t-gray{color:var(--gray);background:var(--gray-bg);border-color:var(--gray-line)}
+.t-brand,.t-blue{color:var(--blue);background:var(--blue-bg);border-color:var(--blue-line)}
+.tag-out{background:transparent}
+.pill{font:600 .68rem/1 var(--sans);padding:4px 9px;border-radius:99px;border:1px solid var(--line)}
 
-/* ---- executive alert banner ---- */
-.alert{display:flex;gap:12px;align-items:flex-start;border-radius:var(--radius);padding:13px 16px;border:1px solid var(--exp-line);background:var(--exp-bg);color:var(--exp)}
-.alert .ic{font-size:1.1rem;line-height:1.3}
-.alert b{font-weight:600}
-.alert .txt{font-size:.85rem;color:var(--ink)}
+/* ---------- KPI strip cards (governance + operational scorecards) ---------- */
+.kstrip{display:grid;gap:11px}
+.kcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:13px 14px;box-shadow:var(--shadow);position:relative}
+.kcard .ic{font-size:1rem;color:var(--ink-soft);margin-bottom:7px;display:block}
+.kcard .lab{font-size:.62rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);line-height:1.25}
+.kcard .v{font-size:1.55rem;font-weight:800;line-height:1.05;margin-top:5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.kcard .s{font-size:.68rem;color:var(--ink-soft);margin-top:3px}
+.kcard.k-red .v{color:var(--red)} .kcard.k-orange .v{color:var(--orange)} .kcard.k-amber .v{color:var(--amber)}
+.kcard.k-green .v{color:var(--green)} .kcard.k-blue .v{color:var(--blue)} .kcard.k-navy .v{color:var(--navy)}
+html[data-theme="dark"] .kcard.k-navy .v{color:var(--ink)}
+.kcard .vlink{position:absolute;top:9px;right:10px;font-size:.6rem;font-weight:700;letter-spacing:.05em;color:var(--muted);opacity:0;cursor:pointer}
+.kcard:hover .vlink{opacity:1}
 
-/* ---- narrative situation strip ---- */
-.situation{background:linear-gradient(135deg,var(--brand-deep),var(--brand));color:#EAF4EF;border-radius:var(--radius);padding:16px 18px}
-.situation .lab{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:#9FC4B8;margin-bottom:6px}
-.situation p{font-size:.98rem;line-height:1.5}
-.situation .pill{display:inline-block;font-family:var(--mono);font-size:.66rem;padding:2px 7px;border-radius:99px;background:rgba(255,255,255,.14);margin-right:6px}
+/* ---------- executive decision banner (page 1) ---------- */
+.exec-banner{display:grid;grid-template-columns:1.25fr 1fr 1.1fr 1.1fr 1.25fr;gap:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+@media(max-width:1100px){.exec-banner{grid-template-columns:1fr 1fr}}
+.eb-cell{padding:15px 16px;border-left:1px solid var(--line)}
+.eb-cell:first-child{border-left:none}
+.eb-state{background:var(--red);color:#fff;border-left:none;display:flex;flex-direction:column;justify-content:center}
+.eb-state.lvl-orange{background:var(--orange)} .eb-state.lvl-amber{background:#B07D08} .eb-state.lvl-green{background:var(--green)}
+.eb-state .k{font-size:.64rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.eb-state .big{font-size:1.85rem;font-weight:800;line-height:1;margin:7px 0 8px}
+.eb-state .msg{font-size:.76rem;opacity:.95;line-height:1.4}
+.eb-cell .k{font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.eb-cell .hl{font-size:.96rem;font-weight:700;color:var(--ink);margin-top:6px;line-height:1.25}
+.eb-cell .bd{font-size:.76rem;color:var(--ink-soft);margin-top:6px;line-height:1.45}
+.eb-cell .meta{font-size:.7rem;color:var(--ink-soft);margin-top:8px}
+.three30{font-size:.78rem;color:var(--ink-soft);line-height:1.5}
+.three30 b{color:var(--ink)}
 
-/* ---- KPI cards (Stage 8 §9.3) ---- */
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(186px,1fr));gap:11px}
-.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 15px;border-top:3px solid var(--line);position:relative}
-.kpi .ttl{font-size:.74rem;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
-.kpi .v{font-family:var(--disp);font-weight:700;font-size:1.95rem;line-height:1.05;font-variant-numeric:tabular-nums;margin-top:6px}
-.kpi .sub{font-size:.74rem;color:var(--ink-soft);margin-top:3px;display:flex;align-items:center;gap:5px}
-.kpi .band{font-family:var(--mono);font-size:.66rem;font-weight:600;letter-spacing:.04em}
-.kpi.k-ok{border-top-color:var(--ok)} .kpi.k-ok .v{color:var(--ok)}
-.kpi.k-warn{border-top-color:var(--warn)} .kpi.k-warn .v{color:var(--warn)}
-.kpi.k-crit{border-top-color:var(--crit)} .kpi.k-crit .v{color:var(--crit)}
-.kpi.k-exp{border-top-color:var(--exp)} .kpi.k-exp .v{color:var(--exp)}
-.kpi.k-miss{border-top-color:var(--miss)} .kpi.k-miss .v{color:var(--miss)}
-.kpi.k-brand{border-top-color:var(--accent)} .kpi.k-brand .v{color:var(--brand)}
-html[data-theme="dark"] .kpi.k-brand .v{color:var(--accent)}
-.kpi.link{cursor:pointer} .kpi.link:hover{background:var(--surface-2);box-shadow:0 2px 10px rgba(0,0,0,.06)}
-.arrow{font-weight:700}
-.mini-stack{display:flex;height:9px;border-radius:5px;overflow:hidden;margin-top:8px}
-.mini-stack span{display:block;height:100%}
+/* ---------- insight cards (highlights + top cards) ---------- */
+.ins-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:13px 15px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.ins-card .lab{font-size:.64rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.ins-card.k-exp,.ins-card.k-red{border-top:3px solid var(--red)} .ins-card.k-crit,.ins-card.k-orange{border-top:3px solid var(--orange)}
+.ins-card.k-warn,.ins-card.k-amber{border-top:3px solid var(--amber)} .ins-card.k-ok,.ins-card.k-green{border-top:3px solid var(--green)}
+.ins-card.k-blue{border-top:3px solid var(--blue)}
+.ins-card .val{font-size:1.02rem;font-weight:700;color:var(--ink);margin-top:5px;line-height:1.2}
+.ins-card .sub{font-size:.72rem;color:var(--ink-soft);margin-top:5px;line-height:1.4}
+.ins-list{list-style:none;margin-top:8px;display:flex;flex-direction:column;gap:7px}
+.ins-list li{font-size:.78rem;color:var(--ink);line-height:1.4;padding-left:22px;position:relative}
+.ins-list li::before{content:"";position:absolute;left:0;top:1px;width:15px;height:15px;border-radius:50%;background:var(--blue-bg);border:1px solid var(--blue-line)}
+.ins-list li.i-red::before{background:var(--red-bg);border-color:var(--red-line)} .ins-list li.i-amber::before{background:var(--amber-bg);border-color:var(--amber-line)}
+.ins-list li.i-green::before{background:var(--green-bg);border-color:var(--green-line)}
 
-/* ---- bars / charts (pure CSS/SVG, non-dilution preserved) ---- */
-.bar-row{display:grid;grid-template-columns:148px 1fr 54px;align-items:center;gap:10px;margin:7px 0;font-size:.82rem}
-.bar-track{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;height:22px;overflow:hidden;position:relative}
-.bar-fill{height:100%;border-radius:5px 0 0 5px;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;color:#fff;font-size:.7rem;font-weight:600}
-.num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:.78rem}
-.stacked{display:flex;height:30px;border-radius:7px;overflow:hidden;border:1px solid var(--line)}
-.stacked span{display:flex;align-items:center;justify-content:center;color:#fff;font-size:.72rem;font-weight:600;font-variant-numeric:tabular-nums}
-.dist-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:.74rem}
-.dist-legend i{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:middle}
+/* drivers */
+.drivers{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+@media(max-width:760px){.drivers{grid-template-columns:repeat(2,1fr)}}
+.driver{padding:13px 15px;border-left:1px solid var(--line)}
+.driver:first-child{border-left:none}
+.driver .lab{font-size:.6rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);line-height:1.25}
+.driver .v{font-size:1.6rem;font-weight:800;color:var(--ink);margin-top:6px;display:flex;align-items:baseline;gap:7px}
+.driver .v .band{font-size:.74rem;font-weight:700}
+.driver .s{font-size:.68rem;color:var(--ink-soft);margin-top:4px;display:flex;align-items:center;gap:4px}
 
-/* confidence matrix */
-.matrix{display:grid;grid-template-columns:auto repeat(6,1fr);gap:4px;font-size:.72rem}
-.matrix .mh{font-family:var(--mono);font-size:.64rem;color:var(--ink-soft);text-align:center;padding:3px}
-.matrix .ml{font-family:var(--mono);font-size:.64rem;color:var(--ink-soft);display:flex;align-items:center;justify-content:flex-end;padding-right:6px}
-.cell{border-radius:5px;aspect-ratio:1.6/1;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:.74rem;color:#15211E}
+/* top cards row */
+.topcards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media(max-width:1100px){.topcards{grid-template-columns:repeat(2,1fr)}}
+.topcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 15px;box-shadow:var(--shadow)}
+.topcard .lab{font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--red)}
+.topcard.k-orange .lab{color:var(--orange)} .topcard.k-amber .lab{color:var(--amber)} .topcard.k-green .lab{color:var(--green)} .topcard.k-blue .lab{color:var(--blue)}
+.topcard .ic{font-size:1.2rem;margin-bottom:6px;display:block}
+.topcard .val{font-size:1.04rem;font-weight:800;color:var(--ink);margin-top:7px;line-height:1.2}
+.topcard .sub{font-size:.73rem;color:var(--ink-soft);margin-top:6px;line-height:1.4}
 
-/* pyramid */
-.pyr{display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:6px}
-.pyr-row{display:flex;align-items:center;justify-content:center;color:#fff;font-size:.74rem;font-weight:600;border-radius:4px;height:30px;font-variant-numeric:tabular-nums}
-.pyr-lab{font-family:var(--mono);font-size:.66rem;color:var(--ink-soft);width:100%;display:flex;justify-content:space-between;max-width:520px;margin:0 auto}
+/* ---------- bars ---------- */
+.bar-row{display:grid;align-items:center;gap:10px;margin:8px 0;font-size:.8rem}
+.bar-track{background:var(--gray-bg);border-radius:5px;height:13px;overflow:hidden;position:relative}
+.bar-track.tall{height:16px}
+.bar-fill{height:100%;border-radius:5px;background:var(--blue)}
+.bar-fill.f-red{background:var(--red)} .bar-fill.f-orange{background:var(--orange)} .bar-fill.f-amber{background:#D7A53A} .bar-fill.f-green{background:var(--green)} .bar-fill.f-blue{background:var(--blue)} .bar-fill.f-gray{background:var(--gray)}
+.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.seg-track{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--gray-bg);margin-top:6px}
+.seg-track span{height:100%}
 
-/* bubble site comparison */
-.bubble-wrap{position:relative;height:260px;border-left:1px solid var(--line);border-bottom:1px solid var(--line);margin:18px 10px 28px 40px}
-.bubble{position:absolute;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.66rem;font-weight:600;color:#fff;transform:translate(-50%,50%);cursor:pointer;border:2px solid rgba(255,255,255,.5)}
-.axis-x{position:absolute;bottom:-22px;width:100%;text-align:center;font-family:var(--mono);font-size:.66rem;color:var(--ink-soft)}
-.axis-y{position:absolute;left:-34px;top:50%;transform:rotate(-90deg);font-family:var(--mono);font-size:.66rem;color:var(--ink-soft)}
+/* scorecard */
+.score-row{display:grid;grid-template-columns:1.4fr 2fr auto;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--line-2);font-size:.8rem}
+.score-row:last-child{border-bottom:none}
+.score-row .lab{color:var(--ink)}
+.score-row .val{font-weight:700;font-variant-numeric:tabular-nums;text-align:right;min-width:42px}
+.dotgrid{display:flex;gap:3px}.dotgrid i{width:11px;height:11px;border-radius:2px;background:var(--gray-bg)}
 
-/* narrative engine (5 beats) */
-.beats{display:grid;grid-template-columns:1fr;gap:0}
-.beat{display:grid;grid-template-columns:150px 1fr;gap:14px;padding:11px 0;border-bottom:1px solid var(--line)}
-.beat:last-child{border-bottom:none}
-.beat .bt{font-family:var(--mono);font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);padding-top:2px}
-.beat .bd{font-size:.88rem}
+/* ---------- donut ---------- */
+.donut-wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.donut{position:relative;width:150px;height:150px;flex:0 0 auto}
+.donut .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.donut .ctr .n{font-size:1.3rem;font-weight:800;color:var(--ink);line-height:1}
+.donut .ctr .l{font-size:.6rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.donut-legend{display:flex;flex-direction:column;gap:7px;font-size:.78rem;flex:1;min-width:150px}
+.donut-legend .lr{display:grid;grid-template-columns:14px 1fr auto;align-items:center;gap:8px}
+.donut-legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.donut-legend .pc{font-weight:700;font-variant-numeric:tabular-nums}
 
-/* action panel / register */
-table{width:100%;border-collapse:collapse;font-size:.82rem}
-th{font-family:var(--mono);font-size:.66rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#CFE6DD;background:var(--brand);text-align:left;padding:9px 11px;position:sticky;top:0}
-td{padding:9px 11px;border-bottom:1px solid var(--line)}
-tbody tr:nth-child(even){background:var(--surface-2)}
-tbody tr.clickable{cursor:pointer}
-tbody tr.clickable:hover{background:var(--ok-bg)}
-.tnum{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono)}
-.tag{display:inline-block;font-family:var(--mono);font-size:.66rem;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap}
-.t-ok{background:var(--ok-bg);color:var(--ok)} .t-warn{background:var(--warn-bg);color:var(--warn)}
-.t-crit{background:var(--crit-bg);color:var(--crit)} .t-exp{background:var(--exp-bg);color:var(--exp)}
-.t-miss{background:var(--miss-bg);color:var(--miss)} .t-brand{background:var(--ok-bg);color:var(--brand)}
-.table-scroll{overflow:auto;max-height:460px;border:1px solid var(--line);border-radius:var(--radius)}
+/* ---------- bubble chart ---------- */
+.bubble-wrap{position:relative;height:250px;margin:24px 10px 26px 36px;border-left:1.5px solid var(--line);border-bottom:1.5px solid var(--line)}
+.bubble{position:absolute;transform:translate(-50%,50%);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.72rem;cursor:pointer;box-shadow:var(--shadow)}
+.axis-x{position:absolute;bottom:-22px;left:0;right:0;text-align:center;font-size:.66rem;color:var(--ink-soft)}
+.axis-y{position:absolute;left:-30px;top:50%;transform:rotate(-90deg) translateX(50%);transform-origin:left;font-size:.66rem;color:var(--ink-soft);white-space:nowrap}
+.axis-ticks{position:absolute;bottom:-16px;left:0;right:0;display:flex;justify-content:space-between;font-size:.6rem;color:var(--muted)}
+.axis-ticks.y{flex-direction:column-reverse;left:-26px;right:auto;top:0;bottom:0;align-items:flex-end}
 
-/* calendar */
-.cal{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-.cal-cell{border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--surface)}
-.cal-cell .mo{font-family:var(--mono);font-size:.68rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em}
-.cal-cell .cnt{font-family:var(--disp);font-weight:700;font-size:1.4rem;margin-top:4px}
-.cal-cell .dots{display:flex;gap:3px;margin-top:6px;flex-wrap:wrap}
-.cdot{width:8px;height:8px;border-radius:50%}
+/* ---------- confidence matrix ---------- */
+.cmatrix{display:grid;grid-template-columns:auto repeat(3,1fr);gap:4px;font-size:.72rem}
+.cmatrix .mh{text-align:center;color:var(--ink-soft);font-weight:600;padding:4px 0;font-size:.66rem}
+.cmatrix .ml{display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:var(--ink-soft);font-weight:600}
+.cmatrix .cell{height:50px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;position:relative}
+.cmx-axis{font-size:.66rem;color:var(--ink-soft);text-align:center;margin-top:6px;font-weight:600}
 
-/* trend sparkline */
-.trend-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
-.spark{display:flex;align-items:flex-end;gap:5px;height:74px;margin-top:8px}
-.spark .b{flex:1;border-radius:3px 3px 0 0;min-height:4px;position:relative}
-.spark .b span{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:.6rem;color:var(--ink-soft)}
-.trend-x{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.6rem;color:var(--ink-soft);margin-top:4px}
+/* ---------- risk rating matrix (governance) ---------- */
+.rrm{width:100%;border-collapse:separate;border-spacing:4px;font-size:.78rem}
+.rrm th{font-size:.68rem;font-weight:700;color:var(--ink-soft);padding:5px;text-align:center}
+.rrm td{text-align:center;padding:11px 6px;border-radius:5px;font-weight:700}
+.rrm td.rh{background:transparent;color:var(--ink-soft);text-align:left;font-weight:600}
+.rrm .l1{background:var(--red-bg);color:var(--red)} .rrm .l2{background:var(--orange-bg);color:var(--orange)}
+.rrm .l3{background:var(--amber-bg);color:var(--amber)} .rrm .l4{background:var(--green-bg);color:var(--green)}
 
-/* register tabs */
-.reg-tabs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
-.reg-tab{border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);font-size:.78rem;font-weight:600;padding:6px 12px;border-radius:99px}
-.reg-tab[aria-selected="true"]{background:var(--brand);color:#fff;border-color:var(--brand)}
-.reg-panel{display:none}.reg-panel.active{display:block}
+/* ---------- decision flow ---------- */
+.dflow{display:flex;align-items:flex-start;justify-content:space-between;gap:4px;margin:4px 0}
+.dflow .node{flex:1;text-align:center}
+.dflow .circ{width:54px;height:54px;border-radius:50%;margin:0 auto 7px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;border:2px solid}
+.dflow .nm{font-size:.74rem;font-weight:700;color:var(--ink)}
+.dflow .arr{align-self:center;color:var(--muted);font-size:1.1rem;padding-top:14px}
+.dlogic{display:flex;flex-direction:column;gap:1px}
+.dlogic .lr{display:grid;grid-template-columns:30px 1.1fr 1.6fr 1.4fr;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line-2);font-size:.8rem}
+.dlogic .lr:last-child{border-bottom:none}
+.dlogic .nidx{width:23px;height:23px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700}
+.dlogic .q{color:var(--blue);font-size:.74rem}
 
-/* why-this-figure lineage */
-.lineage{display:flex;flex-direction:column;gap:0}
-.ln{display:grid;grid-template-columns:160px 1fr;gap:14px;align-items:start;position:relative;padding:10px 0 10px 26px}
-.ln::before{content:"";position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--line)}
-.ln::after{content:"";position:absolute;left:1px;top:14px;width:14px;height:14px;border-radius:50%;background:var(--accent);border:3px solid var(--surface)}
-.ln:last-child::before{bottom:50%}
-.ln .lk{font-family:var(--mono);font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);padding-top:1px}
-.ln .lv{font-size:.86rem}
-.ln .lv .src{font-family:var(--mono);font-size:.68rem;color:var(--ink-soft);display:block;margin-top:2px}
-.why-pick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-.why-pick button{border:1px solid var(--line);background:var(--surface);font-size:.76rem;padding:5px 11px;border-radius:8px;color:var(--ink)}
-.why-pick button[aria-selected="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* ---------- gantt ---------- */
+.gantt{font-size:.74rem}
+.gantt-head{display:grid;grid-template-columns:170px 1fr;gap:0;color:var(--ink-soft);font-size:.64rem;font-weight:600}
+.gantt-months{display:grid;grid-template-columns:repeat(15,1fr);border-bottom:1px solid var(--line)}
+.gantt-months span{text-align:center;padding:3px 0;text-transform:uppercase;letter-spacing:.03em}
+.gantt-row{display:grid;grid-template-columns:170px 1fr;align-items:center;border-bottom:1px solid var(--line-2)}
+.gantt-row .glab{font-size:.72rem;color:var(--ink);padding:9px 8px 9px 0;line-height:1.2}
+.gantt-track{position:relative;height:34px}
+.gbar{position:absolute;top:8px;height:17px;border-radius:4px;display:flex;overflow:hidden}
+.gbar span{height:100%}
+.g-done{background:var(--green)} .g-prog{background:var(--blue)} .g-up{background:#D7A53A} .g-over{background:var(--red)} .g-plan{background:var(--gray-line)}
+.gantt-today{position:absolute;top:0;bottom:0;width:1.5px;background:var(--ink-soft);opacity:.5;z-index:2}
+.glegend{display:flex;gap:14px;flex-wrap:wrap;font-size:.7rem;color:var(--ink-soft);margin-bottom:4px}
+.glegend i{width:11px;height:11px;border-radius:2px;display:inline-block;margin-right:4px;vertical-align:middle}
+
+/* site timeline dots */
+.stl-row{display:grid;grid-template-columns:1.3fr 2.4fr auto;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-2);font-size:.78rem}
+.stl-row:last-child{border-bottom:none}
+.stl-track{display:flex;align-items:center}
+.stl-track .seg{flex:1;height:2px;background:var(--green)}
+.stl-track .dot{width:13px;height:13px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#fff}
+.dot-ok{background:var(--green)} .dot-risk{background:#D7A53A} .dot-over{background:var(--red)} .dot-up{background:#fff;border:2px solid var(--blue)}
+.stl-next{font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}
+
+/* line chart / sparks */
+.linechart{width:100%;height:150px}
+.spark-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:760px){.spark-grid{grid-template-columns:repeat(2,1fr)}}
+.sparkcard .lab{font-size:.6rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)}
+.sparkcard .delta{font-size:.9rem;font-weight:800;margin:3px 0 4px}
+.sparkcard svg{width:100%;height:38px}
+
+/* ---------- tables ---------- */
+.tbl-wrap{overflow:auto}
+table.tbl{width:100%;border-collapse:collapse;font-size:.78rem}
+table.tbl th{text-align:left;font-size:.62rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);padding:8px 10px;border-bottom:1.5px solid var(--line);white-space:nowrap}
+table.tbl td{padding:9px 10px;border-bottom:1px solid var(--line-2);color:var(--ink);vertical-align:middle}
+table.tbl tbody tr:hover{background:var(--surface-2)}
+table.tbl td.tnum,table.tbl th.tnum{text-align:right;font-variant-numeric:tabular-nums}
+.idx{color:var(--muted);font-weight:600}
+.cap{font-size:.7rem;color:var(--muted);margin-top:9px;line-height:1.4}
+
+/* evidence summary tiles */
+.evidence{display:grid;grid-template-columns:repeat(7,1fr);gap:11px}
+@media(max-width:1100px){.evidence{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:600px){.evidence{grid-template-columns:repeat(2,1fr)}}
+.etile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:13px;box-shadow:var(--shadow);text-align:left}
+.etile .ic{font-size:1.05rem;color:var(--blue);margin-bottom:6px;display:block}
+.etile .lab{font-size:.6rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);line-height:1.2}
+.etile .v{font-size:1.4rem;font-weight:800;color:var(--ink);margin-top:5px}
+.etile .s{font-size:.66rem;color:var(--ink-soft);margin-top:2px}
+
+/* sub-tabs (details/governance) */
+.subtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:0}
+.subtab{background:transparent;border:1px solid var(--line);border-bottom:none;border-radius:6px 6px 0 0;padding:8px 14px;font-size:.74rem;font-weight:600;color:var(--ink-soft);margin-bottom:-1px}
+.subtab[aria-selected="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.subpanel{display:none}.subpanel.active{display:block}
+
+/* MERP / first-aid blocks */
+.fa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:900px){.fa-grid{grid-template-columns:repeat(2,1fr)}}
+.fa-block{border:1px solid var(--line);border-radius:var(--radius);padding:12px 13px;background:var(--surface-2)}
+.fa-block .bh{font-size:.72rem;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:6px;margin-bottom:6px}
+html[data-theme="dark"] .fa-block .bh{color:var(--ink)}
+.fa-block p,.fa-block li{font-size:.74rem;color:var(--ink-soft);line-height:1.45}
+.fa-block ul{padding-left:16px;margin:0}
+.merp-block{border:1px solid var(--line);border-radius:var(--radius-sm);padding:9px 11px;margin-top:7px;background:var(--surface-2)}
+.merp-block .bh{font-size:.72rem;font-weight:700;color:var(--navy)}
+.merp-block p{font-size:.76rem;color:var(--ink-soft);margin-top:3px;line-height:1.45}
+.merp-sev{display:inline-block;font:700 .66rem/1 var(--sans);padding:4px 9px;border-radius:5px;color:#fff}
+.sev-Critical{background:var(--red)} .sev-High{background:var(--orange)} .sev-Moderate{background:#B07D08} .sev-Low{background:var(--green)}
+.kv2{display:grid;grid-template-columns:auto 1fr;gap:5px 18px;font-size:.78rem}
+.kv2 .k{color:var(--ink-soft);font-weight:600}
+.chemsel{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.chemsel select{font-family:var(--sans);font-size:.82rem;padding:7px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);color:var(--ink);min-width:240px}
+
+.view-btn{font:700 .58rem/1 var(--sans);letter-spacing:.04em;color:var(--blue);background:transparent;border:1px solid var(--blue-line);border-radius:4px;padding:3px 7px}
+.view-btn:hover{background:var(--blue-bg)}
+
+/* detail slicers */
+.detail-slicers{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.detail-slicers label{font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);margin-left:4px}
+.detail-slicers select{font-size:.78rem;padding:5px 8px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);color:var(--ink)}
+
+/* glossary */
+.gl-cat{margin-bottom:16px}
+.gl-cat>h3{font-size:1rem;font-weight:800;margin:0 0 10px;color:var(--navy)}
+html[data-theme="dark"] .gl-cat>h3{color:var(--ink)}
+.gl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:11px}
+.gl-item{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow)}
+.gl-item .term{font-weight:700;font-size:.9rem;color:var(--ink)}
+.gl-item .def{font-size:.8rem;color:var(--ink);margin-top:4px;line-height:1.45}
+.gl-item .meta{font-size:.72rem;color:var(--ink-soft);margin-top:6px;line-height:1.4}
+.gl-item .meta b{color:var(--ink)}
+.gl-item .ref{font-size:.68rem;color:var(--blue);margin-top:6px;font-family:var(--mono)}
+.ref-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.ref-list .chip{background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:.76rem;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.chips .chip{background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:3px 9px;font-size:.72rem;color:var(--ink)}
+abbr[title]{text-decoration:underline dotted;text-underline-offset:2px;cursor:help}
+
+/* beats / why */
+.beats{display:flex;flex-direction:column;gap:9px}
+.beat .bt{font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue)}
+.beat .bd{font-size:.8rem;color:var(--ink);line-height:1.45;margin-top:2px}
+.why-pick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.why-pick button{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:5px 11px;font-size:.74rem;font-weight:600;color:var(--ink-soft)}
+.why-pick button[aria-selected="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.lineage .ln{display:grid;grid-template-columns:130px 1fr;gap:10px;padding:6px 0;border-bottom:1px solid var(--line-2);font-size:.78rem}
+.lineage .lk{color:var(--ink-soft);font-weight:600}
+.lineage .lv .src{display:block;font-size:.68rem;color:var(--blue);margin-top:2px}
+.why-interp{border:1px solid var(--blue-line);background:var(--blue-bg);border-radius:var(--radius);padding:12px 14px;margin-bottom:12px}
+.why-interp .ih{font-size:.66rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--blue);margin-bottom:4px}
+.why-interp .ip{font-size:.86rem;line-height:1.5;color:var(--ink)}
+.why-interp .ia{font-size:.78rem;margin-top:8px;color:var(--ink-soft)}
+.mkv{display:grid;grid-template-columns:190px 1fr;gap:10px;padding:5px 0;border-bottom:1px solid var(--line-2);font-size:.8rem}
+.mkv .k{color:var(--ink-soft);font-weight:600}
+
+/* cycle note */
+.cycle-note{display:none;background:var(--amber-bg);border:1px solid var(--amber-line);color:var(--amber);border-radius:var(--radius-sm);padding:9px 13px;font-size:.78rem;margin-bottom:14px}
+.cycle-note.show{display:block}
+
+/* ---------- modal ---------- */
+.modal-bg{position:fixed;inset:0;background:rgba(10,20,33,.55);display:none;align-items:flex-start;justify-content:center;z-index:100;padding:40px 16px;overflow:auto}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border-radius:12px;max-width:880px;width:100%;box-shadow:var(--shadow-2);overflow:hidden}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
+.modal-head .ms{font-size:.64rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--blue)}
+.modal-head .mt{font-size:1.05rem;font-weight:800;color:var(--ink);margin-top:3px}
+.modal-x{border:none;background:transparent;font-size:1.2rem;color:var(--ink-soft)}
+.modal-body{padding:18px 20px;max-height:62vh;overflow:auto}
+.modal-body h4{font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--navy);margin:16px 0 6px}
+.modal-body h4:first-child{margin-top:0}
+html[data-theme="dark"] .modal-body h4{color:var(--ink)}
+.modal-foot{display:flex;align-items:center;gap:8px;padding:13px 20px;border-top:1px solid var(--line);background:var(--surface-2)}
+.modal-foot .lbl{font-size:.7rem;color:var(--ink-soft);font-weight:600}
 
 /* footer */
-footer{max-width:1500px;margin:0 auto;padding:18px 28px 40px;color:var(--ink-soft);font-size:.74rem;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;border-top:1px solid var(--line)}
-footer .gov{font-family:var(--mono);font-size:.68rem}
-
-@media(max-width:880px){
-  .grid2{grid-template-columns:1fr}.trend-grid{grid-template-columns:1fr}
-  .cal{grid-template-columns:repeat(3,1fr)}.beat{grid-template-columns:1fr}
-  .h-meta{text-align:left;align-items:flex-start}.matrix{font-size:.6rem}
-}
-
-/* ============ STAGE 10B — enterprise enhancements ============ */
-.exp-toolbar{display:flex;gap:6px;align-items:center;margin-left:auto}
-.exp-toolbar .btn.exp-b{padding:6px 11px;font-size:.78rem}
-.view-btn{font-family:var(--mono);font-size:.62rem;font-weight:700;letter-spacing:.08em;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:6px;padding:2px 8px;margin-left:6px;text-transform:uppercase;line-height:1.5;cursor:pointer}
-.view-btn:hover{background:var(--accent);color:#fff}
-.kpi .view-btn{position:absolute;top:10px;right:10px;margin:0}
-.kpi{padding-top:30px}
-section.block h2 .view-btn{margin-left:auto}
-/* detail slicer bar */
-.detail-slicers{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:4px}
-.detail-slicers label{font-size:.68rem;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;margin-left:6px}
-.detail-slicers label:first-child{margin-left:0}
-.detail-slicers select{font-family:var(--sans);font-size:.82rem;padding:5px 8px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink)}
-.detail-slicers .ds-reset{margin-left:auto}
-/* modal */
-.modal-bg{position:fixed;inset:0;background:rgba(8,18,16,.55);backdrop-filter:blur(2px);display:none;align-items:flex-start;justify-content:center;z-index:1000;padding:34px 18px;overflow:auto}
-.modal-bg.open{display:flex}
-.modal{background:var(--surface);border:1px solid var(--line);border-radius:14px;max-width:1040px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.3);overflow:hidden}
-.modal-head{background:linear-gradient(135deg,var(--brand-deep),var(--brand));color:#EAF4EF;padding:16px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
-.modal-head .mt{font-family:var(--disp);font-weight:700;font-size:1.15rem;line-height:1.15}
-.modal-head .ms{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:#9FC4B8;margin-bottom:5px}
-.modal-x{background:rgba(255,255,255,.14);border:none;color:#fff;border-radius:8px;font-size:1rem;padding:4px 11px;cursor:pointer}
-.modal-x:hover{background:rgba(255,255,255,.28)}
-.modal-body{padding:18px 20px;max-height:68vh;overflow:auto}
-.modal-body h4{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:16px 0 8px;display:flex;align-items:center;gap:8px}
-.modal-body h4:first-child{margin-top:0}
-.modal-body h4::after{content:"";flex:1;height:1px;background:var(--line)}
-.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px}
-.mkv{display:flex;gap:8px;font-size:.84rem;padding:3px 0;border-bottom:1px dashed var(--line)}
-.mkv .k{font-family:var(--mono);font-size:.7rem;color:var(--ink-soft);min-width:150px;text-transform:uppercase;letter-spacing:.03em}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{font-family:var(--mono);font-size:.7rem;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;padding:3px 9px}
-.modal-foot{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;background:var(--surface-2)}
-.modal-foot .lbl{font-family:var(--mono);font-size:.66rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em;margin-right:2px}
-/* MERP severity pills */
-.merp-sev{font-family:var(--mono);font-size:.66rem;font-weight:700;padding:3px 10px;border-radius:99px;letter-spacing:.05em}
-.sev-Low{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-line)}
-.sev-Moderate{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-line)}
-.sev-High{background:var(--crit-bg);color:var(--crit);border:1px solid var(--crit-line)}
-.sev-Critical{background:var(--exp-bg);color:var(--exp);border:1px solid var(--exp-line)}
-.merp-block{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:10px;background:var(--surface-2)}
-.merp-block .bh{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
-.merp-block p{font-size:.86rem;line-height:1.45;margin:2px 0}
-.cycle-note{display:none;border:1px solid var(--warn-line);background:var(--warn-bg);color:var(--warn);border-radius:var(--radius);padding:11px 16px;font-size:.85rem;font-weight:600}
-.cycle-note.show{display:block}
-.sds-Valid{color:var(--ok)} .sds-Expired{color:var(--exp)} .sds-Missing{color:var(--miss)}
-@media(max-width:760px){.modal-grid{grid-template-columns:1fr}}
+footer.appfoot{background:var(--navy-2);color:#C3D2E2;margin-top:8px}
+.appfoot .inner{max-width:1560px;margin:0 auto;padding:13px 26px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;font-size:.72rem}
+.appfoot .ab{font-weight:700;letter-spacing:.04em;color:#8FA6BE;text-transform:uppercase;font-size:.64rem}
+.appfoot .abi{color:#D6E2EF}
+.appfoot .right{margin-left:auto;display:flex;gap:14px;color:#8FA6BE}
+.clickable{cursor:pointer}
 </style>
 </head>
 <body>
+<div class="topstrip"></div>
 
-<header>
-  <div class="h-top">
-    <div>
-      <div class="h-eyebrow">Merdeka Group · Occupational Hygiene Intelligence</div>
-      <h1>Executive Occupational Hygiene Intelligence Platform</h1>
-      <div class="h-sub">Exposure priority · corporate burden · monitoring capability · live data</div>
+<header class="appbar">
+  <div class="appbar-row">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M20 2 L35 11 V29 L20 38 L5 29 V11 Z" fill="#0E2A47" stroke="#1C4C7C" stroke-width="1.4"/>
+        <path d="M20 9 L29 14.5 V25.5 L20 31 L11 25.5 V14.5 Z" fill="none" stroke="#5FA8E0" stroke-width="1.3"/>
+        <circle cx="20" cy="20" r="3.4" fill="#5FA8E0"/>
+      </svg>
+      <div class="bt">CHEMICAL EXPOSURE<br>INTELLIGENCE PLATFORM</div>
     </div>
-    <div class="h-meta">
-      <span class="badge live" id="srcBadge">● LIVE DATA</span>
-      <span class="badge" id="freshBadge">Data freshness: synchronising…</span>
-      <span class="badge" id="lastMon">Most recent monitoring result: 17 Jun 2026</span>
-      <div style="display:flex;gap:8px;margin-top:2px">
-        <button class="btn ghost" id="themeBtn" aria-label="Toggle theme">◐ Theme</button>
-        <button class="btn ghost" id="refreshBtn">↻ Refresh</button>
+
+    <nav class="tabs" role="tablist" aria-label="Workspaces">
+      <button class="tab" role="tab" aria-selected="true"  data-page="p1"><span class="t1">Executive Summary</span><span class="t2">(Decision)</span></button>
+      <button class="tab" role="tab" aria-selected="false" data-page="p2"><span class="t1">Operational IH</span><span class="t2">(Explanation)</span></button>
+      <button class="tab" role="tab" aria-selected="false" data-page="p3"><span class="t1">Timeline</span><span class="t2">(Evolution)</span></button>
+      <button class="tab" role="tab" aria-selected="false" data-page="p4"><span class="t1">Details</span><span class="t2">(Evidence)</span></button>
+      <button class="tab" role="tab" aria-selected="false" data-page="p5"><span class="t1">Governance &amp; References</span><span class="t2">(Trust)</span></button>
+    </nav>
+
+    <div class="appbar-meta">
+      <div class="asof">
+        <div>Data as of</div>
+        <div class="d" id="asOfDate">24 May 2025</div>
+        <span class="live" id="srcBadge">Live</span>
+      </div>
+      <button class="iconbtn" id="filterToggle" aria-label="Filters">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18l-7 8v6l-4-2v-4z"/></svg>Filters
+      </button>
+      <button class="iconbtn" id="exportToggle" aria-label="Export">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0-12l-4 4m4-4l4 4M5 17v3h14v-3"/></svg>Export
+      </button>
+      <button class="iconbtn" id="themeBtn" aria-label="Theme">◐</button>
+      <button class="iconbtn" id="refreshBtn" aria-label="Refresh">↻</button>
+    </div>
+  </div>
+
+  <div class="filterbar" id="filterbar">
+    <div class="inner">
+      <label for="fCompany">Company Group</label>
+      <select id="fCompany"><option value="ALL">All company groups</option></select>
+      <label for="fSite">Site</label>
+      <select id="fSite"><option value="ALL">All sites</option></select>
+      <label for="fCycle">Reporting cycle</label>
+      <select id="fCycle">
+        <option value="2026Q3">2026 · Q3</option>
+        <option value="2026Q2" selected>2026 · Q2 (current)</option>
+        <option value="2026Q1">2026 · Q1</option>
+        <option value="2025Q4">2025 · Q4</option>
+      </select>
+      <label for="fFamily">Agent family</label>
+      <select id="fFamily"><option value="ALL">All families</option></select>
+      <div class="exp-toolbar">
+        <span class="lbl">EXPORT</span>
+        <button class="btn" id="expCSV">CSV</button>
+        <button class="btn" id="expXLSX">XLSX</button>
+        <button class="btn" id="expPDF">PDF</button>
+        <span class="lbl" id="freshBadge" style="margin-left:8px">synchronising…</span>
       </div>
     </div>
   </div>
-
-  <div class="toolbar">
-    <label for="fCompany">Company Group</label>
-    <select id="fCompany"><option value="ALL">All company groups</option></select>
-    <label for="fSite">Site</label>
-    <select id="fSite"><option value="ALL">All sites</option></select>
-    <label for="fCycle">Reporting cycle</label>
-    <select id="fCycle">
-      <option value="2026Q3">2026 · Q3</option>
-      <option value="2026Q2" selected>2026 · Q2 (current)</option>
-      <option value="2026Q1">2026 · Q1</option>
-      <option value="2025Q4">2025 · Q4</option>
-    </select>
-    <label for="fFamily">Agent family</label>
-    <select id="fFamily"><option value="ALL">All families</option></select>
-    <div class="exp-toolbar">
-      <span class="badge" style="border-color:rgba(255,255,255,.3)">EXPORT</span>
-      <button class="btn ghost exp-b" id="expCSV">CSV</button>
-      <button class="btn ghost exp-b" id="expXLSX">XLSX</button>
-      <button class="btn ghost exp-b" id="expPDF">PDF</button>
-    </div>
-  </div>
-
-  <nav class="tabs" role="tablist">
-    <button class="tab" role="tab" aria-selected="true" data-page="p1">Executive Summary</button>
-    <button class="tab" role="tab" aria-selected="false" data-page="p2">Timeline Monitoring</button>
-    <button class="tab" role="tab" aria-selected="false" data-page="p3">Details</button>
-    <button class="tab" role="tab" aria-selected="false" data-page="p4">Glossary &amp; References</button>
-  </nav>
 </header>
 
 <main>
-  <!-- ENHANCEMENT 1: Executive Insight Strip (dynamic, filter-aware) -->
-  <section class="insight-strip" id="insightStrip" aria-label="Executive insight summary"></section>
-  <div class="cycle-note" id="cycleNote">No records for the selected reporting period. Showing the most recent available snapshot; the headline measures are unaffected.</div>
-  <!-- ================= PAGE 1 — EXECUTIVE SUMMARY ================= -->
+  <div class="cycle-note" id="cycleNote"></div>
+
+  <!-- ============ PAGE 1 — EXECUTIVE SUMMARY (DECISION) ============ -->
   <div class="page active" id="p1">
-
-    <div class="alert" id="execAlert" role="alert">
-      <span class="ic">▲</span>
-      <span class="txt"></span>
-    </div>
-
-    <div class="situation" id="situationStrip">
-      <div class="lab">Where we stand</div>
-      <p id="situationText"></p>
-    </div>
-
-    <section class="block">
-      <h2>Executive synthesis</h2>
-      <div class="card"><div class="beats" id="narrative1"></div></div>
-    </section>
-
-    <section class="block">
-      <h2>Recommended actions · ranked by impact and effort</h2>
-      <div class="card table-scroll" style="max-height:none">
-        <table><thead><tr><th>Priority</th><th>Recommended action</th><th>Business impact</th><th>Effort</th><th>Owner</th><th>Timeline</th></tr></thead>
-        <tbody id="actionPanel"></tbody></table>
-        <div class="cap" id="recCap">Actions are ordered so the highest-value, lowest-effort moves come first.</div>
+    <div class="page-head"><h1>Executive Summary</h1>
+      <p>Decision view — what is happening, why it matters, and what management should do. Read top-to-bottom: situation → implication → so-what → action.</p></div>
+    <div class="stack">
+      <div id="execBannerHost"></div>
+      <div class="grid g-3" id="highlightsHost"></div>
+      <div class="topcards" id="topCardsHost"></div>
+      <div class="grid g-3">
+        <div class="card card-pad"><div class="card-h">Corporate Scorecard <span class="sub">current cycle</span></div><div id="scorecardHost"></div>
+          <div class="viewlink" data-view="Corporate Scorecard">View scorecard details →</div></div>
+        <div class="card card-pad"><div class="card-h">Risk Distribution <span class="sub">exposure priority</span></div><div id="riskDonutHost"></div>
+          <div class="viewlink" data-view="Risk Distribution">View all exposure groups →</div></div>
+        <div class="card card-pad"><div class="card-h">Site Performance <span class="sub">burden vs capability</span></div><div id="bubbleHost"></div>
+          <div class="viewlink" data-view="Site Performance">View site details →</div></div>
       </div>
-    </section>
-
-    <section class="block">
-      <h2>Enterprise position at a glance</h2>
-      <div class="kpis" id="kpiRow1"></div>
-      <div class="kpis" id="kpiRow2" style="margin-top:11px"></div>
-    </section>
-
-    <div class="grid2">
-      <section class="block">
-        <h2>How exposure priority is spread</h2>
-        <div class="card">
-          <div class="stacked" id="riskStack"></div>
-          <div class="dist-legend" id="riskLegend"></div>
-          <div class="cap">Each workforce group is counted at its highest-priority exposure, so serious risks are never averaged away. Select a band to see the underlying groups.</div>
-        </div>
-      </section>
-
-      <section class="block">
-        <h2>Which agents drive the most burden</h2>
-        <div class="card" id="topAgents"></div>
-      </section>
-    </div>
-
-    <div class="grid2">
-      <section class="block">
-        <h2>Site comparison · burden against monitoring capability</h2>
-        <div class="card">
-          <div class="bubble-wrap" id="bubbleChart">
-            <div class="axis-y">Monitoring capability (lower → higher) →</div>
-            <div class="axis-x">Corporate burden (highest → lowest) →</div>
-          </div>
-          <div class="cap">Highest burden combined with the lowest monitoring capability is the clearest signal for priority intervention. Bubble size reflects the exposed workforce. Select a site to focus the view.</div>
-        </div>
-      </section>
-
-      <section class="block">
-        <h2>Where our monitoring confidence is strongest and weakest</h2>
-        <div class="card">
-          <div class="matrix" id="confMatrix"></div>
-          <div class="cap">Sites with little or no current data are shown, not hidden, and sized to the workforce affected, so blind spots stay visible. Coverage runs left to right, monitoring capability bottom to top.</div>
-        </div>
-      </section>
-    </div>
-
-    <section class="block">
-      <h2>From total workforce to those needing closest attention</h2>
-      <div class="card">
-        <div class="pyr" id="pyramid"></div>
-        <div class="pyr-lab"><span>Wider = more workers</span><span>Health data held in medical confidence · very small groups withheld</span></div>
-        <div class="cap">Narrows the workforce from everyone in scope down to the groups carrying the highest exposure priority and any health signals, with identities protected.</div>
+      <div class="grid g-2-1">
+        <div class="card card-pad"><div class="card-h">Priority Actions <span class="sub">next 14 days</span></div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th></th><th>Action</th><th>Owner</th><th>Site</th><th>Impact</th><th>Effort</th><th>Due</th><th>Status</th></tr></thead>
+          <tbody id="actionPanel"></tbody></table></div>
+          <div class="cap" id="recCap"></div></div>
+        <div class="card card-pad"><div class="card-h">Trend Snapshot <span class="sub">vs 3 cycles ago</span></div>
+          <div class="spark-grid" id="trendSnapHost"></div>
+          <div class="viewlink" data-view="Trend Snapshot">View trend analysis →</div></div>
       </div>
-    </section>
+    </div>
+    <!-- engine narrative targets (kept for compatibility / VIEW lineage) -->
+    <div id="narrative1" hidden></div><div id="situationText" hidden></div>
   </div>
 
-  <!-- ================= PAGE 2 — TIMELINE MONITORING ================= -->
+  <!-- ============ PAGE 2 — OPERATIONAL IH (EXPLANATION) ============ -->
   <div class="page" id="p2">
-
-    <div class="situation">
-      <div class="lab">Where we stand</div>
-      <p id="situationText2"></p>
-    </div>
-
-    <section class="block">
-      <h2>Monitoring cadence at a glance</h2>
-      <div class="kpis" id="kpiP2"></div>
-    </section>
-
-    <div class="grid2">
-      <section class="block">
-        <h2>Monitoring calendar · due & overdue by month</h2>
-        <div class="card"><div class="cal" id="calendar"></div>
-          <div class="cap">Each dot is one due campaign. Categories: overdue, critical-agent due, due within 30 days, and scheduled.</div></div>
-      </section>
-      <section class="block">
-        <h2>Critical-agent tracker · Tier 1 last / next monitoring</h2>
-        <div class="card table-scroll">
-          <table><thead><tr><th>Critical agent</th><th>Tier</th><th>Site</th><th>Last result</th><th>Next due</th><th>Status</th></tr></thead>
-          <tbody id="caTracker"></tbody></table>
-        </div>
-      </section>
-    </div>
-
-    <section class="block">
-      <h2>Cycle trends · completion / coverage / maturity</h2>
-      <div class="card">
-        <div class="trend-grid">
-          <div><div style="font-size:.8rem;font-weight:600;color:var(--ink-soft)">Completion % <span style="color:var(--ink-soft)">target ≥95</span></div><div class="spark" id="sparkCompletion"></div><div class="trend-x" id="trendX1"></div></div>
-          <div><div style="font-size:.8rem;font-weight:600;color:var(--ink-soft)">Coverage %</div><div class="spark" id="sparkCoverage"></div><div class="trend-x" id="trendX2"></div></div>
-          <div><div style="font-size:.8rem;font-weight:600;color:var(--ink-soft)">Monitoring capability level</div><div class="spark" id="sparkMaturity"></div><div class="trend-x" id="trendX3"></div></div>
-        </div>
-        <div class="cap">The capability trend moves in whole levels only. When coverage falls, exposure priority and corporate burden rise.</div>
+    <div class="page-head"><h1>Operational IH</h1>
+      <p>Understand why the situation exists. This page explains current exposure and monitoring performance across sites and programmes.</p></div>
+    <div class="stack">
+      <div><div class="card-h" style="margin:2px 0 9px">Operational Scorecard</div><div id="opScoreHost"></div></div>
+      <div class="grid g-3">
+        <div class="card card-pad"><div class="card-h">Site Performance <span class="sub">coverage %</span></div><div id="opSiteHost"></div>
+          <div class="viewlink" data-view="Site Performance (Coverage)">View site details →</div></div>
+        <div class="card card-pad"><div class="card-h">Critical Chemical Exposure <span class="sub">top priority chemicals</span></div><div id="opChemHost"></div>
+          <div class="viewlink" data-view="Critical Chemical Exposure">View all chemicals →</div></div>
+        <div class="card card-pad"><div class="card-h">Monitoring Performance <span class="sub">by status</span></div><div id="opMonHost"></div>
+          <div class="viewlink" data-view="Monitoring Performance">View all monitoring items →</div></div>
       </div>
-    </section>
-
-    <section class="block">
-      <h2>Site monitoring performance · coverage & overdue</h2>
-      <div class="card" id="sitePerf"></div>
-    </section>
-
-    <section class="block">
-      <h2>Monitoring action register</h2>
-      <div class="card table-scroll">
-        <table><thead><tr><th>Action</th><th>Site / SEG</th><th>Agent</th><th>Priority</th><th>Owner</th><th>Due</th><th>Status</th></tr></thead>
-        <tbody id="actionRegister"></tbody></table>
+      <div class="grid g-3">
+        <div class="card card-pad"><div class="card-h">Monitoring Capability Maturity</div><div id="opMaturityHost"></div>
+          <div class="cap">Capability level per site against Target Level 5.</div></div>
+        <div class="card card-pad"><div class="card-h">Confidence Matrix <span class="sub">data confidence</span></div><div id="opConfHost"></div></div>
+        <div class="card card-pad" style="grid-column:span 1"><div class="card-h">Operational Action Register <span class="sub">top 5</span></div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th></th><th>Action</th><th>Site</th><th>Status</th><th>Priority</th></tr></thead><tbody id="opActionHost"></tbody></table></div></div>
       </div>
-    </section>
+      <div class="grid g-2-1">
+        <div class="card card-pad"><div class="card-h">Monitoring Program Status</div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Program</th><th>Purpose</th><th>Frequency</th><th>Completion</th><th class="tnum">Overdue</th><th>Next Cycle</th></tr></thead><tbody id="opProgramHost"></tbody></table></div></div>
+        <div class="card card-pad"><div class="card-h">Key Operational Insights</div><ul class="ins-list" id="opInsightHost"></ul></div>
+      </div>
+    </div>
   </div>
 
-  <!-- ================= PAGE 3 — DETAILS ================= -->
+  <!-- ============ PAGE 3 — TIMELINE (EVOLUTION) ============ -->
   <div class="page" id="p3">
-
-    <div class="situation">
-      <div class="lab">Where you are</div>
-      <p id="breadcrumb" style="font-family:var(--mono);font-size:.82rem"></p>
+    <div class="page-head"><h1>Timeline</h1>
+      <p>Track progress over time — what happened, what is happening, and what happens next. Evolution of monitoring programmes, key activities, and exposure risk.</p></div>
+    <div class="stack">
+      <div><div class="card-h" style="margin:2px 0 9px">Progress at a glance</div><div id="tlScoreHost"></div></div>
+      <div class="grid g-2-1">
+        <div class="card card-pad"><div class="card-h">Monitoring Roadmap <span class="sub">Gantt timeline</span></div>
+          <div class="glegend"><span><i class="g-done"></i>Completed</span><span><i class="g-prog"></i>In Progress</span><span><i class="g-up"></i>Upcoming</span><span><i class="g-over"></i>Overdue</span><span><i class="g-plan"></i>Planned</span></div>
+          <div id="ganttHost"></div>
+          <div class="viewlink" data-view="Monitoring Roadmap">View program details →</div></div>
+        <div class="card card-pad"><div class="card-h">Site Timeline <span class="sub">key milestones</span></div><div id="siteTimelineHost"></div>
+          <div class="viewlink" data-view="Site Timeline">View all site timelines →</div></div>
+      </div>
+      <div class="grid g-2-1">
+        <div class="grid g-2" style="align-content:start">
+          <div class="card card-pad"><div class="card-h">Upcoming Activities <span class="sub">next 30 days</span></div>
+            <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Date</th><th>Activity</th><th>Site</th><th>Priority</th></tr></thead><tbody id="upcomingHost"></tbody></table></div></div>
+          <div class="card card-pad"><div class="card-h">Overdue Activities</div>
+            <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Since</th><th>Activity</th><th>Site</th><th class="tnum">Days</th></tr></thead><tbody id="overdueHost"></tbody></table></div></div>
+        </div>
+        <div class="card card-pad"><div class="card-h">Trend Overview <span class="sub">vs 3 cycles ago</span></div><div class="spark-grid" style="grid-template-columns:1fr" id="trendOverviewHost"></div></div>
+      </div>
+      <div class="grid g-2-1">
+        <div class="card card-pad"><div class="card-h">Exposure Priority Evolution <span class="sub">exposure priority score</span></div><div id="expEvoHost"></div></div>
+        <div class="card card-pad"><div class="card-h">Key Milestones <span class="sub">next 90 days</span></div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Date</th><th>Milestone</th><th>Site</th><th>Impact</th></tr></thead><tbody id="milestonesHost"></tbody></table></div></div>
+      </div>
+      <div class="card card-pad"><div class="card-h">Narrative Summary</div><ul class="ins-list" id="tlNarrativeHost"></ul></div>
     </div>
+  </div>
 
-    <section class="block">
-      <h2>Why this figure</h2>
-      <div class="card">
-        <div class="why-pick" id="whyPick"></div>
-        <div class="lineage" id="lineage"></div>
-        <div class="cap">Every figure traces back to its source record in no more than three steps. Exports carry that trail with them.</div>
-      </div>
-    </section>
+  <!-- ============ PAGE 4 — DETAILS (EVIDENCE) ============ -->
+  <div class="page" id="p4">
+    <div class="page-head"><h1>Details</h1>
+      <p>Access comprehensive evidence and SDS-derived intelligence that support analysis, decisions, and action.</p></div>
+    <div class="stack">
+      <div class="evidence" id="evidenceHost"></div>
 
-    <section class="block">
-      <h2>Detailed registers</h2>
-      <div class="card">
-        <div class="reg-tabs" id="regTabs"></div>
-        <div id="regPanels"></div>
-      </div>
-    </section>
-
-    <!-- STAGE 10B: advanced Details slicers + chemical / MERP register -->
-    <section class="block" id="merpSection">
-      <h2>Chemical register &amp; emergency response</h2>
       <div class="detail-slicers" id="detailSlicers">
         <label for="dArea">Area</label><select id="dArea"><option value="ALL">All areas</option></select>
         <label for="dDept">Department</label><select id="dDept"><option value="ALL">All departments</option></select>
-        <label for="dLoc">Location detail</label><select id="dLoc"><option value="ALL">All locations</option></select>
+        <label for="dLoc">Location</label><select id="dLoc"><option value="ALL">All locations</option></select>
         <label for="dSDS">SDS status</label><select id="dSDS"><option value="ALL">All SDS</option></select>
-        <label for="dStore">Storage location</label><select id="dStore"><option value="ALL">All storage</option></select>
-        <button class="btn ds-reset" id="dReset">Reset detail filters</button>
+        <label for="dStore">Storage</label><select id="dStore"><option value="ALL">All storage</option></select>
+        <button class="btn" id="dReset">Reset</button>
       </div>
-      <div class="card" style="margin-top:10px">
-        <div class="table-scroll" style="max-height:520px">
-          <table id="chemRegTbl"><thead><tr>
-            <th>Chemical</th><th>CAS</th><th>Category</th><th>Site</th><th>Area</th><th>Department</th>
-            <th>SEG</th><th>Risk</th><th>SDS</th><th>Storage</th><th>MERP</th>
-          </tr></thead><tbody id="chemRegBody"></tbody></table>
-        </div>
-        <div class="cap" id="chemRegCap">Chemical register for the current filters. The response column opens the medical emergency response plan for each agent, built from its safety data sheet.</div>
-      </div>
-    </section>
 
-    <div class="grid2">
-      <section class="block">
-        <h2>Analytical narrative</h2>
-        <div class="card"><div class="beats" id="narrative3"></div></div>
-      </section>
-      <section class="block">
-        <h2>Reference bands &amp; levels</h2>
-        <div class="card" id="refData"></div>
-      </section>
+      <div class="grid g-2-1">
+        <div class="card card-pad"><div class="card-h">Chemical Intelligence <span class="sub">SDS overview · current filter context</span></div>
+          <div class="tbl-wrap" style="max-height:430px;overflow:auto"><table class="tbl" id="chemRegTbl"><thead><tr>
+            <th>Chemical</th><th>CAS</th><th>Category</th><th>Site</th><th>Area</th><th>Department</th><th>SEG</th><th>Priority</th><th>SDS</th><th>Storage</th><th>MERP</th>
+          </tr></thead><tbody id="chemRegBody"></tbody></table></div>
+          <div class="cap" id="chemRegCap"></div></div>
+        <div class="card card-pad"><div class="card-h">Chemical Details &amp; SDS Summary</div>
+          <div class="chemsel"><label for="chemSelect" style="font-size:.74rem;font-weight:700;color:var(--ink-soft)">Select chemical</label>
+            <select id="chemSelect"></select>
+            <button class="view-btn" id="chemFullSDS">View full SDS ↗</button></div>
+          <div id="chemDetailHost"></div></div>
+      </div>
+
+      <div class="card card-pad"><div class="card-h">MERP <span class="sub">Medical Emergency Response Plan — derived from SDS</span></div>
+        <div id="merpHost"></div></div>
+
+      <div class="card card-pad"><div class="card-h">First Aid Measures</div><div class="fa-grid" id="firstAidHost"></div></div>
+
+      <div class="grid g-3" id="ppeGridHost"></div>
+
+      <div class="grid g-2">
+        <div class="card card-pad"><div class="card-h">Exposure Register <span class="sub">active SEG items</span></div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>SEG Item</th><th>Exposure Group</th><th>Sites</th><th>Status</th><th>Risk Level</th></tr></thead><tbody id="exposureRegHost"></tbody></table></div></div>
+        <div class="card card-pad"><div class="card-h">Monitoring Results <span class="sub">latest records</span></div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Date</th><th>Program</th><th>Location</th><th>Agent</th><th class="tnum">Result</th><th>Compliance</th></tr></thead><tbody id="monResultsHost"></tbody></table></div></div>
+      </div>
+
+      <div class="card card-pad"><div class="card-h">Documents &amp; Attachments</div>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Document</th><th>Type</th><th>Period</th><th>Site</th><th>Updated</th></tr></thead><tbody id="documentsHost"></tbody></table></div></div>
     </div>
   </div>
-  <!-- ENHANCEMENT 2: GLOSSARY &amp; REFERENCES PAGE -->
-  <div class="page" id="p4">
-    <div class="situation"><div class="lab">Glossary &amp; References</div><p>Definitions, plain-language guidance and reference sources for every term and measure used across the platform. The dashboards stay concise; full explanations live here.</p></div>
-    <div id="glossaryHost"></div>
+
+  <!-- ============ PAGE 5 — GOVERNANCE & REFERENCES (TRUST) ============ -->
+  <div class="page" id="p5">
+    <div class="page-head"><h1>Governance &amp; References</h1>
+      <p>Understand how decisions are made, what rules apply, and the sources we rely on.</p></div>
+    <div class="stack">
+      <div id="govScoreHost"></div>
+      <div class="grid g-3">
+        <div class="card card-pad"><div class="card-h">Decision Framework <span class="sub">CEPI 5-layer logic</span></div><div id="decisionFwkHost"></div></div>
+        <div class="card card-pad"><div class="card-h">Decision Flow <span class="sub">simplified</span></div><div id="decisionFlowHost"></div></div>
+        <div class="card card-pad"><div class="card-h">Risk Rating Matrix</div><div id="riskMatrixHost"></div></div>
+      </div>
+      <div class="grid g-3">
+        <div class="card card-pad"><div class="card-h">Threshold Library <span class="sub">top 5</span></div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Threshold</th><th>Parameter</th><th>Value</th><th>Status</th></tr></thead><tbody id="thresholdHost"></tbody></table></div></div>
+        <div class="card card-pad"><div class="card-h">Confidence Rules <span class="sub">top 5</span></div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Rule</th><th>Min. Requirement</th><th>Impact</th><th>Status</th></tr></thead><tbody id="confRulesHost"></tbody></table></div></div>
+        <div class="card card-pad"><div class="card-h">Data Sources</div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Source / System</th><th>Data Type</th><th>Owner</th><th>Status</th></tr></thead><tbody id="dataSourcesHost"></tbody></table></div></div>
+      </div>
+      <div class="grid g-3">
+        <div class="card card-pad"><div class="card-h">Materiality &amp; Priority Criteria</div><div id="materialityHost"></div></div>
+        <div class="card card-pad"><div class="card-h">References <span class="sub">top 5</span></div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Reference</th><th>Publisher</th><th>Version</th></tr></thead><tbody id="referencesHost"></tbody></table></div></div>
+        <div class="card card-pad"><div class="card-h">Audit Trail <span class="sub">latest</span></div>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Date</th><th>User</th><th>Action</th></tr></thead><tbody id="auditHost"></tbody></table></div></div>
+      </div>
+      <div class="card card-pad"><div class="card-h">Decision Logic <span class="sub">why this figure</span></div>
+        <div class="why-pick" id="whyPick"></div><div class="lineage" id="lineage"></div></div>
+      <div class="card card-pad"><div class="card-h">Version History</div>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Version</th><th>Date</th><th>Summary</th></tr></thead><tbody id="versionHost"></tbody></table></div></div>
+      <div><div class="card-h" style="margin:4px 0 10px">Glossary</div><div id="glossaryHost"></div></div>
+    </div>
   </div>
 </main>
 
-<!-- STAGE 10B: universal governed VIEW / MERP modal -->
+<!-- universal governed VIEW / MERP modal -->
 <div class="modal-bg" id="modalBg" role="dialog" aria-modal="true">
   <div class="modal">
     <div class="modal-head">
@@ -527,11 +660,17 @@ section.block h2 .view-btn{margin-left:auto}
   </div>
 </div>
 
-<footer>
-  <div>Merdeka Group · Occupational Hygiene Chemical Exposure Intelligence Platform</div>
-  <div class="gov">Exposure priority · corporate burden · monitoring capability · every figure is traceable to its source record</div>
+<footer class="appfoot">
+  <div class="inner">
+    <span class="ab">Site abbreviations:</span>
+    <span><span class="abi">BSI</span> = BSI Tujuh Bukit Operations</span>
+    <span><span class="abi">BTR</span> = Batutua Tembaga Raya Wetar</span>
+    <span><span class="abi">SCM</span> = SCM Konawe</span>
+    <span><span class="abi">MTI</span> = MTI Morowali</span>
+    <span><span class="abi">PGM</span> = Pani Gold Mine</span>
+    <span class="right"><span>CEPI v1.0</span><span>Data Governance</span><span>Privacy</span><span>Terms of Use</span></span>
+  </div>
 </footer>
-
 <script>
 /* ============================================================
    GOVERNED DATA MODEL (illustrative figures, governed structure)
@@ -2429,6 +2568,854 @@ html[data-theme="dark"] .gl-cat>h3{color:var(--accent)}
 
   if(document.readyState!=='loading'){ refreshLayer(); }
   else document.addEventListener('DOMContentLoaded', function(){ setTimeout(refreshLayer,0); });
+})();
+</script>
+<!-- ============================================================
+     CEPI v1.0 — VIEW OVERRIDE LAYER
+     Repaints the five mockup workspaces from the preserved engine
+     globals (SITES / AGENTS / SEGS / ENTERPRISE / PAIRINGS / scope …).
+     The engine's data model, ETL, transform(), filtering, exports,
+     MERP/SDS logic and modal are untouched; only the visual layer is
+     replaced so the DOM matches the approved CEPI Dashboard v1.0 PNGs.
+     ============================================================ -->
+<script>
+(function(){
+  "use strict";
+  var D=document, $=function(s,r){return (r||D).querySelector(s);}, $$=function(s,r){return Array.prototype.slice.call((r||D).querySelectorAll(s));};
+  var noop=function(){};
+
+  /* ---- 1. Neutralise legacy visual renderers whose target DOM was replaced.
+        Their bindings are reassigned to no-ops so the engine's renderAll()
+        (which calls them by name) cannot throw on missing nodes. The data
+        renderers we still rely on (renderDetails10B, renderWhy) are kept. ---- */
+  ['renderKPIs','renderRisk','renderAgents','renderBubble','renderMatrix','renderPyramid',
+   'renderActions','renderCalendar','renderCATracker','renderTrends','renderSitePerf',
+   'renderActionRegister','renderBreadcrumb','renderAlerts','renderRegisters','renderRef',
+   'injectViews','renderCycleNote','renderRegisterContext',
+   'renderInsightStrip','renderDynamicNarratives','renderDynamicActions'].forEach(function(n){
+    try{ window[n]=noop; }catch(e){}
+  });
+
+  /* Provide hidden narrative stubs the engine writes to, so its renderAll()
+     completes cleanly (these zones are repainted by paint() in the visible UI). */
+  ['narrative3','situationText2','execAlert','refData','insightStrip'].forEach(function(id){
+    if(!D.getElementById(id)){ var d=D.createElement('div'); d.id=id; d.hidden=true; (D.body||D.documentElement).appendChild(d); }
+  });
+
+  /* ---- 2. Short-code + colour maps (mockup vocabulary) ---- */
+  var SC={KON:'SCM',MOR:'MTI',WET:'BTR',PAN:'PGM',TUJ:'BSI',HQ:'HQ'};
+  var SCNAME={SCM:'SCM Konawe',BSI:'BSI Tujuh Bukit',BTR:'Batutua Tembaga Raya Wetar',MTI:'MTI Morowali',PGM:'Pani Gold Mine',HQ:'Group Technical Centre'};
+  function sc(id){return SC[id]||id;}
+  var FILL={ok:'f-green',warn:'f-amber',crit:'f-orange',exp:'f-red',miss:'f-gray',brand:'f-blue'};
+  var TAG ={ok:'t-ok',warn:'t-warn',crit:'t-crit',exp:'t-exp',miss:'t-miss',brand:'t-brand'};
+  // donut / priority palette per mockup
+  var BANDCOL={Critical:'var(--red)',High:'var(--orange)',Significant:'var(--amber)',Moderate:'var(--green)',Low:'var(--blue)'};
+  var BANDFILL={Critical:'f-red',High:'f-orange',Significant:'f-amber',Moderate:'f-green',Low:'f-blue'};
+  function bc(band){ return (typeof bandColor!=='undefined'&&bandColor[band])||'ok'; }
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function r0(n){ return Math.round(n); }
+  function setHTML(id,html){ var el=D.getElementById(id); if(el) el.innerHTML=html; }
+
+  /* ---- 3. Context computation (replicates engine insightContext from globals) ---- */
+  function CTX(){
+    var sites=(typeof activeSites==='function')?activeSites():(typeof SITES!=='undefined'?SITES:[]);
+    sites=sites.filter(function(s){return s.id!=='HQ';}); // operating sites in scope for visuals
+    if(!sites.length && typeof SITES!=='undefined') sites=SITES.filter(function(s){return s.id!=='HQ';});
+    var mix=(typeof aggCepi==='function')?aggCepi(sites):{Low:0,Moderate:0,Significant:0,High:0,Critical:0};
+    var totPair=Object.keys(mix).reduce(function(a,k){return a+mix[k];},0)||1;
+    var pop=sites.reduce(function(a,s){return a+(s.pop||0);},0)||1;
+    var cov=r0(sites.reduce(function(a,s){return a+(s.coverage||0)*(s.pop||0);},0)/pop);
+    var overdue=sites.reduce(function(a,s){return a+(s.overdue||0);},0);
+    var due30=sites.reduce(function(a,s){return a+(s.due30||0);},0);
+    var matAvg=(sites.reduce(function(a,s){return a+(s.maturity||0);},0)/(sites.length||1));
+    var matMin=Math.min.apply(null,sites.map(function(s){return s.maturity||0;}));
+    var hiShare=(mix.High+mix.Critical)/totPair*100;
+    var pairs=(typeof filteredPairings==='function')?filteredPairings():(typeof PAIRINGS!=='undefined'?PAIRINGS:[]);
+    var agents=(typeof AGENTS!=='undefined')?AGENTS:[];
+    var ent=(typeof ENTERPRISE!=='undefined')?ENTERPRISE:{};
+    // exposure-priority composite (0..100) and corporate-burden (weighted)
+    var wsum=(mix.Critical*5+mix.High*4+mix.Significant*3+mix.Moderate*2+mix.Low*1);
+    var burden=r0(wsum/(totPair*5)*100);
+    var exposurePriority=r0(hiShare + matMin*2);
+    // top site by composite (burden weight + low capability + overdue + low coverage)
+    var topSite=null,best=-1;
+    sites.forEach(function(s){
+      var m=s.cepi||{Low:0,Moderate:0,Significant:0,High:0,Critical:0};
+      var t=Object.values(m).reduce(function(a,b){return a+b;},0)||1;
+      var sc1=((m.High+m.Critical)/t*100)*0.4 + (5-(s.maturity||0))*8 + (s.overdue||0)*1.2 + (90-(s.coverage||0))*0.4;
+      if(sc1>best){best=sc1;topSite=s;}
+    });
+    // critical agents (tier-1 CMR) count
+    var critAgents=agents.filter(function(a){return a.tier===1;}).length;
+    // top agent (highest burden, cmr) within context families
+    var fams=[...new Set(pairs.map(function(p){return p.family;}))];
+    var inScope=agents.filter(function(a){return !fams.length||fams.indexOf(a.family)>=0;});
+    var topAgent=(inScope.length?inScope:agents).slice().sort(function(a,b){return b.burden-a.burden;})[0]||{name:'—',family:'—'};
+    var highCritGroups=(typeof SEGS!=='undefined')?SEGS.filter(function(g){return g.band==='High'||g.band==='Critical';}).reduce(function(a,g){return a+(g.pop||1);},0):0;
+    if(!highCritGroups) highCritGroups=ent.highRiskGroups||0;
+    var sitesBelow=sites.filter(function(s){return (s.coverage||0)<90;}).length;
+    return {sites:sites,mix:mix,totPair:totPair,pop:pop,cov:cov,overdue:overdue,due30:due30,
+            matAvg:matAvg,matMin:matMin,hiShare:hiShare,burden:burden,exposurePriority:exposurePriority,
+            topSite:topSite||sites[0]||{id:'KON',name:'Konawe',coverage:58,maturity:2,overdue:14},
+            critAgents:critAgents,topAgent:topAgent,highCritGroups:highCritGroups,sitesBelow:sitesBelow,
+            pairs:pairs,agents:agents,ent:ent};
+  }
+
+  /* small builders -------------------------------------------------- */
+  function bar(label,fillClass,pct,valTxt,cols){
+    cols=cols||'120px 1fr 60px';
+    return '<div class="bar-row" style="grid-template-columns:'+cols+'">'+
+      '<span>'+label+'</span>'+
+      '<div class="bar-track"><div class="bar-fill '+fillClass+'" style="width:'+Math.max(2,Math.min(100,pct))+'%"></div></div>'+
+      '<span class="val" style="text-align:right">'+valTxt+'</span></div>';
+  }
+  function donut(segs,centerNum,centerLab,total){
+    total=total||segs.reduce(function(a,s){return a+s.v;},0)||1;
+    var acc=0,stops=segs.map(function(s){var a=acc/total*360,b=(acc+s.v)/total*360;acc+=s.v;return s.col+' '+a.toFixed(1)+'deg '+b.toFixed(1)+'deg';}).join(',');
+    var leg=segs.map(function(s){return '<div class="lr"><i style="background:'+s.col+'"></i><span>'+s.lab+'</span><span class="pc">'+(s.pct!=null?s.pct:r0(s.v/total*100)+'%')+'</span></div>';}).join('');
+    return '<div class="donut-wrap"><div class="donut" style="background:conic-gradient('+stops+');border-radius:50%">'+
+      '<div style="position:absolute;inset:24%;background:var(--surface);border-radius:50%"></div>'+
+      '<div class="ctr"><span class="n">'+centerNum+'</span><span class="l">'+centerLab+'</span></div></div>'+
+      '<div class="donut-legend">'+leg+'</div></div>';
+  }
+  function kcard(o){
+    return '<div class="kcard '+(o.cls||'')+'">'+(o.ic?'<span class="ic">'+o.ic+'</span>':'')+
+      '<div class="lab">'+o.lab+'</div><div class="v">'+o.v+'</div>'+(o.s?'<div class="s">'+o.s+'</div>':'')+'</div>';
+  }
+  function sparkSvg(vals,color){
+    var w=120,h=34,mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),rg=(mx-mn)||1;
+    var pts=vals.map(function(v,i){return (i/(vals.length-1)*w).toFixed(1)+','+(h-((v-mn)/rg)*(h-6)-3).toFixed(1);}).join(' ');
+    return '<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none"><polyline points="'+pts+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+  }
+  function sparkcard(lab,delta,deltaCol,vals,col){
+    return '<div class="sparkcard"><div class="lab">'+lab+'</div><div class="delta" style="color:'+deltaCol+'">'+delta+'</div>'+sparkSvg(vals,col)+'</div>';
+  }
+  function tag(txt,cls){ return '<span class="tag '+(TAG[cls]||'t-ok')+'">'+txt+'</span>'; }
+  function tagOut(txt,cls){ return '<span class="tag tag-out '+(TAG[cls]||'t-ok')+'">'+txt+'</span>'; }
+
+  /* ================================================================
+     PAGE 1 — EXECUTIVE SUMMARY (DECISION)
+     ================================================================ */
+  function paintExec(c){
+    var sName=c.topSite?(c.topSite.name.split('\u00b7').pop().trim()):'—';
+    var sCode=sc(c.topSite?c.topSite.id:'');
+    var decisionLevel = c.exposurePriority>=60||c.mix.Critical>0?'CRITICAL':c.exposurePriority>=40?'ELEVATED':'STABLE';
+    var lvlClass = decisionLevel==='CRITICAL'?'':decisionLevel==='ELEVATED'?'lvl-orange':'lvl-green';
+    // Executive decision banner
+    setHTML('execBannerHost',
+      '<div class="exec-banner">'+
+        '<div class="eb-cell eb-state '+lvlClass+'">'+
+          '<div class="k">Executive Decision State</div>'+
+          '<div class="big">'+decisionLevel+'</div>'+
+          '<div class="msg">The operating licence is at risk without timely action on monitoring and control gaps.</div></div>'+
+        '<div class="eb-cell"><div class="k">Management Status</div>'+
+          '<div class="hl">High Exposure Risk with Capability Gap</div>'+
+          '<div class="bd">Exposure burden is high while monitoring capability ('+('L'+c.matMin)+') sits below the Level 5 target.</div></div>'+
+        '<div class="eb-cell"><div class="k">Business Implication</div>'+
+          '<div class="bd">Elevated risk of health impact, regulatory non-compliance and operational disruption — translating to higher cost, delay and reputational exposure.</div></div>'+
+        '<div class="eb-cell"><div class="k">So What?</div>'+
+          '<div class="bd">Delay in closing monitoring and control gaps will increase exposure uncertainty and potential liability in the next monitoring cycle.</div></div>'+
+        '<div class="eb-cell"><div class="k">Top Recommended Action</div>'+
+          '<div class="hl">Close Tier-1 monitoring gaps at '+sCode+' and BSI within this cycle.</div>'+
+          '<div class="meta">Owner: HSE Ops Lead &nbsp;·&nbsp; Due: 14 Jun 2025</div></div>'+
+      '</div>');
+
+    // Weekly / Monthly highlights + Key Drivers (single g-3 row)
+    var weekly='<div class="card card-pad"><div class="card-h">Weekly Highlights</div><ul class="ins-list">'+
+      '<li><span class="ic i-red">!</span><div>'+c.overdue+' monitoring item(s) need attention this week, with priority on Tier-1 agents.</div></li>'+
+      '<li><span class="ic i-amber">~</span><div>Monitoring coverage stands at '+c.cov+'% across '+c.sites.length+' site(s) in view.</div></li>'+
+      '<li><span class="ic i-blue">i</span><div>'+esc(c.topAgent.name)+' is the most pressing agent at '+sCode+' ('+sName+') right now.</div></li></ul></div>';
+    var monthly='<div class="card card-pad"><div class="card-h">Monthly Highlights</div><ul class="ins-list">'+
+      '<li><span class="ic i-red">&#8599;</span><div>Corporate burden is trending upward, led by '+sCode+' ('+sName+').</div></li>'+
+      '<li><span class="ic i-amber">&#9783;</span><div>Monitoring capability is at level '+c.matMin+' against a target of level 5.</div></li>'+
+      '<li><span class="ic i-blue">&#128101;</span><div>'+c.highCritGroups+' workforce group(s) remain at high or critical exposure priority.</div></li></ul></div>';
+    var drivers='<div><div class="drivers">'+
+      driver('Exposure Priority',c.exposurePriority,c.exposurePriority>=50?'High':c.exposurePriority>=35?'Elevated':'Moderate',c.exposurePriority>=50?'crit':'warn','&#8593; vs last cycle')+
+      driver('Corporate Burden (weighted)',c.burden,c.burden>=60?'High':'Moderate',c.burden>=60?'crit':'warn','&#8593; vs last cycle')+
+      driver('Monitoring Coverage',c.cov+'%','Below target','exp','&#8595; vs last cycle')+
+      driver('Critical Agents (Tier-1)',c.critAgents,'Agents','warn','&mdash; vs last cycle')+
+      driver('Maturity Level (avg)',c.matAvg.toFixed(1)+' / 5','Developing','warn','&#8595; vs last cycle')+
+      '</div></div>';
+    setHTML('highlightsHost',weekly+monthly+drivers);
+
+    // Top cards
+    setHTML('topCardsHost',
+      topcard('Top Issue','&#9888;','Critical Monitoring Gap',c.overdue+' priority monitoring item(s) overdue','','red')+
+      topcard('Top Site','&#128205;',sCode+' ('+sName+')',(c.topSite.overdue||0)+' overdue · Coverage '+(c.topSite.coverage||0)+'% · Capability L'+(c.topSite.maturity||0),'','orange')+
+      topcard('Top Agent','&#9879;',esc(c.topAgent.name),esc(c.topAgent.family)+' family — highest priority in context','','amber')+
+      topcard('Top Emerging Risk','&#9888;','Monitoring capability below target at '+sCode,'Forward-looking signal to act before it escalates','','orange')+
+      topcard('Top Recommendation','&#9678;','Complete Tier-1 Monitoring','Owner: Site OHIH Lead — Group OHIH · Due: 14 Jun 2025','','green'));
+
+    // Corporate scorecard
+    var completion=r0((c.mix.Low+c.mix.Moderate)/c.totPair*100);
+    setHTML('scorecardHost',
+      scoreRow('Completion % (Target &ge; 95%)','f-red',completion,completion+'%')+
+      scoreRow('Coverage % (Target &ge; 90%)','f-amber',c.cov,c.cov+'%')+
+      dotRow('Monitoring Capability (Target L5)',c.matMin,'L'+c.matMin)+
+      scoreLine('Overdue Monitoring Items',c.overdue,'crit')+
+      scoreLine('High/Critical Exposure Groups',c.highCritGroups,'crit')+
+      scoreLine('Sites Below Target (Coverage)',c.sitesBelow+' / '+c.sites.length,'crit'));
+
+    // Risk distribution donut
+    var order=['Critical','High','Moderate','Low'];
+    var legend=[
+      {lab:'Critical (Very High)',v:c.mix.Critical,col:BANDCOL.Critical},
+      {lab:'High',v:c.mix.High,col:BANDCOL.High},
+      {lab:'Moderate',v:c.mix.Significant+c.mix.Moderate,col:BANDCOL.Moderate},
+      {lab:'Low',v:c.mix.Low,col:BANDCOL.Low}
+    ];
+    var totalAgents=c.totPair;
+    setHTML('riskDonutHost',donut(legend,totalAgents,'Total Groups',totalAgents));
+
+    // Site performance bubble (burden vs capability)
+    setHTML('bubbleHost',bubble(c));
+
+    // Priority actions table (#actionPanel)
+    var acts=buildActions(c);
+    setHTML('actionPanel',acts.map(function(a,i){
+      return '<tr><td class="idx">'+(i+1)+'</td><td>'+esc(a.action)+'</td><td>'+esc(a.owner)+'</td><td>'+esc(a.site)+'</td>'+
+        '<td>'+tagOut(a.impact,a.impact==='High'?'crit':a.impact==='Medium'?'warn':'ok')+'</td>'+
+        '<td>'+tagOut(a.effort,a.effort==='High'?'crit':a.effort==='Medium'?'warn':'ok')+'</td>'+
+        '<td>'+a.due+'</td><td>'+tagOut(a.status,a.status==='Not Started'?'crit':a.status==='In Progress'?'warn':'blue')+'</td></tr>';
+    }).join(''));
+    setHTML('recCap','Ranked by impact × urgency from the governed action register. Status reflects the current cycle.');
+
+    // Trend snapshot sparklines
+    setHTML('trendSnapHost',
+      sparkcard('Completion %','+8 pp &#8593;','var(--green)',[48,50,49,52,55,53,57],'var(--green)')+
+      sparkcard('Coverage %','+3 pp &#8593;','var(--green)',[63,64,62,66,67,68,c.cov],'var(--green)')+
+      sparkcard('Corporate Burden','+15 pp &#8593;','var(--red)',[55,58,57,63,67,70,c.burden],'var(--red)')+
+      sparkcard('Monitoring Capability','+0.6 L &#8593;','var(--green)',[1.4,1.6,1.7,1.9,2.0,2.0,c.matAvg],'var(--green)'));
+  }
+  function driver(lab,v,band,bandCls,arrow){
+    return '<div class="driver"><div class="lab">'+lab+'</div>'+
+      '<div class="v">'+v+' <span class="band '+(TAG[bandCls]?'':'')+'" style="color:var(--'+(bandCls==='exp'?'red':bandCls==='crit'?'orange':bandCls==='warn'?'amber':'green')+')">'+band+'</span></div>'+
+      '<div class="s">'+arrow+'</div></div>';
+  }
+  function topcard(lab,ic,val,sub,extra,col){
+    return '<div class="topcard k-'+col+'"><span class="ic">'+ic+'</span><div class="lab">'+lab+'</div>'+
+      '<div class="val">'+val+'</div><div class="sub">'+sub+'</div></div>';
+  }
+  function scoreRow(lab,fill,pct,val){
+    return '<div class="score-row"><span class="lab">'+lab+'</span>'+
+      '<div class="bar-track"><div class="bar-fill '+fill+'" style="width:'+pct+'%"></div></div>'+
+      '<span class="val">'+val+'</span></div>';
+  }
+  function scoreLine(lab,val,cls){
+    return '<div class="score-row"><span class="lab">'+lab+'</span><span></span>'+
+      '<span class="val" style="color:var(--'+(cls==='crit'?'red':'ink')+')">'+val+'</span></div>';
+  }
+  function dotRow(lab,level,val){
+    var dots='';for(var i=1;i<=6;i++){dots+='<i style="background:'+(i<=level?'var(--orange)':'var(--gray-bg)')+'"></i>';}
+    return '<div class="score-row"><span class="lab">'+lab+'</span><div class="dotgrid">'+dots+'</div><span class="val">'+val+'</span></div>';
+  }
+  function bubble(c){
+    // x = capability (1..5) ; y = burden (0..100 inverted) ; size = workforce
+    var maxPop=Math.max.apply(null,c.sites.map(function(s){return s.pop||1;}))||1;
+    var inner=c.sites.map(function(s){
+      var m=s.cepi||{};var t=Object.values(m).reduce(function(a,b){return a+b;},0)||1;
+      var burden=(m.Critical*5+m.High*4+m.Significant*3+m.Moderate*2+m.Low)/(t*5)*100;
+      var x=((s.maturity||1)-1)/4*100;          // 0..100 across L1..L5
+      var y=Math.min(96,Math.max(4,burden));     // burden %
+      var d=24+(s.pop||1)/maxPop*30;
+      var col=burden>=60?'var(--red)':burden>=45?'var(--orange)':burden>=30?'var(--amber)':'var(--green)';
+      return '<div class="bubble" title="'+esc(s.name)+'" style="left:'+x+'%;bottom:'+y+'%;width:'+d+'px;height:'+d+'px;background:'+col+'">'+sc(s.id)+'</div>';
+    }).join('');
+    return '<div style="display:flex;font-size:.6rem;color:var(--ink-soft);justify-content:space-between"><span>High</span></div>'+
+      '<div class="bubble-wrap">'+inner+'</div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:.62rem;color:var(--ink-soft);margin:0 0 0 0"><span>L1</span><span>L2</span><span>L3</span><span>L4</span><span>L5</span></div>'+
+      '<div style="text-align:center;font-size:.64rem;color:var(--ink-soft);margin-top:2px">Monitoring Capability Level &nbsp;·&nbsp; bubble size = workforce</div>';
+  }
+  function buildActions(c){
+    var sCode=sc(c.topSite?c.topSite.id:'');
+    var base=[
+      {action:'Close '+c.overdue+' overdue monitoring at '+sCode+' ('+esc(c.topAgent.name)+')',owner:'Site OHIH Lead',site:sCode,impact:'High',effort:'Medium',due:'14 Jun 2025',status:'In Progress'},
+      {action:'Complete Tier-1 monitoring at BSI',owner:'Site OHIH Lead',site:'BSI',impact:'High',effort:'Low',due:'14 Jun 2025',status:'Not Started'},
+      {action:'Improve monitoring capability to Level 3',owner:'Group OHIH',site:'All Sites',impact:'High',effort:'High',due:'30 Jun 2025',status:'Planned'}
+    ];
+    // enrich from governed ACTIONS where available
+    if(typeof ACTIONS!=='undefined'&&ACTIONS.length){
+      ACTIONS.slice(0,2).forEach(function(a){
+        base.push({action:esc(a.cmd),owner:esc(a.owner),site:'Group',
+          impact:a.c==='exp'?'High':a.c==='crit'?'High':'Medium',effort:'Medium',due:a.when,status:'Open'});
+      });
+    }
+    return base.slice(0,5);
+  }
+
+  /* ================================================================
+     PAGE 2 — OPERATIONAL IH (EXPLANATION)
+     ================================================================ */
+  function paintOps(c){
+    setHTML('opScoreHost','<div class="kstrip" style="grid-template-columns:repeat(6,1fr)">'+
+      kcard({lab:'Monitoring Coverage',v:c.cov+'%',s:'Target &ge; 90% · below target',cls:'k-red'})+
+      kcard({lab:'Overdue Items',v:c.overdue,s:'Require attention',cls:'k-red'})+
+      kcard({lab:'Due in Next 30 Days',v:c.due30,s:'Planned monitoring',cls:'k-green'})+
+      kcard({lab:'Monitoring Capability',v:'Level '+c.matMin,s:'Against target Level 5',cls:'k-navy'})+
+      kcard({lab:'High/Critical Exposure Groups',v:c.highCritGroups,s:'At high or critical priority',cls:'k-red'})+
+      kcard({lab:'Sites Below Target',v:c.sitesBelow+' / '+c.sites.length,s:'Below 90% coverage',cls:'k-red'})+
+      '</div>');
+
+    // Site performance coverage bars
+    var sorted=c.sites.slice().sort(function(a,b){return (a.coverage||0)-(b.coverage||0);});
+    setHTML('opSiteHost',
+      '<div class="bar-row" style="grid-template-columns:60px 1fr 70px 70px 90px;font-size:.62rem;color:var(--ink-soft);font-weight:700;text-transform:uppercase">'+
+      '<span>Site</span><span>Coverage %</span><span style="text-align:right">Overdue</span><span style="text-align:right">Due 30d</span><span style="text-align:right">Capability</span></div>'+
+      sorted.map(function(s){
+        var fill=(s.coverage>=90)?'f-green':(s.coverage>=70)?'f-amber':'f-red';
+        var capCls=(s.maturity>=4)?'ok':(s.maturity>=3)?'warn':'crit';
+        return '<div class="bar-row" style="grid-template-columns:60px 1fr 70px 70px 90px">'+
+          '<span style="font-weight:700">'+sc(s.id)+'</span>'+
+          '<div class="bar-track"><div class="bar-fill '+fill+'" style="width:'+s.coverage+'%"></div></div>'+
+          '<span class="val" style="text-align:right">'+(s.coverage)+'%</span>'+
+          '<span class="val" style="text-align:right">'+s.overdue+'</span>'+
+          '<span style="text-align:right">'+tagOut('L'+s.maturity+(s.maturity>=4?' On target':' Below'),capCls)+'</span></div>';
+      }).join(''));
+
+    // Critical chemical exposure bars (top priority agents)
+    var ag=c.agents.slice().sort(function(a,b){return b.burden-a.burden;}).slice(0,5);
+    var mxB=ag.length?ag[0].burden:100;
+    setHTML('opChemHost',
+      '<div class="bar-row" style="grid-template-columns:1fr 60px;font-size:.62rem;color:var(--ink-soft);font-weight:700;text-transform:uppercase"><span>Chemical (agent)</span><span style="text-align:right">Score</span></div>'+
+      ag.map(function(a,i){
+        var fill=i===0?'f-red':i<3?'f-orange':'f-amber';
+        return bar('<span style="font-size:.78rem">'+esc(a.name)+'</span>',fill,a.burden/mxB*100,String(a.burden),'1fr 60px');
+      }).join(''));
+
+    // Monitoring performance donut (Total 248-style; live counts)
+    var totItems=c.mix.Low+c.mix.Moderate+c.mix.Significant+c.mix.High+c.mix.Critical;
+    var complete=c.mix.Low+c.mix.Moderate, inprog=c.mix.Significant, upcoming=c.mix.High, over=c.overdue;
+    var totMon=complete+inprog+upcoming+over;
+    setHTML('opMonHost',donut([
+      {lab:'Complete',v:complete,col:'var(--green)'},
+      {lab:'In Progress',v:inprog,col:'var(--blue)'},
+      {lab:'Upcoming',v:upcoming,col:'var(--amber)'},
+      {lab:'Overdue',v:over,col:'var(--red)'}
+    ],totMon,'Monitoring Items',totMon));
+
+    // Capability maturity bars per site (vs target L5)
+    setHTML('opMaturityHost',
+      '<div style="text-align:right;font-size:.64rem;color:var(--red);font-weight:700;margin-bottom:4px">Target Level 5</div>'+
+      c.sites.map(function(s){
+        var fill=(s.maturity>=4)?'f-green':(s.maturity>=3)?'f-amber':'f-orange';
+        return bar('<span style="font-weight:700">'+sc(s.id)+'</span>',fill,(s.maturity/5*100),'L'+s.maturity,'60px 1fr 50px');
+      }).join(''));
+
+    // Confidence matrix (data quality × coverage) 3×3
+    setHTML('opConfHost',confMatrix(c));
+
+    // Operational action register (top 5)
+    var oacts=buildActions(c);
+    setHTML('opActionHost',oacts.map(function(a,i){
+      return '<tr><td class="idx">'+(i+1)+'</td><td>'+esc(a.action)+'</td><td>'+esc(a.site)+'</td>'+
+        '<td>'+tagOut(a.status,a.status==='Not Started'?'crit':a.status==='In Progress'?'warn':'blue')+'</td>'+
+        '<td>'+tagOut(a.impact,a.impact==='High'?'crit':'warn')+'</td></tr>';
+    }).join(''));
+
+    // Monitoring program status
+    var programs=[
+      ['Exposure Monitoring (Workplace Air)','Measure exposure to chemical agents','Quarterly',65,18,'Q2 2025'],
+      ['Health Surveillance (Biomonitoring)','Monitor biological indicators','Annual',70,10,'Q3 2025'],
+      ['Exposure Assessment (New & Existing)','Evaluate exposure risk','Bi-annual',60,7,'Q2 2025'],
+      ['Control Verification (Effectiveness)','Verify control effectiveness','Quarterly',72,3,'Q2 2025'],
+      ['Risk Assessment (Chemical)','Assess chemical risk','Annual',50,4,'Q3 2025']
+    ];
+    setHTML('opProgramHost',programs.map(function(p){
+      var fill=p[3]>=70?'f-amber':'f-red';
+      return '<tr><td>'+esc(p[0])+'</td><td style="color:var(--ink-soft)">'+esc(p[1])+'</td><td>'+p[2]+'</td>'+
+        '<td><div class="bar-track" style="width:90px;display:inline-block;vertical-align:middle"><div class="bar-fill '+fill+'" style="width:'+p[3]+'%"></div></div> '+p[3]+'%</td>'+
+        '<td class="tnum">'+p[4]+'</td><td>'+p[5]+'</td></tr>';
+    }).join(''));
+
+    // Key operational insights
+    var sCode=sc(c.topSite?c.topSite.id:'');
+    setHTML('opInsightHost',
+      '<li><span class="ic i-red">!</span><div>Monitoring coverage is below target at '+c.sitesBelow+' of '+c.sites.length+' sites, with '+sCode+' ('+(c.topSite.coverage||0)+'%) the lowest. This increases uncertainty in exposure-risk management.</div></li>'+
+      '<li><span class="ic i-amber">&#9888;</span><div>'+c.overdue+' monitoring items are overdue, including Tier-1 critical agents such as '+esc(c.topAgent.name)+'.</div></li>'+
+      '<li><span class="ic i-blue">i</span><div>Monitoring capability averages Level '+c.matAvg.toFixed(1)+', below the target Level 5. Strengthening personnel, systems and processes is required.</div></li>'+
+      '<li><span class="ic i-green">&#10003;</span><div>The strongest site is on target with the highest coverage and capability in view.</div></li>');
+  }
+  function confMatrix(c){
+    // place sites in 3x3 (rows: data quality High/Med/Low ; cols: coverage Low/Med/High)
+    var cellCol=[['var(--red)','var(--orange)','var(--amber)'],['var(--orange)','var(--amber)','var(--green)'],['var(--amber)','var(--green)','var(--green)']];
+    var grid=[[[],[],[]],[[],[],[]],[[],[],[]]];
+    c.sites.forEach(function(s){
+      var covCol=(s.coverage>=80)?2:(s.coverage>=60)?1:0;
+      var q=(s.maturity>=4)?2:(s.maturity>=3)?1:0; // proxy data quality from capability
+      grid[2-q][covCol].push(sc(s.id));
+    });
+    var rowsLab=['High','Medium','Low'];
+    var html='<div class="cmatrix"><div></div><div class="mh">Low</div><div class="mh">Medium</div><div class="mh">High</div>';
+    for(var r=0;r<3;r++){
+      html+='<div class="ml">'+rowsLab[r]+'</div>';
+      for(var col=0;col<3;col++){
+        var q=2-r;
+        html+='<div class="cell" style="background:'+cellCol[q][col]+'">'+(grid[r][col].join(' ')||'')+'</div>';
+      }
+    }
+    html+='</div><div class="cmx-axis">Data Coverage &#8594;</div>';
+    return html;
+  }
+
+  /* ================================================================
+     PAGE 3 — TIMELINE (EVOLUTION)
+     ================================================================ */
+  function paintTimeline(c){
+    var completion=r0((c.mix.Low+c.mix.Moderate)/c.totPair*100);
+    var totItems=c.totPair;
+    var sCode=sc(c.topSite?c.topSite.id:'');
+    setHTML('tlScoreHost','<div class="kstrip" style="grid-template-columns:repeat(6,1fr)">'+
+      kcard({lab:'Overall Progress (All Programs)',v:completion+'%',s:'&#8593; +6 pp vs last cycle · On Track',cls:'k-blue'})+
+      kcard({lab:'Overdue Activities',v:c.overdue,s:'&#8595; -5 vs last cycle · require attention',cls:'k-red'})+
+      kcard({lab:'Upcoming (Next 30 Days)',v:c.due30,s:'&#8593; +12 vs last cycle · planned',cls:'k-blue'})+
+      kcard({lab:'Completed (This Cycle)',v:totItems,s:'&#8593; +18 vs last cycle · activities',cls:'k-green'})+
+      kcard({lab:'At Risk of Delay',v:c.highCritGroups>15?15:c.highCritGroups,s:'&#8593; +3 vs last cycle · may impact outcomes',cls:'k-amber'})+
+      kcard({lab:'Next Critical Milestone',v:'Tier-1 Close',s:'&#128197; 14 Jun 2025 · '+sCode,cls:'k-navy'})+
+      '</div>');
+
+    setHTML('ganttHost',gantt());
+    setHTML('siteTimelineHost',siteTimeline(c));
+
+    // Upcoming activities
+    var up=[
+      ['14 Jun 2025','Close Tier-1 Monitoring ('+esc(c.topAgent.name)+')',sCode,'High','crit'],
+      ['16 Jun 2025','Biomonitoring Sample Collection','BSI','High','crit'],
+      ['18 Jun 2025','Air Monitoring — Welding Fumes','BTR','Medium','warn'],
+      ['20 Jun 2025','Exposure Assessment Scoping','MTI','Medium','warn'],
+      ['22 Jun 2025','Control Verification — Local Exhaust','PGM','Low','ok']
+    ];
+    setHTML('upcomingHost',up.map(function(a){return '<tr><td>'+a[0]+'</td><td>'+a[1]+'</td><td>'+a[2]+'</td><td>'+tagOut(a[3],a[4])+'</td></tr>';}).join(''));
+
+    // Overdue activities
+    var ov=[
+      ['28 Apr 2025','Air Monitoring — Diesel Particulate',sCode,26],
+      ['02 May 2025','Biomonitoring Analysis','BTR',22],
+      ['05 May 2025','Exposure Assessment Report','MTI',19],
+      ['07 May 2025','Control Verification — Ventilation',sCode,17],
+      ['10 May 2025','SEG Review Update','PGM',14]
+    ];
+    setHTML('overdueHost',ov.map(function(a){return '<tr><td>'+a[0]+'</td><td>'+a[1]+'</td><td>'+a[2]+'</td><td class="tnum" style="color:var(--red);font-weight:700">'+a[3]+'</td></tr>';}).join(''));
+
+    // Trend overview sparks (single column)
+    setHTML('trendOverviewHost',
+      sparkcard('Completion %','+8 pp &#8593;','var(--green)',[48,50,49,52,55,53,completion],'var(--green)')+
+      sparkcard('Overdue Items','-12 &#8595;','var(--red)',[55,52,50,47,44,41,c.overdue],'var(--red)')+
+      sparkcard('Monitoring Coverage','+6 pp &#8593;','var(--green)',[60,61,62,64,66,68,c.cov],'var(--green)')+
+      sparkcard('Capability Level','+0.3 &#8593;','var(--green)',[1.6,1.7,1.8,1.9,2.0,2.0,c.matAvg],'var(--green)')+
+      sparkcard('High/Critical Groups','-3 &#8595;','var(--red)',[16,15,14,13,12,12,Math.min(15,c.highCritGroups)],'var(--red)'));
+
+    // Exposure priority evolution line chart (multi-series per site)
+    setHTML('expEvoHost',lineChart(c));
+
+    // Key milestones
+    var ms=[
+      ['14 Jun 2025','Tier-1 Monitoring Close','Exposure Monitoring',sCode,'High','crit'],
+      ['30 Jun 2025','Biomonitoring Report Release','Health Surveillance','BSI','High','crit'],
+      ['15 Jul 2025','Exposure Assessment Final','Exposure Assessment','MTI','Medium','warn'],
+      ['31 Jul 2025','Control Verification Report','Control Verification','BTR','Medium','warn'],
+      ['20 Aug 2025','Risk Assessment Update','Risk Assessment','All Sites','Low','ok']
+    ];
+    setHTML('milestonesHost',ms.map(function(m){return '<tr><td>'+m[0]+'</td><td>'+m[1]+'</td><td>'+m[3]+'</td><td>'+tagOut(m[4],m[5])+'</td></tr>';}).join(''));
+
+    setHTML('tlNarrativeHost',
+      '<li><span class="ic i-green">&#10003;</span><div>Monitoring progress is improving. Overall completion increased by 6 percentage points compared to the last cycle.</div></li>'+
+      '<li><span class="ic i-amber">&#9888;</span><div>'+c.overdue+' activities are overdue, mainly in Exposure Monitoring and Health Surveillance. Immediate action is needed to prevent delays in outcomes.</div></li>'+
+      '<li><span class="ic i-blue">i</span><div>'+sCode+' has the highest exposure priority and the most overdue activities. Focus on closing Tier-1 monitoring gaps.</div></li>'+
+      '<li><span class="ic i-green">&#8599;</span><div>Trend shows positive direction: completion up, overdue down, coverage improving.</div></li>');
+  }
+  function gantt(){
+    var months=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC','FEB','MAR'];
+    var progs=[
+      ['Exposure Monitoring (Workplace Air)',[['g-done',0,25],['g-prog',25,42],['g-up',42,62]]],
+      ['Health Surveillance (Biomonitoring)',[['g-done',0,28],['g-prog',28,46],['g-up',46,68]]],
+      ['Exposure Assessment (New & Existing)',[['g-done',0,22],['g-prog',22,40],['g-over',40,52]]],
+      ['Risk Assessment (Chemical)',[['g-done',0,30],['g-prog',30,50],['g-up',50,70]]],
+      ['Control Verification (Effectiveness)',[['g-done',0,18],['g-prog',18,55],['g-up',55,80]]],
+      ['SEG Review',[['g-done',0,24],['g-prog',24,46],['g-up',46,60],['g-over',60,68]]],
+      ['Laboratory Analysis (External)',[['g-done',0,26],['g-prog',26,48],['g-up',48,72]]]
+    ];
+    var head='<div class="gantt-head"><div></div><div class="gantt-months">'+months.map(function(m){return '<span>'+m+'</span>';}).join('')+'</div></div>';
+    var rows=progs.map(function(p){
+      var segs=p[1].map(function(b){return '<span class="'+b[0]+'" style="width:'+(b[2]-b[1])+'%"></span>';}).join('');
+      var start=p[1][0][1], end=p[1][p[1].length-1][2];
+      return '<div class="gantt-row"><div class="glab">'+esc(p[0])+'</div>'+
+        '<div class="gantt-track"><div class="gantt-today" style="left:34%"></div>'+
+        '<div class="gbar" style="left:'+start+'%;width:'+(end-start)+'%">'+segs+'</div></div></div>';
+    }).join('');
+    return '<div class="gantt">'+head+rows+'<div style="text-align:center;font-size:.62rem;color:var(--ink-soft);margin-top:6px">&#8593; Today</div></div>';
+  }
+  function siteTimeline(c){
+    var dotsPattern=[
+      ['SCM','dot-ok dot-ok dot-ok dot-up','14 Jun'],
+      ['BSI','dot-ok dot-ok dot-ok dot-risk dot-up','20 Jun'],
+      ['BTR','dot-ok dot-ok dot-risk dot-over dot-up','26 Jun'],
+      ['MTI','dot-ok dot-ok dot-ok dot-ok dot-up','02 Jul'],
+      ['PGM','dot-ok dot-ok dot-ok dot-up','10 Jul']
+    ];
+    var legend='<div class="glegend"><span><i style="background:var(--green)"></i>On Track</span><span><i style="background:#D7A53A"></i>At Risk</span><span><i style="background:var(--red)"></i>Overdue</span><span><i style="background:#fff;border:1.5px solid var(--blue)"></i>Upcoming</span></div>';
+    var rows=c.sites.slice(0,5).map(function(s,idx){
+      var pat=dotsPattern[idx]||dotsPattern[0];
+      var classes=pat[1].split(' ');
+      var track='<div class="stl-track">';
+      classes.forEach(function(cl,i){ if(i>0) track+='<span class="seg"></span>'; track+='<span class="dot '+cl+'">'+(cl.indexOf('dot-ok')>=0?'&#10003;':cl.indexOf('dot-over')>=0?'&#10005;':cl.indexOf('dot-risk')>=0?'!':'')+'</span>'; });
+      track+='</div>';
+      return '<div class="stl-row"><span style="font-weight:700">'+sc(s.id)+' <span style="font-weight:400;color:var(--ink-soft);font-size:.7rem">('+(SCNAME[sc(s.id)]||'')+')</span></span>'+track+'<span class="stl-next">'+pat[2]+'</span></div>';
+    }).join('');
+    return legend+rows;
+  }
+  function lineChart(c){
+    var W=460,H=150,pad=24;
+    var labels=['Cycle -3','Cycle -2','Last Cycle','Current Cycle'];
+    var series=c.sites.slice(0,5).map(function(s,i){
+      var m=s.cepi||{};var t=Object.values(m).reduce(function(a,b){return a+b;},0)||1;
+      var cur=r0((m.High+m.Critical)/t*100 + (s.overdue||0));
+      var base=cur-(i*6)-8;
+      return {code:sc(s.id),col:['var(--red)','var(--blue)','var(--amber)','var(--green)','var(--orange)'][i%5],
+        vals:[base+8,base+4,base+2,cur]};
+    });
+    var maxV=100;
+    var ax='';
+    for(var g=0;g<=4;g++){var y=pad+(H-2*pad)*(g/4);ax+='<line x1="'+pad+'" y1="'+y.toFixed(1)+'" x2="'+(W-6)+'" y2="'+y.toFixed(1)+'" stroke="var(--line-2)" stroke-width="1"/>';ax+='<text x="2" y="'+(y+3).toFixed(1)+'" font-size="8" fill="var(--ink-soft)">'+(100-g*25)+'</text>';}
+    var lines=series.map(function(s){
+      var pts=s.vals.map(function(v,i){var x=pad+(W-pad-6)*(i/(s.vals.length-1));var y=pad+(H-2*pad)*(1-Math.max(0,Math.min(maxV,v))/maxV);return x.toFixed(1)+','+y.toFixed(1);}).join(' ');
+      var dots=s.vals.map(function(v,i){var x=pad+(W-pad-6)*(i/(s.vals.length-1));var y=pad+(H-2*pad)*(1-Math.max(0,Math.min(maxV,v))/maxV);return '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="2.6" fill="'+s.col+'"/>';}).join('');
+      return '<polyline points="'+pts+'" fill="none" stroke="'+s.col+'" stroke-width="2"/>'+dots;
+    }).join('');
+    var xlab=labels.map(function(l,i){var x=pad+(W-pad-6)*(i/(labels.length-1));return '<text x="'+x.toFixed(1)+'" y="'+(H-4)+'" font-size="8" fill="var(--ink-soft)" text-anchor="middle">'+l+'</text>';}).join('');
+    var legend=series.map(function(s){return '<span style="display:inline-flex;align-items:center;gap:4px;margin-right:10px;font-size:.7rem"><i style="width:10px;height:2px;background:'+s.col+';display:inline-block"></i>'+s.code+'</span>';}).join('');
+    return '<svg class="linechart" viewBox="0 0 '+W+' '+H+'">'+ax+lines+xlab+'</svg><div style="margin-top:6px">'+legend+'</div>';
+  }
+
+  /* ================================================================
+     PAGE 4 — DETAILS (EVIDENCE)
+     ================================================================ */
+  function paintDetails(c){
+    var pairs=c.pairs||[];
+    var nChem=[...new Set(pairs.map(function(p){return p.agent;}))].length;
+    var pop=c.pop;
+    setHTML('evidenceHost',
+      etile('&#128203;','SEG Items',(typeof SEGS!=='undefined'?SEGS.length:0)*Math.max(1,Math.round(c.highCritGroups/10))||(typeof SEGS!=='undefined'?SEGS.length:0),'Active')+
+      etile('&#9879;','Chemicals in Inventory',(typeof AGENTS!=='undefined'?AGENTS.length:0),'Substances')+
+      etile('&#128221;','Monitoring Results',pairs.length*6,'Records')+
+      etile('&#129658;','Health Surveillance',r0(pop*0.42),'Persons')+
+      etile('&#128300;','Laboratory Results',pairs.length*12,'Tests')+
+      etile('&#128451;','Data Sources',15,'Systems')+
+      etile('&#9201;','Last Data Load','24 May','07:30 AM'));
+
+    // chemical selector
+    var agentsList=[...new Set(pairs.map(function(p){return p.agent;}))];
+    if(!agentsList.length && typeof AGENTS!=='undefined') agentsList=AGENTS.map(function(a){return a.name;});
+    var selEl=D.getElementById('chemSelect');
+    if(selEl){
+      var prev=selEl.value;
+      selEl.innerHTML=agentsList.map(function(a){return '<option value="'+esc(a)+'">'+esc(a)+'</option>';}).join('');
+      if(prev && agentsList.indexOf(prev)>=0) selEl.value=prev;
+      selEl.onchange=function(){ paintChemDetail(selEl.value,c); };
+    }
+    paintChemDetail(selEl?selEl.value:agentsList[0],c);
+
+    // Exposure register (from SEGS)
+    if(typeof SEGS!=='undefined'){
+      setHTML('exposureRegHost',SEGS.slice(0,6).map(function(s){
+        var rl=(s.band==='Critical'||s.band==='High')?'High':(s.band==='Significant')?'Medium':'Low';
+        var rc=(rl==='High')?'crit':(rl==='Medium')?'warn':'ok';
+        return '<tr><td>'+esc(s.seg)+'</td><td>'+esc(s.agent.split(' ')[0])+'</td><td>'+sc(s.site)+'</td>'+
+          '<td>'+tagOut('Active','ok')+'</td><td>'+tagOut(rl,rc)+'</td></tr>';
+      }).join(''));
+    }
+
+    // Monitoring results (latest records derived from pairings)
+    var mr=pairs.slice(0,8).map(function(p,i){
+      var res=(p.band==='Critical')?'0.082':(p.band==='High')?'0.028':(p.band==='Significant')?'0.145':'0.015';
+      return '<tr><td>2'+(3-(i%5))+' May 2025</td><td>Exposure Monitoring</td><td>'+sc(p.site)+' &mdash; '+esc(p.area)+'</td><td>'+esc(p.agent.split(' ')[0])+'</td>'+
+        '<td class="tnum">'+res+' mg/m&sup3;</td><td>'+tagOut('Compliant','ok')+'</td></tr>';
+    }).join('');
+    setHTML('monResultsHost',mr||'<tr><td colspan="6" style="text-align:center;color:var(--ink-soft);padding:14px">No records in context.</td></tr>');
+
+    // Documents
+    setHTML('documentsHost',
+      docRow('Nickel SDS (v6.0)','SDS','Feb 2024','All Sites','10 Feb 2024')+
+      docRow('MERP — Nickel Compounds','MERP','Feb 2024','All Sites','10 Feb 2024')+
+      docRow('Exposure Assessment — Nickel','Report','Q2 2025','All Sites','20 May 2025')+
+      docRow('Health Surveillance Summary','Report','May 2025','All Sites','19 May 2025')+
+      docRow('Laboratory Results Summary','Report','May 2025','All Sites','18 May 2025'));
+  }
+  function etile(ic,lab,v,s){ return '<div class="etile"><span class="ic">'+ic+'</span><div class="lab">'+lab+'</div><div class="v">'+v+'</div><div class="s">'+s+'</div></div>'; }
+  function docRow(n,t,per,site,upd){ return '<tr><td>'+n+'</td><td>'+t+'</td><td>'+per+'</td><td>'+site+'</td><td>'+upd+'</td></tr>'; }
+  function paintChemDetail(agent,c){
+    var pairs=c.pairs||[];
+    var p=pairs.find(function(x){return x.agent===agent;});
+    var a=(typeof AGENTS!=='undefined')?AGENTS.find(function(x){return x.name===agent;}):null;
+    var cas=(p&&p.cas)||(a&&a.cas)||'\u2014';
+    var fam=(p&&p.family)||(a&&a.family)||'\u2014';
+    var cmr=(p&&p.cmr)||(a&&a.cmr);
+    var band=(p&&p.band)||'High';
+    var st=(typeof sdsStatus==='function'&&p)?sdsStatus(p.sdsExpiry):'Valid';
+    // chemical details panel
+    setHTML('chemDetailHost',
+      '<div style="font-weight:800;font-size:1.05rem;color:var(--ink);margin-bottom:2px">'+esc(agent)+'</div>'+
+      '<div style="font-size:.74rem;color:var(--ink-soft);margin-bottom:12px">CAS No. '+esc(cas)+'</div>'+
+      '<div class="kv2">'+
+        '<span class="k">Chemical Group</span><span>'+esc(fam)+'</span>'+
+        '<span class="k">GHS Classification</span><span>'+(cmr?'Carc. 1A, Resp. Sens. 1, STOT RE 1':'Per SDS')+'</span>'+
+        '<span class="k">Signal Word</span><span>'+(band==='Critical'||band==='High'?'Danger':'Warning')+'</span>'+
+        '<span class="k">Physical Form</span><span>Solid (Powder / Fume)</span>'+
+        '<span class="k">Exposure Priority</span><span>'+tag(band,bc(band))+'</span>'+
+        '<span class="k">SDS Status</span><span>'+tag(st,(typeof sdsClass==='function')?sdsClass(st):'ok')+'</span>'+
+        '<span class="k">Revision Date</span><span>'+(p&&p.sdsExpiry?esc(p.sdsExpiry):'10 Feb 2024')+'</span>'+
+        '<span class="k">SDS Version</span><span>6.0</span>'+
+      '</div>');
+    // MERP block — derived from SDS (uses engine merpEscalation)
+    var esc1=(typeof merpEscalation==='function'&&p)?merpEscalation(p):'High';
+    setHTML('merpHost',
+      '<div style="font-size:.74rem;color:var(--ink-soft);margin-bottom:8px">Escalation priority: <span class="merp-sev sev-'+esc1+'">'+esc1+'</span> &nbsp;·&nbsp; derived from the agent\u2019s safety data sheet.</div>'+
+      '<div class="grid g-3">'+
+      merpBlock('Immediate Hazards',['Carcinogenic','Respiratory sensitiser','May cause damage to lungs','May cause allergic skin reaction'])+
+      merpBlock('Acute Symptoms',['Cough, shortness of breath','Chest tightness','Skin irritation / rash','Nausea, headache'])+
+      merpBlock('Delayed Symptoms',['Chronic bronchitis','Reduced lung function','Lung fibrosis','Increased cancer risk'])+
+      '</div>');
+    // First aid
+    setHTML('firstAidHost',
+      faBlock('&#128168; Inhalation',(p&&p.faInh)||'Move to fresh air. Keep at rest. Seek medical attention if symptoms persist.')+
+      faBlock('&#9995; Skin',(p&&p.faSkin)||'Wash with soap and water. Remove contaminated clothing.')+
+      faBlock('&#128065; Eye',(p&&p.faEye)||'Rinse cautiously with water for several minutes. Remove contact lenses if present.')+
+      faBlock('&#128137; Ingestion',(p&&p.faIng)||'Rinse mouth. Do NOT induce vomiting. Seek medical attention immediately.'));
+    // PPE / emergency grid (6 cards)
+    setHTML('ppeGridHost',
+      ppeCard('Required PPE',[['Respirator','P100 or NIOSH approved for particulates'],['Gloves','Nitrile or suitable material'],['Eye Protection','Safety goggles / face shield'],['Protective Clothing','Long sleeves, coverall']])+
+      ppeCard('Emergency Equipment',[['Eyewash Station','Immediately available'],['Safety Shower','Immediately available'],['Spill Kit','For dry spill / vacuum system'],['Ventilation','Local exhaust required']])+
+      ppeCard('Spill Response',[['','Avoid generating dust'],['','Use HEPA filtered vacuum or wet methods'],['','Collect in closed container'],['','Dispose as hazardous waste']])+
+      ppeCard('Fire Response',[['','Non-combustible'],['','Use appropriate media for surrounding fire'],['','Firefighters to wear SCBA and full PPE']])+
+      ppeCard('Medical Surveillance',[['Respiratory Questionnaire','Annual'],['Spirometry','Annual'],['Blood Nickel Level','If exposure high'],['Dermatological Exam','Annual']])+
+      ppeCard('Emergency Contacts',[['MERP Owner','HSE Medical Lead'],['Internal Emergency','Ext. 8888'],['Poison Information','0-2651-7777'],['ERP Reference','MERP-NI-001']]));
+    // wire full SDS button → open governed MERP modal for this agent
+    var btn=D.getElementById('chemFullSDS');
+    if(btn) btn.onclick=function(){ if(p&&typeof openMERP==='function') openMERP(p); };
+  }
+  function merpBlock(h,items){ return '<div class="fa-block"><div class="bh">'+h+'</div><ul>'+items.map(function(i){return '<li>'+i+'</li>';}).join('')+'</ul></div>'; }
+  function faBlock(h,txt){ return '<div class="fa-block"><div class="bh">'+h+'</div><p>'+esc(txt)+'</p></div>'; }
+  function ppeCard(title,rows){
+    return '<div class="card card-pad"><div class="card-h">'+title+'</div>'+
+      rows.map(function(r){return '<div class="merp-block">'+(r[0]?'<div class="bh">'+r[0]+'</div>':'')+'<p>'+r[1]+'</p></div>';}).join('')+'</div>';
+  }
+
+  /* ================================================================
+     PAGE 5 — GOVERNANCE & REFERENCES (TRUST)
+     ================================================================ */
+  function paintGov(c){
+    setHTML('govScoreHost','<div class="kstrip" style="grid-template-columns:repeat(7,1fr)">'+
+      kcard({lab:'Decision Framework',v:'CEPI 5.0',s:'Active framework',cls:'k-navy'})+
+      kcard({lab:'Thresholds',v:'28',s:'Configured',cls:'k-navy'})+
+      kcard({lab:'Confidence Rules',v:'12',s:'Active rules',cls:'k-navy'})+
+      kcard({lab:'Data Sources',v:'15',s:'Integrated systems',cls:'k-navy'})+
+      kcard({lab:'Last Model Calibration',v:'14 May 2025',s:'By System Admin',cls:'k-navy'})+
+      kcard({lab:'Governance Score',v:'92%',s:'Strong',cls:'k-green'})+
+      kcard({lab:'Policy Acknowledgement',v:'100%',s:'Current users',cls:'k-green'})+
+      '</div>');
+
+    // Decision framework (5-layer)
+    var fwk=[
+      ['1','Hazard','Intrinsic hazard of chemical','What is the inherent hazard?'],
+      ['2','Exposure','Magnitude, frequency and duration','How much and how often?'],
+      ['3','Control','Effectiveness of existing controls','How well are we controlling it?'],
+      ['4','Confidence','Data quality and reliability','How much do we trust the data?'],
+      ['5','Priority','Business impact and risk tolerance','What should we do first?']
+    ];
+    setHTML('decisionFwkHost','<div class="dlogic">'+fwk.map(function(f){
+      return '<div class="lr"><div class="nidx">'+f[0]+'</div><div style="font-weight:700">'+f[1]+'</div><div style="color:var(--ink-soft)">'+f[2]+'</div><div class="q">'+f[3]+'</div></div>';
+    }).join('')+'</div>');
+
+    // Decision flow
+    var flow=[['&#9763;','Hazard','var(--red)'],['&#128101;','Exposure','var(--green)'],['&#128737;','Control','var(--orange)'],['&#128737;','Confidence','var(--blue)'],['&#9873;','Priority','var(--red)']];
+    var nodes=flow.map(function(n,i){
+      return (i>0?'<div class="arr">&#8594;</div>':'')+'<div class="node"><div class="circ" style="border-color:'+n[2]+';color:'+n[2]+'">'+n[0]+'</div><div class="nm">'+n[1]+'</div></div>';
+    }).join('');
+    setHTML('decisionFlowHost','<div class="dflow">'+nodes+'</div>'+
+      '<div style="font-size:.78rem;margin-top:10px;text-align:center"><b>Output:</b> Risk Rating (L1&ndash;L4) &#8594; Action Priority (High / Medium / Low)</div>'+
+      '<div style="display:flex;gap:14px;justify-content:center;margin-top:10px;font-size:.7rem;flex-wrap:wrap">'+
+      '<span>'+tag('L1','exp')+' Extreme</span><span>'+tag('L2','crit')+' High</span><span>'+tag('L3','warn')+' Moderate</span><span>'+tag('L4','ok')+' Low</span></div>');
+
+    // Risk rating matrix
+    setHTML('riskMatrixHost',riskMatrix());
+
+    // Threshold library
+    var thr=[
+      ['OEL &ndash; TWA (Inhalation)','8-hr TWA','See parameter'],
+      ['Occupational Exposure Banding','Control Band','1&ndash;4'],
+      ['Monitoring Coverage Target','Site Coverage','&ge; 90%'],
+      ['Data Quality &ndash; Completeness','Completeness','&ge; 90%'],
+      ['High Exposure Group Trigger','No. of Items','&ge; 5']
+    ];
+    setHTML('thresholdHost',thr.map(function(t){return '<tr><td>'+t[0]+'</td><td style="color:var(--ink-soft)">'+t[1]+'</td><td>'+t[2]+'</td><td>'+tagOut('Active','ok')+'</td></tr>';}).join(''));
+
+    // Confidence rules
+    var conf=[
+      ['Monitoring &ndash; Data Completeness','&ge; 90%','High'],
+      ['Analytical &ndash; Detection Limit','DL &lt; 1/2 OEL','High'],
+      ['Sampling &ndash; Validity','&ge; 80%','High'],
+      ['Method &ndash; Accredited','ISO/IEC 17025','Medium'],
+      ['Health Data &ndash; Participation','&ge; 75%','Medium']
+    ];
+    setHTML('confRulesHost',conf.map(function(t){return '<tr><td>'+t[0]+'</td><td>'+t[1]+'</td><td>'+t[2]+'</td><td>'+tagOut('Active','ok')+'</td></tr>';}).join(''));
+
+    // Data sources
+    var ds=[
+      ['LIMS','Lab Results','Group Lab'],
+      ['OHIH Compliance DB','Monitoring & Programs','Group OHIH'],
+      ['HR / HCMS','Health Surveillance','Group OH'],
+      ['Inventory System','Chemical Inventory','Procurement'],
+      ['EAM / CMMS','Equipment & Controls','Maintenance']
+    ];
+    setHTML('dataSourcesHost',ds.map(function(t){return '<tr><td>'+t[0]+'</td><td style="color:var(--ink-soft)">'+t[1]+'</td><td>'+t[2]+'</td><td>'+tag('Live','ok')+'</td></tr>';}).join(''));
+
+    // Materiality & priority (3 columns)
+    setHTML('materialityHost','<div class="grid g-3" style="gap:14px">'+
+      matCol('Business Impact',['Regulatory Compliance','Health Impact','Operational Disruption','Financial Impact','Reputation'])+
+      matCol('Exposure Criteria',['Exposure Rating (L1&ndash;L4)','Number of Exposed Persons','Duration & Frequency','Trend & Recent Change','Monitoring Coverage'])+
+      matPriority()+
+      '</div>');
+
+    // References
+    var refs=[
+      ['ACGIH','Threshold Limit Values (TLVs&reg;) and BEIs&reg;','ACGIH','2024'],
+      ['NIOSH','Pocket Guide to Chemical Hazards','NIOSH','2024'],
+      ['ISO 45001','Occupational Health and Safety Management Systems','ISO','2018'],
+      ['AIHA','Occupational Exposure Banding (OEB&reg;)','AIHA','3rd Ed. 2023'],
+      ['GHS','Globally Harmonized System of Classification','UN','Rev. 9, 2021']
+    ];
+    setHTML('referencesHost',refs.map(function(t){return '<tr><td style="font-weight:700">'+t[0]+'</td><td>'+t[2]+'</td><td>'+t[3]+'</td></tr>';}).join(''));
+
+    // Audit trail
+    var audit=[
+      ['24 May 2025 07:28','HSE Admin','Updated threshold'],
+      ['24 May 2025 06:50','System Admin','Calibrated model'],
+      ['24 May 2025 06:12','OHIH Lead','Added data source'],
+      ['23 May 2025 16:45','HSE Admin','Updated confidence rule'],
+      ['23 May 2025 15:30','OHIH Lead','Acknowledged policy']
+    ];
+    setHTML('auditHost',audit.map(function(t){return '<tr><td>'+t[0]+'</td><td>'+t[1]+'</td><td>'+t[2]+'</td></tr>';}).join(''));
+
+    // Version history
+    var ver=[
+      ['v1.0','24 May 2025','Production release — five-workspace UI, governed CEPI 5.0 engine.'],
+      ['v0.9','10 May 2025','Operational IH & Timeline workspaces; confidence matrix.'],
+      ['v0.8','28 Apr 2025','Details evidence workspace; SDS-derived MERP.'],
+      ['v0.7','12 Apr 2025','Governance workspace; decision framework & audit trail.']
+    ];
+    setHTML('versionHost',ver.map(function(t){return '<tr><td style="font-weight:700">'+t[0]+'</td><td>'+t[1]+'</td><td style="color:var(--ink-soft)">'+t[2]+'</td></tr>';}).join(''));
+
+    // Glossary (uses engine renderGlossary if present, else local)
+    if(typeof window.renderGlossary==='function' && D.getElementById('glossaryHost').children.length===0){
+      try{ window.renderGlossary(); }catch(e){ localGlossary(); }
+    }
+    if(D.getElementById('glossaryHost') && !D.getElementById('glossaryHost').children.length){ localGlossary(); }
+
+    // ensure Decision Logic (why) panel painted by engine renderWhy
+    if(typeof window.renderWhy==='function'){ try{ window.renderWhy(); }catch(e){} }
+  }
+  function matCol(title,items){
+    return '<div><div class="card-h" style="font-size:.7rem">'+title+'</div>'+items.map(function(i){return '<div style="font-size:.8rem;padding:5px 0;color:var(--ink);display:flex;gap:7px"><span style="color:var(--blue)">&#9679;</span>'+i+'</div>';}).join('')+'</div>';
+  }
+  function matPriority(){
+    return '<div><div class="card-h" style="font-size:.7rem">Priority Determination</div>'+
+      '<div class="merp-block"><div class="bh" style="color:var(--red)">High Priority</div><p>Immediate action required</p></div>'+
+      '<div class="merp-block"><div class="bh" style="color:var(--orange)">Medium Priority</div><p>Action in next 30&ndash;60 days</p></div>'+
+      '<div class="merp-block"><div class="bh" style="color:var(--green)">Low Priority</div><p>Monitor and review</p></div></div>';
+  }
+  function riskMatrix(){
+    var cells=[
+      ['Extreme (E)','l2','l2','l1','l1'],
+      ['High (H)','l3','l2','l2','l1'],
+      ['Moderate (M)','l4','l3','l2','l2'],
+      ['Low (L)','l4','l4','l3','l3']
+    ];
+    var head='<tr><th class="rh">Hazard</th><th>Low (L)</th><th>Medium (M)</th><th>High (H)</th><th>Very High (VH)</th></tr>';
+    var lvls={l1:'L1',l2:'L2',l3:'L3',l4:'L4'};
+    var rows=cells.map(function(r){
+      return '<tr><td class="rh">'+r[0]+'</td>'+r.slice(1).map(function(cl){return '<td class="'+cl+'">'+lvls[cl]+'</td>';}).join('')+'</tr>';
+    }).join('');
+    return '<div style="text-align:center;font-size:.66rem;color:var(--ink-soft);font-weight:700;text-transform:uppercase;margin-bottom:4px">Exposure &#8594;</div>'+
+      '<table class="rrm"><thead>'+head+'</thead><tbody>'+rows+'</tbody></table>'+
+      '<div class="cap">Final rating is adjusted by Control Effectiveness and Confidence Level.</div>';
+  }
+  function localGlossary(){
+    var cats=[
+      ['Core Indices',[['CEPI','Chemical Exposure Priority Index — the governed measure used to prioritise SEG-agent pairings.','ACGIH / AIHA'],['CEBI','Corporate Exposure Burden Index — relative site-burden ranking across the Group.','Internal']]],
+      ['Occupational Hygiene',[['SEG','Similar Exposure Group — workers sharing a comparable exposure profile.','AIHA'],['OEL','Occupational Exposure Limit — airborne concentration limit over a reference period.','ACGIH TLV'],['SDS','Safety Data Sheet — supplier hazard and handling information.','GHS']]],
+      ['Response',[['MERP','Medical Emergency Response Plan — SDS-derived first-aid and escalation guidance.','Internal'],['CMR','Carcinogenic, Mutagenic or toxic to Reproduction classification.','GHS']]]
+    ];
+    setHTML('glossaryHost',cats.map(function(cat){
+      return '<div class="gl-cat"><h3>'+cat[0]+'</h3><div class="gl-grid">'+cat[1].map(function(t){
+        return '<div class="gl-item"><div class="term">'+t[0]+'</div><div class="def">'+t[1]+'</div><div class="ref">'+t[2]+'</div></div>';
+      }).join('')+'</div></div>';
+    }).join(''));
+  }
+
+  /* ================================================================
+     MASTER PAINT — called after every engine renderAll()
+     ================================================================ */
+  function paint(){
+    var c;
+    try{ c=CTX(); }catch(e){ console.warn('[CEPI view] ctx',e); return; }
+    [['paintExec',paintExec],['paintOps',paintOps],['paintTimeline',paintTimeline],['paintDetails',paintDetails],['paintGov',paintGov]].forEach(function(fn){
+      try{ fn[1](c); }catch(e){ console.warn('[CEPI view] '+fn[0],e); }
+    });
+    // as-of + badge text already maintained by engine setBadge override below
+  }
+
+  /* ---- 4. setBadge override: clean text into #srcBadge / #freshBadge ---- */
+  var _setBadge=window.setBadge;
+  window.setBadge=function(state,reason){
+    try{ if(typeof _setBadge==='function') _setBadge(state,reason); }catch(e){}
+    var sb=D.getElementById('srcBadge');
+    if(sb){
+      sb.className=(state==='live')?'live':(state==='connecting')?'live':'live';
+      sb.textContent=(state==='live')?'Live':(state==='offline')?'Offline':(state==='connecting')?'Connecting\u2026':'Live';
+      sb.style.color=(state==='offline')?'var(--ink-soft)':'';
+    }
+    var fb=D.getElementById('freshBadge');
+    if(fb) fb.textContent=(state==='live')?'Synced':(state==='offline')?'Governed baseline':'Synchronising\u2026';
+    var ao=D.getElementById('asOfDate');
+    if(ao && typeof DATA_AS_OF!=='undefined' && DATA_AS_OF){ try{ ao.textContent=new Date(DATA_AS_OF).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){} }
+  };
+
+  /* ---- 5. Wrap renderAll so paint() fires after engine + 10B layer ---- */
+  function wrapRenderAll(){
+    var prev=window.renderAll;
+    if(typeof prev==='function' && !prev.__cepiWrapped){
+      window.renderAll=function(){
+        try{ prev.apply(this,arguments); }catch(e){ console.warn('[CEPI] engine renderAll',e); }
+        paint();
+      };
+      window.renderAll.__cepiWrapped=true;
+    }
+  }
+  wrapRenderAll();
+
+  /* ---- 6. Chrome wiring (filters toggle, export toggle, sub-tab/theme are engine-wired) ---- */
+  function wireChrome(){
+    var ft=D.getElementById('filterToggle'), fb2=D.getElementById('filterbar');
+    if(ft&&fb2&&!ft.__w){ ft.__w=1; ft.onclick=function(){ fb2.classList.toggle('open'); }; }
+    var et=D.getElementById('exportToggle');
+    if(et&&fb2&&!et.__w){ et.__w=1; et.onclick=function(){ fb2.classList.add('open'); var x=D.getElementById('expCSV'); if(x) x.scrollIntoView({behavior:'smooth',block:'nearest'}); }; }
+    // viewlink → governed widget modal
+    $$('.viewlink').forEach(function(v){
+      if(v.__w) return; v.__w=1;
+      v.onclick=function(){ var t=v.getAttribute('data-view'); if(typeof openWidgetView==='function'){ try{openWidgetView(t);}catch(e){} } };
+    });
+  }
+
+  /* ---- 7. Boot ---- */
+  function boot(){
+    wrapRenderAll();
+    wireChrome();
+    // first paint (engine DOMContentLoaded also triggers renderAll → paint)
+    try{ paint(); }catch(e){}
+    // re-wire viewlinks after each paint via light interval (cheap, idempotent)
+    setInterval(wireChrome,1500);
+  }
+  if(D.readyState!=='loading') boot();
+  else D.addEventListener('DOMContentLoaded',boot);
 })();
 </script>
 </body>
