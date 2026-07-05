@@ -416,6 +416,113 @@ canvas{max-width:100%}
 @media (max-width:1300px){.p2-kpis{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:1300px){.p2-kpis.two{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:1024px){.p2-kpis{grid-template-columns:repeat(2,1fr)}}
+
+/* ============================================================
+   PAGE 3 — SITE BENCHMARK (scoped .p3-*)  [added v12]
+   ============================================================ */
+.p3-head{margin-bottom:14px}
+.p3-head h1{font-size:22px;font-weight:800;color:var(--ink);margin:2px 0 2px;letter-spacing:.01em}
+.p3-head .p3-sub{font-size:12.5px;color:var(--grey);margin:0}
+.p3-head .p3-q{font-size:12.5px;color:var(--ink);margin-top:5px;font-weight:600}
+.p3-head .p3-q .gold{color:var(--gold)}
+.p3-row1{display:grid;grid-template-columns:48fr 52fr;gap:var(--sp);align-items:stretch}
+.p3-row2{display:grid;grid-template-columns:32fr 32fr 36fr;gap:var(--sp);align-items:stretch;margin-top:var(--sp)}
+.p3-row1>*,.p3-row2>*{min-width:0;min-height:0}
+.p3-card{display:flex;flex-direction:column;min-width:0;min-height:0}
+.p3-card .card-head{flex:0 0 auto}
+/* Component 1 radar */
+.p3-radar-layout{display:grid;grid-template-columns:120px 1fr 190px;gap:12px;align-items:stretch;min-height:0}
+.p3-legend{display:flex;flex-direction:column;gap:9px;justify-content:center;font-size:11px}
+.p3-legend .li{display:flex;align-items:center;gap:7px}
+.p3-legend .sw{width:16px;height:3px;border-radius:2px;flex:0 0 auto}
+.p3-legend .nm{font-weight:600;color:var(--ink)}
+.p3-radar-wrap{position:relative;height:262px;min-width:0;min-height:0}
+.p3-htr{background:var(--line-soft);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:10.5px;color:var(--grey);align-self:stretch;overflow:auto}
+.p3-htr h4{font-size:11px;font-weight:700;color:var(--ink);margin:0 0 6px}
+.p3-htr .grp{font-size:9.5px;font-weight:700;letter-spacing:.04em;color:var(--gold);margin:7px 0 3px;text-transform:uppercase}
+.p3-htr ul{list-style:none;margin:0;padding:0}
+.p3-htr li{margin:2px 0;line-height:1.35}
+.p3-htr b{color:var(--ink)}
+.p3-gov{margin-top:10px;font-size:10px;color:var(--grey);border-top:1px solid var(--line);padding-top:8px;line-height:1.5}
+/* Component 2 matrix */
+.p3-matrix{width:100%;border-collapse:collapse;font-size:11px}
+.p3-matrix th,.p3-matrix td{padding:7px 6px;text-align:center;border-bottom:1px solid var(--line-soft)}
+.p3-matrix thead th{background:#FAFAFB;font-size:9.5px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:.02em;vertical-align:top}
+.p3-matrix thead th .dir{display:block;font-size:8.5px;font-weight:600;color:var(--grey);text-transform:none;letter-spacing:0;margin-top:2px}
+.p3-matrix td.site{text-align:left;font-weight:700;color:var(--ink);white-space:nowrap}
+.p3-matrix .pill{font-size:9px;padding:2px 7px}
+.p3-legend-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:10px;color:var(--grey)}
+.p3-legend-row .li{display:flex;align-items:center;gap:6px}
+.p3-legend-row .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+/* KPI tabs (Comp 3 & 4) */
+.p3-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.p3-tab{font-size:10.5px;font-weight:700;padding:4px 11px;border-radius:16px;border:1px solid var(--line);background:#fff;color:var(--grey);cursor:pointer;letter-spacing:.02em}
+.p3-tab.active{background:var(--gold);border-color:var(--gold);color:#fff}
+.p3-cue{font-size:10px;color:var(--grey);margin:-4px 0 8px}
+.p3-cue .per{color:var(--ink);font-weight:600}
+/* Comp 3 ranking table */
+.p3-rank{width:100%;border-collapse:collapse;font-size:11.5px}
+.p3-rank th,.p3-rank td{padding:7px 8px;border-bottom:1px solid var(--line-soft)}
+.p3-rank thead th{font-size:9.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--grey);text-align:left}
+.p3-rank th.num,.p3-rank td.num{text-align:right}
+.p3-rank td.rk{font-weight:800;color:var(--gold);width:34px}
+.p3-rank td.st{text-align:center}
+.p3-rank .pill{font-size:9px;padding:2px 7px}
+.p3-more{margin-top:9px;font-size:10.5px;font-weight:700;color:var(--gold);background:none;border:none;cursor:pointer;padding:0}
+/* Comp 4 distribution */
+.p3-dist{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.p3-dist .db{border:1px solid var(--line);border-radius:9px;padding:11px 9px;text-align:center;display:flex;flex-direction:column;gap:4px}
+.p3-dist .db.good{background:var(--good-bg);border-color:#bfe6cd}
+.p3-dist .db.watch{background:var(--watch-bg);border-color:#eddca0}
+.p3-dist .db.action{background:var(--action-bg);border-color:#f2c4c4}
+.p3-dist .db .lab{font-size:9.5px;font-weight:800;letter-spacing:.03em}
+.p3-dist .db.good .lab{color:#1e6b3d}.p3-dist .db.watch .lab{color:#8a6500}.p3-dist .db.action .lab{color:#9e2b2b}
+.p3-dist .db .cnt{font-size:26px;font-weight:800;color:var(--ink);line-height:1}
+.p3-dist .db .pct{font-size:11px;font-weight:700;color:var(--ink)}
+.p3-dist .db .ref{font-size:9px;color:var(--grey);line-height:1.3}
+.p3-dist-tot{margin-top:10px;font-size:11px;font-weight:700;color:var(--ink);text-align:center}
+/* Comp 5 insights */
+.p3-insight-head{display:flex;justify-content:flex-end;font-size:10px;color:var(--grey);margin-bottom:8px}
+.p3-banner{display:flex;align-items:center;gap:9px;background:var(--action-bg);border:1px solid #f2c4c4;border-radius:9px;padding:10px 11px;margin-bottom:10px}
+.p3-banner.calm{background:var(--good-bg);border-color:#bfe6cd}
+.p3-banner .bic{flex:0 0 auto;color:#9e2b2b}
+.p3-banner.calm .bic{color:#1e6b3d}
+.p3-banner .bt{font-size:12.5px;font-weight:800;color:var(--ink)}
+.p3-banner .bs{font-size:10px;color:var(--grey)}
+.p3-ins{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.p3-ins li{display:flex;align-items:flex-start;gap:9px;font-size:11.5px;color:var(--ink);line-height:1.4}
+.p3-ins .iic{flex:0 0 auto;margin-top:1px}
+.p3-ins .iic.att{color:var(--action)}.p3-ins .iic.sev{color:var(--gold)}
+.p3-ins .iic.pos{color:var(--good)}.p3-ins .iic.inf{color:var(--grey)}.p3-ins .iic.ill{color:var(--navy)}
+.p3-ins b{font-weight:700}
+@media (max-width:920px){.p3-row1{grid-template-columns:1fr}.p3-row2{grid-template-columns:1fr}.p3-radar-layout{grid-template-columns:1fr}}
+
+
+/* ---- Page 3 v12.1 refinements (header badge + local utilities) ---- */
+.p3-head .p3-title-row{display:inline-flex;align-items:center;gap:11px;margin-bottom:4px}
+.p3-head .p3-title-row .p3-num{width:30px;height:30px;border-radius:8px;background:var(--gold);
+  color:#1a1300;font-size:16px;font-weight:800;line-height:1;letter-spacing:-.01em;
+  display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.p3-head .p3-title-row h1{font-size:20px;font-weight:800;color:var(--ink);margin:0;letter-spacing:.02em;text-transform:uppercase}
+.p3-util{margin-top:9px}
+.p3-hidden{display:none}
+.p3-util-link{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;
+  color:var(--gold);background:none;border:none;cursor:pointer;padding:0}
+.p3-util-link:hover{text-decoration:underline}
+.p3-util-panel{margin-top:9px;border:1px solid var(--line);background:var(--line-soft);
+  border-radius:8px;padding:10px 11px;font-size:10.5px;color:var(--grey);line-height:1.45}
+.p3-util-panel h5{font-size:11px;color:var(--ink);margin:0 0 6px;font-weight:700}
+.p3-util-panel .meta{font-size:9.5px;color:var(--grey);margin:0 0 6px}
+.p3-thr-row{display:flex;gap:8px;margin:3px 0}
+.p3-thr-row .k{font-weight:700;flex:0 0 96px}
+.p3-thr-row.good .k{color:#1e6b3d}.p3-thr-row.watch .k{color:#8a6500}.p3-thr-row.action .k{color:#9e2b2b}
+.p3-det-tbl{width:100%;border-collapse:collapse;font-size:10px;margin-top:2px}
+.p3-det-tbl th,.p3-det-tbl td{padding:4px 5px;border-bottom:1px solid var(--line);text-align:center;vertical-align:top}
+.p3-det-tbl th{font-size:8.5px;text-transform:uppercase;color:var(--grey);letter-spacing:.02em}
+.p3-det-tbl td.s{text-align:left;font-weight:700;color:var(--ink);white-space:nowrap}
+.p3-det-tbl td.names{text-align:left;color:var(--grey);min-width:70px}
+.p3-det-c{font-weight:800}.p3-det-c.a{color:var(--action)}.p3-det-c.w{color:var(--watch)}.p3-det-c.g{color:var(--good)}.p3-det-c.n{color:var(--grey-2)}
+
 </style>
 </head>
 <body>
@@ -1659,89 +1766,308 @@ function monthlyPerfTable(span){
 /* ============================================================
    PAGE 3 — SITE BENCHMARK (Ch.6.7 / 7.12)
    ============================================================ */
+/* ============================================================
+   PAGE 3 — SITE BENCHMARK  (v12 reconstruction — Ch.6.7 / 7.12)
+   Five governed components. KPI engine, statusFor & filters frozen.
+   ============================================================ */
+let p3Best="FTWR", p3Dist="FTWR", p3Exp=false;
+let p3ThrOpen=false, p3DetOpen=false;
+/* Page-3-scoped semantic line icons (inline SVG inner-paths; consistent stroke via svg()) */
+const P3I={
+  alertCircle:'<circle cx="12" cy="12" r="9"/><path d="M12 8v4.5M12 16h.01"/>',
+  alertTri:'<path d="M12 3.5l8.5 15h-17z"/><path d="M12 10v4M12 17h.01"/>',
+  heartbeat:'<path d="M3 12h3.5l2-5 3.2 10 2.1-6.5L17 12h4"/>',
+  calClock:'<path d="M21 10V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6M8 2v4M16 2v4M3 10h18"/><circle cx="18" cy="17" r="3.6"/><path d="M18 15.4V17l1.1.9"/>',
+  medcross:'<rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M12 10.5v5M9.5 13h5"/>',
+  userCheck:'<path d="M15 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M16 11.5l2 2 4-4"/>',
+  shieldCheck:'<path d="M12 3l7 3v5c0 4.6-3.1 7.8-7 9-3.9-1.2-7-4.4-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.8h.01"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>'
+};
+/* card-scoped active-tab projection of p3Best / p3Dist (presentation only) */
+function p3SyncTabs(containerId, activeKpi){
+  const c=document.getElementById(containerId); if(!c) return;
+  [...c.querySelectorAll(".p3-tab")].forEach(b=>b.classList.toggle("active", b.dataset.kpi===activeKpi));
+}
+const P3_AXES=["FTWR","CMR","MFR","SSR","ASR","OIR"];
+const P3_TREND=["CMR","SSR"];               // trend-referenced (no national numeric benchmark)
+const P3_UNIT={FTWR:"%",CMR:"%",MFR:"per 1M MH",SSR:"per 100 spells",ASR:"per 1M MH",OIR:"per 1M workers"};
+const P3_DIRTXT={FTWR:"Higher is Better",CMR:"Lower is Better",MFR:"Lower is Better",SSR:"Lower is Better",ASR:"Lower is Better",OIR:"Lower is Better"};
+
+function p3Sites(){ return SITE_ORDER.filter(s=>dimRows().some(r=>r.site===s)); }
+function p3Rows(rm,s){ return rowsForMY(rm).filter(r=>r.site===s); }
+function p3Prev(id,s,rm){ const p=prevMY(rm); if(!p) return null; return kpiVal(id,rowsForMY(p).filter(r=>r.site===s)); }
+function p3Stat(id,s,rm){
+  const v=kpiVal(id,p3Rows(rm,s));
+  const prev = P3_TREND.includes(id) ? p3Prev(id,s,rm) : null;   // deliver valid prior-period context
+  return {v,st:statusFor(id,v,prev)};
+}
+
 function pagePerfBench(host){
+  p3Exp=false;
   const rm=reportingMY();
-  host.innerHTML="";host.appendChild(tag("3","Site Benchmark"));
-  if(!rm){host.appendChild(emptyState("No data for the current filter selection."));return;}
-  const sites=SITE_ORDER.filter(s=>dimRows().some(r=>r.site===s));
+  host.innerHTML="";
+  host.appendChild(p3Header());
+  if(!rm){ host.appendChild(emptyState("No data for the current filter selection.")); host.appendChild(pageNo(3)); return; }
+  const sites=p3Sites();
 
-  const g=el("div","grid grid-12");
-  g.appendChild(benchHeat(rm,sites,"col-span-7"));
-  g.appendChild(chartCard("Radar Comparison — "+labelOf(rm),"col-span-5","radar",300));
-  host.appendChild(g);
+  const row1=el("div","p3-row1");
+  row1.appendChild(p3Overview(rm,sites));
+  row1.appendChild(p3Matrix(rm,sites));
+  host.appendChild(row1);
 
-  const g2=el("div","grid grid-12");g2.style.marginTop="var(--sp)";
-  g2.appendChild(enterpriseRanking(rm,sites,"col-span-5"));
-  g2.appendChild(benchTable(rm,sites,"col-span-7"));
-  host.appendChild(g2);
+  const row2=el("div","p3-row2");
+  row2.appendChild(p3BestCard(rm,sites));
+  row2.appendChild(p3DistCard(rm,sites));
+  row2.appendChild(p3Insights(rm,sites));
+  host.appendChild(row2);
   host.appendChild(pageNo(3));
 
-  // radar: normalize each KPI 0..100 (best=100). Use FTWR,MFR,ASR,OIR
-  const ids=["FTWR","MFR","ASR","OIR"];
-  const raw={};ids.forEach(id=>raw[id]=sites.map(s=>kpiVal(id,rowsForMY(rm).filter(r=>r.site===s))));
-  const norm=(id,v)=>{const arr=raw[id].filter(x=>x!=null);if(!arr.length||v==null)return 0;
-    const mn=Math.min(...arr),mx=Math.max(...arr);if(mx===mn)return 80;
-    const t=(v-mn)/(mx-mn); return KPI[id].dir==="higher"? 20+t*80 : 20+(1-t)*80;};
+  p3DrawRadar(rm,sites);
+}
+
+function p3Header(){
+  const h=el("div","p3-head");
+  h.innerHTML=`<div class="p3-title-row"><span class="p3-num">3</span><h1>SITE BENCHMARK</h1></div>
+    <p class="p3-sub">Compare occupational health performance between operating sites</p>
+    <p class="p3-q">Which operating site requires <span class="gold">management attention</span>?</p>`;
+  return h;
+}
+
+/* ---------- Component 1: Benchmark Performance Overview ---------- */
+function p3Overview(rm,sites){
+  const c=card("1. Benchmark Performance Overview","Governed KPI Reference View","p3-card p3-radar-card");
+  const layout=el("div","p3-radar-layout");
   const palette=[C.navy,C.gold,C.green,C.red,C.blue];
+  const leg=el("div","p3-legend");
+  sites.forEach((s,i)=>leg.appendChild(el("div","li",`<span class="sw" style="background:${palette[i%palette.length]}"></span><span class="nm">${META[s].name}</span>`)));
+  layout.appendChild(leg);
+  const w=el("div","p3-radar-wrap"); const cv=el("canvas"); cv.id="p3radar"; w.appendChild(cv); layout.appendChild(w);
+  const htr=el("div","p3-htr");
+  htr.innerHTML=`<h4>How to Read</h4>
+    <div class="grp">Numeric reference-based</div>
+    <ul><li><b>FTWR</b> — higher is better; governed target</li>
+    <li><b>MFR</b> — lower is better; governed benchmark</li>
+    <li><b>ASR</b> — lower is better; governed benchmark</li>
+    <li><b>OIR</b> — lower is better; zero threshold</li></ul>
+    <div class="grp">Trend-monitored †</div>
+    <ul><li><b>CMR</b> — lower is better; trend-monitored</li>
+    <li><b>SSR</b> — lower is better; trend-monitored</li></ul>
+    <p style="margin:7px 0 0">Polygons show each site's governed KPI status. Axes marked † are trend-referenced, not benchmark attainment.</p>`;
+  layout.appendChild(htr);
+  c.appendChild(layout);
+  const gov=el("div","p3-gov",
+    `Governance: FTWR governed target ≥90% (≥95% GOOD). MFR benchmark ${fmt(BENCH.MFR,2)} /1M MH · ASR benchmark ${fmt(BENCH.ASR,2)} /1M MH · OIR zero threshold. CMR & SSR are trend-monitored — no approved national numeric benchmark.`);
+  c.appendChild(gov);
+  return c;
+}
+/* radar position from governed status only — no min/max normalization, no invented benchmark, no composite */
+function p3Pos(key){ return key==="good"?100:key==="watch"?62:key==="action"?28:0; }
+function p3DrawRadar(rm,sites){
+  const cv=$("#p3radar"); if(!cv) return;
+  const palette=[C.navy,C.gold,C.green,C.red,C.blue];
+  const labels=P3_AXES.map(id=>P3_TREND.includes(id)?id+" †":id);
   const ds=sites.map((s,i)=>({label:META[s].name,
-    data:ids.map(id=>norm(id,kpiVal(id,rowsForMY(rm).filter(r=>r.site===s)))),
-    borderColor:palette[i%palette.length],backgroundColor:palette[i%palette.length]+"22",borderWidth:2,pointRadius:2}));
-  mkChart($("#radar"),{type:"radar",data:{labels:ids,datasets:ds},
+    data:P3_AXES.map(id=>p3Pos(p3Stat(id,s,rm).st.key)),
+    borderColor:palette[i%palette.length],
+    backgroundColor:palette[i%palette.length]+"1E",
+    borderWidth:2,pointRadius:2.5,pointBackgroundColor:palette[i%palette.length],fill:true}));
+  mkChart(cv,{type:"radar",data:{labels,datasets:ds},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,position:"bottom",labels:{boxWidth:9,usePointStyle:true,padding:8,font:{size:9.5}}},
-        tooltip:{enabled:false}},
-      scales:{r:{min:0,max:100,angleLines:{color:"#D9DCE1"},grid:{color:"#E6E8EC"},
-        pointLabels:{font:{size:11,weight:"700"},color:"#1A1B1E"},ticks:{display:false}}}}});
+      plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{r:{min:0,max:100,angleLines:{color:"#C7CBD2"},grid:{color:"#DDE0E5"},
+        pointLabels:{font:{size:11,weight:"700"},color:"#1A1B1E"},
+        ticks:{display:false,stepSize:25}}}}});
 }
-function benchHeat(rm,sites,span){
-  const c=card("Benchmark Heat Map",labelOf(rm),span);
-  const ids=["FTWR","CMR","MFR","SSR","ASR","OIR"];
-  const heat=el("div","heat");
-  const hdr=el("div","hrow");hdr.style.gridTemplateColumns=`1.5fr repeat(${ids.length},1fr)`;
-  hdr.appendChild(el("div","hhdr",""));ids.forEach(id=>hdr.appendChild(el("div","hhdr",id)));heat.appendChild(hdr);
-  sites.forEach(s=>{const rows=rowsForMY(rm).filter(r=>r.site===s);
-    const row=el("div","hrow");row.style.gridTemplateColumns=`1.5fr repeat(${ids.length},1fr)`;
-    row.appendChild(el("div","hname",META[s].name));
-    ids.forEach(id=>{const v=kpiVal(id,rows),st=statusFor(id,v,null);
-      const col=st.key==="good"?C.green:st.key==="watch"?C.amber:C.red;
-      const cell=el("div","cell",`${fmt(v,id==="FTWR"||id==="CMR"?1:0)}`);cell.style.background=col;row.appendChild(cell);});
-    heat.appendChild(row);});
-  c.appendChild(heat);c.appendChild(heatLegend());return c;
-}
-function enterpriseRanking(rm,sites,span){
-  const c=card("Enterprise Ranking","Composite KPI score — "+labelOf(rm),span);
-  const ids=["FTWR","MFR","ASR","OIR"];
-  const score=s=>{const rows=rowsForMY(rm).filter(r=>r.site===s);
-    return ids.reduce((acc,id)=>{const st=statusFor(id,kpiVal(id,rows),null);return acc+(st.key==="good"?2:st.key==="watch"?1:0);},0);};
-  const ranked=sites.map(s=>({s,sc:score(s)})).sort((a,b)=>b.sc-a.sc);
-  const t=el("table","tbl");
-  t.innerHTML=`<thead><tr><th>Rank</th><th>Site</th><th class="num">FTWR</th><th class="num">MFR</th><th>Standing</th></tr></thead>`;
+
+/* ---------- Component 2: Site Benchmark Matrix ---------- */
+function p3Matrix(rm,sites){
+  const c=card("2. Site Benchmark Matrix",labelOf(rm),"p3-card p3-matrix-card");
+  const heads=[["OPERATING SITE",""],["FTWR (%)",P3_DIRTXT.FTWR],["CMR (%)",P3_DIRTXT.CMR],
+    ["MFR (/1M MH)",P3_DIRTXT.MFR],["SSR",P3_DIRTXT.SSR],["ASR (/1M MH)",P3_DIRTXT.ASR],["OIR (/1M workers)",P3_DIRTXT.OIR]];
+  const t=el("table","p3-matrix");
+  t.innerHTML=`<thead><tr>${heads.map((h,i)=>`<th${i===0?' style="text-align:left"':''}>${h[0]}${h[1]?`<span class="dir">${h[1]}</span>`:''}</th>`).join("")}</tr></thead>`;
   const tb=el("tbody");
-  ranked.forEach((o,i)=>{const rows=rowsForMY(rm).filter(r=>r.site===o.s);
-    const standing=o.sc>=7?{key:"good",text:"GOOD"}:o.sc>=4?{key:"watch",text:"WATCH"}:{key:"action",text:"ACTION REQUIRED"};
-    tb.appendChild(el("tr",null,`<td class="rank">#${i+1}</td><td><b>${META[o.s].name}</b></td>
-      <td class="num">${fmt(kpiVal("FTWR",rows),1)}</td><td class="num">${fmt(kpiVal("MFR",rows),0)}</td><td>${pill(standing)}</td>`));});
-  t.appendChild(tb);c.appendChild(t);return c;
+  sites.forEach(s=>{
+    const cells=P3_AXES.map(id=>`<td>${pill(p3Stat(id,s,rm).st)}</td>`).join("");
+    tb.appendChild(el("tr",null,`<td class="site">${META[s].name}</td>${cells}`));
+  });
+  t.appendChild(tb); c.appendChild(t);
+  c.appendChild(el("div","p3-legend-row",
+    `<span class="li"><span class="dot" style="background:var(--good)"></span>GOOD — Normal</span>
+     <span class="li"><span class="dot" style="background:var(--watch)"></span>WATCH — Attention</span>
+     <span class="li"><span class="dot" style="background:var(--action)"></span>ACTION REQUIRED — Immediate Action</span>
+     <span class="li" style="margin-left:auto">SSR unit: days lost per 100 spells</span>`));
+  return c;
 }
-function benchTable(rm,sites,span){
-  const c=card("Benchmark Table",labelOf(rm),span);
-  const t=el("table","tbl zebra");
-  t.innerHTML=`<thead><tr><th>Site</th><th class="num">FTWR %</th><th class="num">CMR %</th><th class="num">MFR</th><th class="num">SSR</th><th class="num">ASR</th><th class="num">OIR</th></tr></thead>`;
-  const tb=el("tbody");
-  sites.forEach(s=>{const r=rowsForMY(rm).filter(x=>x.site===s);
-    tb.appendChild(el("tr",null,`<td><b>${META[s].name}</b><br><span class="muted" style="font-size:10px">${META[s].commodity} · ${META[s].optype}</span></td>
-      <td class="num">${fmt(kpiVal("FTWR",r),2)}</td><td class="num">${fmt(kpiVal("CMR",r),2)}</td><td class="num">${fmt(kpiVal("MFR",r),2)}</td>
-      <td class="num">${fmt(kpiVal("SSR",r),2)}</td><td class="num">${fmt(kpiVal("ASR",r),2)}</td><td class="num">${fmt(kpiVal("OIR",r),2)}</td>`));});
-  // enterprise row + benchmark row
-  const ent=rowsForMY(rm);
-  tb.appendChild(el("tr",null,`<td style="background:#F2EEDF"><b>ENTERPRISE</b></td>
-    <td class="num" style="background:#F2EEDF"><b>${fmt(kpiVal("FTWR",ent),2)}</b></td><td class="num" style="background:#F2EEDF"><b>${fmt(kpiVal("CMR",ent),2)}</b></td>
-    <td class="num" style="background:#F2EEDF"><b>${fmt(kpiVal("MFR",ent),2)}</b></td><td class="num" style="background:#F2EEDF"><b>${fmt(kpiVal("SSR",ent),2)}</b></td>
-    <td class="num" style="background:#F2EEDF"><b>${fmt(kpiVal("ASR",ent),2)}</b></td><td class="num" style="background:#F2EEDF"><b>${fmt(kpiVal("OIR",ent),2)}</b></td>`));
-  tb.appendChild(el("tr",null,`<td class="muted">National Benchmark</td><td class="num muted">—</td><td class="num muted">—</td>
-    <td class="num muted">${fmt(BENCH.MFR,2)}</td><td class="num muted">—</td><td class="num muted">${fmt(BENCH.ASR,2)}</td><td class="num muted">0</td>`));
-  t.appendChild(tb);c.appendChild(t);return c;
+
+/* ---------- Component 3: Best Performers by KPI ---------- */
+function p3BestCard(rm,sites){
+  const c=card("3. Best Performers by KPI","","p3-card p3-ranking");
+  const tabs=el("div","p3-tabs"); tabs.id="p3-bp-tabs";
+  P3_AXES.forEach(id=>{const b=el("button","p3-tab"+(id===p3Best?" active":""),id); b.dataset.kpi=id;
+    b.onclick=()=>{p3Best=id;p3Exp=false;p3SyncTabs("p3-bp-tabs",p3Best);p3FillBest(rm,sites);}; tabs.appendChild(b);});
+  c.appendChild(tabs);
+  const body=el("div"); body.id="p3-bp-body"; c.appendChild(body);
+  setTimeout(()=>p3FillBest(rm,sites),0);
+  return c;
 }
+function p3FillBest(rm,sites){
+  const body=$("#p3-bp-body"); if(!body) return;
+  const id=p3Best, dir=KPI[id].dir;
+  const rank=sites.map(s=>({s,v:kpiVal(id,p3Rows(rm,s)),st:p3Stat(id,s,rm).st}))
+    .sort((a,b)=>{
+      if(a.v==null&&b.v==null) return SITE_ORDER.indexOf(a.s)-SITE_ORDER.indexOf(b.s);
+      if(a.v==null) return 1; if(b.v==null) return -1;
+      if(a.v===b.v) return SITE_ORDER.indexOf(a.s)-SITE_ORDER.indexOf(b.s);
+      return dir==="higher" ? b.v-a.v : a.v-b.v;
+    });
+  const compact=3, showAll=p3Exp||rank.length<=compact;
+  const view=showAll?rank:rank.slice(0,compact);
+  const rows=view.map((o,i)=>`<tr><td class="rk">#${i+1}</td><td><b>${META[o.s].name}</b></td>
+    <td class="num">${o.v==null?"—":fmt(o.v,2)}</td><td class="st">${pill(o.st)}</td></tr>`).join("");
+  body.innerHTML=`<div class="p3-cue">${P3_DIRTXT[id]} · unit ${P3_UNIT[id]} · reporting period <span class="per">${labelOf(rm)}</span></div>
+    <table class="p3-rank"><thead><tr><th>Rank</th><th>Operating Site</th><th class="num">${id} (${P3_UNIT[id]})</th><th class="st" style="text-align:center">Status</th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+  if(rank.length>compact){
+    const btn=el("button","p3-more",p3Exp?"Show top "+compact:"View full ranking ("+rank.length+")");
+    btn.onclick=()=>{p3Exp=!p3Exp;p3FillBest(rm,sites);};
+    body.appendChild(btn);
+  }
+}
+
+/* ---------- Component 4: Performance Distribution ---------- */
+function p3DistCard(rm,sites){
+  const c=card("4. Performance Distribution","","p3-card p3-distribution");
+  const tabs=el("div","p3-tabs"); tabs.id="p3-dist-tabs";
+  P3_AXES.forEach(id=>{const b=el("button","p3-tab"+(id===p3Dist?" active":""),id); b.dataset.kpi=id;
+    b.onclick=()=>{p3Dist=id;p3SyncTabs("p3-dist-tabs",p3Dist);p3FillDist(rm,sites);}; tabs.appendChild(b);});
+  c.appendChild(tabs);
+  const body=el("div"); body.id="p3-dist-body"; c.appendChild(body);
+  setTimeout(()=>p3FillDist(rm,sites),0);
+  return c;
+}
+function p3RefWord(id,key){
+  if(id==="FTWR") return key==="good"?"≥95% of workforce fit":key==="watch"?"90–95% fit":"below 90% fit";
+  if(id==="MFR") return key==="good"?"≤85% of benchmark "+fmt(BENCH.MFR,0):key==="watch"?"at/near benchmark":"above benchmark";
+  if(id==="ASR") return key==="good"?"≤85% of benchmark "+fmt(BENCH.ASR,0):key==="watch"?"at/near benchmark":"above benchmark";
+  if(id==="OIR") return key==="good"?"zero cases (threshold met)":"cases above zero threshold";
+  return key==="good"?"improving/stable vs prior":key==="watch"?"rising vs prior period":"sharp rise vs prior";
+}
+/* Understanding thresholds — truthful projection of the existing statusFor() engine, driven by p3Dist */
+function p3ThrExplain(id){
+  const name=KPI[id].name, dir=P3_DIRTXT[id];
+  let rows;
+  if(id==="FTWR"){
+    rows=[["good","GOOD","value ≥ 95% fit-to-work"],
+      ["watch","WATCH","value ≥ 90% and < 95%"],
+      ["action","ACTION REQUIRED","value < 90%"]];
+  } else if(id==="MFR"||id==="ASR"){
+    const b=fmt(BENCH[id],2);
+    rows=[["good","GOOD","value ≤ 85% of benchmark ("+b+" "+P3_UNIT[id]+")"],
+      ["watch","WATCH","value > 85% of benchmark and ≤ benchmark ("+b+")"],
+      ["action","ACTION REQUIRED","value > benchmark ("+b+")"]];
+  } else if(id==="OIR"){
+    rows=[["good","GOOD","value = 0 (zero-threshold met)"],
+      ["watch","WATCH","Not used under the current zero-threshold OIR status logic"],
+      ["action","ACTION REQUIRED","value > 0 (any recorded case)"]];
+  } else { // CMR, SSR — trend-monitored, no national numeric benchmark
+    rows=[["good","GOOD","falls ≥ 2% vs prior period, or stays within ±2% (stable)"],
+      ["watch","WATCH","rises 2%–10% vs prior period, or no prior-period data available"],
+      ["action","ACTION REQUIRED","rises ≥ 10% vs prior period"]];
+  }
+  const basis = (id==="CMR"||id==="SSR")
+    ? "Trend-monitored — no approved national numeric benchmark. Status compares against the valid previous reporting period."
+    : (id==="OIR") ? "Governed zero-threshold status."
+    : (id==="FTWR") ? "Governed target/status classification." : "Governed variance to national benchmark.";
+  return `<h5>Understanding thresholds — ${name} (${id})</h5>
+    <p class="meta">${dir} · ${basis}</p>
+    ${rows.map(r=>`<div class="p3-thr-row ${r[0]}"><span class="k">${r[1]}</span><span>${r[2]}</span></div>`).join("")}`;
+}
+function p3FillDist(rm,sites){
+  const body=$("#p3-dist-body"); if(!body) return;
+  const id=p3Dist;
+  const stats=sites.map(s=>p3Stat(id,s,rm)).filter(o=>o.v!=null);
+  const N=stats.length;
+  const cnt={good:0,watch:0,action:0};
+  stats.forEach(o=>{cnt[o.st.key]=(cnt[o.st.key]||0)+1;});
+  const pct=k=>N?Math.round(cnt[k]/N*100):0;
+  const block=(k,lab)=>`<div class="db ${k}"><div class="lab">${lab}</div><div class="cnt">${cnt[k]}</div>
+    <div class="pct">${pct(k)}%</div><div class="ref">${p3RefWord(id,k)}</div></div>`;
+  body.innerHTML=`<div class="p3-cue">${P3_DIRTXT[id]} · governed status · reporting period <span class="per">${labelOf(rm)}</span></div>
+    <div class="p3-dist">${block("good","GOOD")}${block("watch","WATCH")}${block("action","ACTION REQUIRED")}</div>
+    <div class="p3-dist-tot">Total Sites: ${N}</div>
+    <div class="p3-util"><button class="p3-util-link" id="p3-thr-btn">${svg(P3I.info,15)}Understanding thresholds</button>
+    <div class="p3-util-panel${p3ThrOpen?"":" p3-hidden"}" id="p3-thr-panel">${p3ThrOpen?p3ThrExplain(id):""}</div></div>`;
+  const tb=$("#p3-thr-btn"); if(tb) tb.onclick=()=>{p3ThrOpen=!p3ThrOpen;p3FillDist(rm,sites);};
+}
+
+/* ---------- Component 5: Site Insights ---------- */
+function p3Insights(rm,sites){
+  const c=card("5. Site Insights","","p3-card p3-insights");
+  const head=el("div","p3-insight-head",labelOf(rm)); c.appendChild(head);
+
+  // governed six-KPI status per visible site (single governed path: p3Stat -> statusFor)
+  const perSite=sites.map(s=>{
+    const st=P3_AXES.map(id=>({id,key:p3Stat(id,s,rm).st.key,text:p3Stat(id,s,rm).st.text}));
+    const of=k=>st.filter(o=>o.key===k && o.text!=="NO DATA");
+    const nodata=st.filter(o=>o.text==="NO DATA");
+    return {s, st,
+      action:of("action").map(o=>o.id), watch:of("watch").map(o=>o.id), good:of("good").map(o=>o.id),
+      nodata:nodata.map(o=>o.id),
+      allGood: st.every(o=>o.key==="good" && o.text!=="NO DATA")};
+  });
+  const attn=perSite.filter(o=>o.action.length>0).length;
+  const banner=el("div","p3-banner"+(attn===0?" calm":""));
+  banner.innerHTML=`<span class="bic">${svg(attn===0?P3I.shieldCheck:P3I.alertCircle,20)}</span>
+    <div><div class="bt">${attn} Site${attn===1?"":"s"} Have Action-Required KPI Status</div>
+    <div class="bs">Based on governed KPI status outcomes for ${labelOf(rm)}</div></div>`;
+  c.appendChild(banner);
+
+  const ins=[];
+  const valOf=(id,s)=>kpiVal(id,p3Rows(rm,s));
+  const topBy=(id,hi)=>{const arr=sites.map(s=>({s,v:valOf(id,s)})).filter(o=>o.v!=null);
+    if(!arr.length) return null; return arr.sort((a,b)=>hi?b.v-a.v:a.v-b.v)[0];};
+  const mfr=topBy("MFR",true), asr=topBy("ASR",true), ftwr=topBy("FTWR",true);
+  if(mfr) ins.push(["sev",P3I.heartbeat,`<b>${META[mfr.s].name}</b> has the highest morbidity frequency (MFR ${fmt(mfr.v,2)} /1M MH).`]);
+  if(asr) ins.push(["sev",P3I.calClock,`<b>${META[asr.s].name}</b> shows the highest absence severity (ASR ${fmt(asr.v,2)} /1M MH).`]);
+  const oirMax=Math.max(0,...sites.map(s=>valOf("OIR",s)||0));
+  if(oirMax>0){const o=topBy("OIR",true); ins.push(["ill",P3I.medcross,`<b>${META[o.s].name}</b> reports occupational illness cases (OIR ${fmt(o.v,2)}).`]);}
+  else ins.push(["pos",P3I.medcross,`No occupational illness cases recorded — all sites meet the OIR zero threshold.`]);
+  if(ftwr) ins.push(["pos",P3I.userCheck,`<b>${META[ftwr.s].name}</b> leads fitness-to-work (FTWR ${fmt(ftwr.v,2)}%).`]);
+  const goodAll=perSite.filter(o=>o.allGood).map(o=>META[o.s].name);
+  ins.push(["pos",P3I.shieldCheck,`${goodAll.length} site${goodAll.length===1?"":"s"} rated GOOD across all six KPIs${goodAll.length?": "+goodAll.join(", "):""}.`]);
+  const worst=perSite.slice().sort((a,b)=>b.action.length-a.action.length)[0];
+  if(worst&&worst.action.length>0) ins.push(["att",P3I.alertTri,`<b>${META[worst.s].name}</b> carries the most action-required KPI statuses (${worst.action.length}).`]);
+
+  const ul=el("ul","p3-ins");
+  ins.forEach(([cls,ic,txt])=>ul.appendChild(el("li",null,`<span class="iic ${cls}">${svg(ic,15)}</span><span>${txt}</span>`)));
+  c.appendChild(ul);
+
+  // View detailed insight — governed evidence drill-down (no composite score); closed by default
+  const detRows=perSite.map(o=>{
+    const nm=id=>id, list=a=>a.length?a.map(nm).join(", "):"—";
+    const ndCell=o.nodata.length?`<span class="p3-det-c n">${o.nodata.length}</span>`:"";
+    return `<tr><td class="s">${META[o.s].name}</td>
+      <td><span class="p3-det-c a">${o.action.length}</span></td>
+      <td><span class="p3-det-c w">${o.watch.length}</span></td>
+      <td><span class="p3-det-c g">${o.good.length}</span>${o.nodata.length?" "+ndCell:""}</td>
+      <td class="names">${list(o.action)}</td>
+      <td class="names">${list(o.watch)}</td></tr>`;
+  }).join("");
+  const util=el("div","p3-util");
+  util.innerHTML=`<button class="p3-util-link" id="p3-det-btn">${svg(P3I.search,15)}View detailed insight</button>
+    <div class="p3-util-panel${p3DetOpen?"":" p3-hidden"}" id="p3-det-panel">
+    <h5>Governed KPI status evidence by site</h5>
+    <p class="meta">Direct summary of the six governed KPI outcomes · reporting period ${labelOf(rm)}</p>
+    <table class="p3-det-tbl"><thead><tr><th>Operating Site</th><th>Action</th><th>Watch</th><th>Good</th><th>Action KPIs</th><th>Watch KPIs</th></tr></thead>
+    <tbody>${detRows}</tbody></table></div>`;
+  c.appendChild(util);
+  const db=util.querySelector("#p3-det-btn");
+  db.onclick=()=>{p3DetOpen=!p3DetOpen; const p=util.querySelector("#p3-det-panel"); p.classList.toggle("p3-hidden",!p3DetOpen);};
+  return c;
+}
+
 
 /* ============================================================
    PAGE 4 — TREND & ANALYTICS (Ch.6.8 / 7.13)
@@ -2197,4 +2523,3 @@ window.OHIH_EXPORTS={execPdf,dashPdf,pptx};
 </script>
 </body>
 </html>
-
