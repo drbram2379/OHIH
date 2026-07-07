@@ -1077,6 +1077,61 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 .p4-na{color:var(--grey-2)}
 </style>
 
+<style id="p5-styles">
+/* ===== Page 5 — KPI Dictionary (Page-5-scoped, .p5-*) ===== */
+.p5-page .card{padding:11px 13px}
+.p5-page .card-head h3{font-size:11px;font-weight:700;letter-spacing:.03em}
+.p5-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.p5-titlebox{display:flex;align-items:center;gap:9px;min-width:0}
+.p5-titlebox .page-tag{margin-bottom:0}
+.p5-titlebox h2{font-size:14px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin:0;color:var(--black)}
+.p5-titlebox p{margin:1px 0 0;font-size:10.5px;color:var(--grey);font-weight:500}
+.p5-navlbl{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--navy);margin:2px 0 7px}
+.p5-nav{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;margin-bottom:11px}
+@media (max-width:1100px){.p5-nav{grid-template-columns:repeat(3,1fr)}}
+.p5-sel{display:flex;flex-direction:column;gap:2px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 11px;cursor:pointer;box-shadow:var(--shadow);transition:.15s}
+.p5-sel:hover{border-color:var(--gold-soft);background:#FEFCF6}
+.p5-sel .ab{font-size:13px;font-weight:800;letter-spacing:.03em;color:var(--navy)}
+.p5-sel .nm{font-size:10px;color:var(--grey);line-height:1.2}
+.p5-sel.active{background:var(--navy);border-color:var(--navy)}
+.p5-sel.active .ab{color:var(--gold)} .p5-sel.active .nm{color:#C9D2E8}
+.p5-row{display:grid;gap:11px;margin-bottom:11px}
+.p5-row-2{grid-template-columns:1fr 1fr}
+@media (max-width:1100px){.p5-row-2{grid-template-columns:1fr}}
+.p5-def-head{display:flex;align-items:center;gap:11px;margin-bottom:6px}
+.p5-icon{width:44px;height:44px;border-radius:12px;background:var(--navy);color:var(--gold);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.p5-def-head h3{margin:0;font-size:15px;font-weight:800;color:var(--black)}
+.p5-def-head .ab{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.05em}
+.p5-field{margin-top:9px}
+.p5-lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--grey-2);font-weight:800;margin-bottom:3px}
+.p5-formula{font-family:'SFMono-Regular',Consolas,monospace;font-size:11.5px;background:var(--line-soft);border:1px solid var(--line);border-radius:8px;padding:9px 11px;color:var(--ink);line-height:1.4}
+.p5-val{font-size:12px;color:var(--ink);font-weight:600;line-height:1.35}
+.p5-def-txt{font-size:11.5px;color:var(--grey);line-height:1.45}
+.p5-2col{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.p5-dir{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700}
+.p5-dir.higher{color:var(--good)} .p5-dir.lower{color:var(--navy)}
+.p5-targets{display:flex;gap:8px;flex-wrap:wrap}
+.p5-tgt{flex:1;min-width:66px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;text-align:center;background:var(--panel)}
+.p5-tgt .t-l{font-size:8.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--grey-2);font-weight:800}
+.p5-tgt .t-v{font-size:14px;font-weight:800;color:var(--black)}
+.p5-tgt.stretch{border-color:#CBE7D6;background:var(--good-bg)} .p5-tgt.stretch .t-v{color:#1e6b3d}
+.p5-tgt.normal{border-color:#EFDCA4;background:var(--watch-bg)} .p5-tgt.normal .t-v{color:#8a6500}
+.p5-tgt.max{border-color:#F1C4C4;background:var(--action-bg)} .p5-tgt.max .t-v{color:#9e2b2b}
+.p5-strip{margin-top:9px;font-size:10.5px;color:var(--grey);background:#EAF0FA;border-radius:8px;padding:7px 10px;line-height:1.4}
+.p5-strip b{color:var(--navy)}
+.p5-ref{display:flex;flex-direction:column;gap:8px}
+.p5-ref-item{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--panel)}
+.p5-ref-item .r-l{font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--grey-2);font-weight:800}
+.p5-ref-item .r-v{font-size:12px;color:var(--ink);font-weight:600;margin-top:1px}
+.p5-status{display:flex;flex-direction:column;gap:8px}
+.p5-st{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+.p5-st .p5-st-tx{min-width:0}
+.p5-st .p5-st-tx p{margin:0;font-size:10.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.p5-st.good{border-color:#CBE7D6;background:var(--good-bg)} .p5-st.watch{border-color:#EFDCA4;background:var(--watch-bg)} .p5-st.action{border-color:#F1C4C4;background:var(--action-bg)}
+.p5-agg{margin-top:9px;font-size:10px;color:var(--grey);line-height:1.4;border-top:1px dashed var(--line);padding-top:7px}
+.p5-matrix tr.sel td{background:#F2EEDF !important}
+</style>
+
 <script>/* ============================================================
    OHIH Lagging Indicators Enterprise Dashboard — app.js
    Implementation per BDSE Master Specification v1.0 (frozen).
@@ -1142,9 +1197,9 @@ const KPI = {
   FTWR:{ name:"Fit-to-Work Rate", unit:"%", dir:"higher", level:"Executive",
     calc:a=> a.manpower? a.fit/a.manpower*100 : null, dp:2 },
   CMR:{ name:"Crude Morbidity Rate", unit:"%", dir:"lower", level:"Operational",
-    calc:a=> a.manpower? a.visits/a.manpower*100 : null, dp:2 },
+    calc:a=> a.manpower? a.sickleave/a.manpower*100 : null, dp:2 },
   MFR:{ name:"Morbidity Frequency Rate", unit:"per 1M MH", dir:"lower", level:"Executive", bench:BENCH.MFR,
-    calc:a=> a.manhours? a.visits/a.manhours*1e6 : null, dp:2 },
+    calc:a=> a.manhours? a.sickleave/a.manhours*1e6 : null, dp:2 },
   SSR:{ name:"Sickness Severity Rate", unit:"per 100 spells", dir:"lower", level:"Operational",
     calc:a=> a.spell? a.lostdays/a.spell*100 : null, dp:2 },
   ASR:{ name:"Absence Severity Rate", unit:"per 1M MH", dir:"lower", level:"Executive", bench:BENCH.ASR,
@@ -1154,30 +1209,32 @@ const KPI = {
 };
 const kpiVal = (id,rows)=> KPI[id].calc(aggregate(rows));
 
-/* Status engine: every status carries colour + icon + text (Ch. accessibility).
-   Benchmarked KPIs → variance to benchmark. Direction-only KPIs → trend of value.*/
+/* ---- Shared target-governance matrix (owner-approved Page 5 matrix) ----
+   Native KPI scale. FTWR is higher-is-better; all others lower-is-better.
+   good = Normal boundary; watch = Min/Max boundary. Single shared authority.
+   FR PAK (internal key OIR) governed at native rates 0 / 2 / 5 (not percentages). */
+const TARGET = {
+  FTWR:{dir:"higher", stretch:100, normal:95,  bound:90,     good:95,  watch:90,     pct:true },
+  CMR: {dir:"lower",  stretch:10,  normal:13,  bound:15,     good:13,  watch:15,     pct:true },
+  MFR: {dir:"lower",  stretch:417, normal:466, bound:482.71, good:466, watch:482.71, pct:false},
+  SSR: {dir:"lower",  stretch:133, normal:147, bound:155,    good:147, watch:155,    pct:false},
+  ASR: {dir:"lower",  stretch:100, normal:201, bound:452.19, good:201, watch:452.19, pct:false},
+  OIR: {dir:"lower",  stretch:0,   normal:2,   bound:5,      good:2,   watch:5,      pct:false}
+};
+/* Single shared classification authority — colour + icon + text (accessibility).
+   Governed by the owner-approved target matrix; no per-page status engine. */
 function statusFor(id,val,prevVal){
-  const k=KPI[id];
-  if(val==null) return {key:"watch",text:"NO DATA"};
-  if(id==="OIR"){ return val>0 ? {key:"action",text:"ACTION REQUIRED"} : {key:"good",text:"GOOD"}; }
-  if(id==="FTWR"){ // higher better, corporate target ≥90% (Ch.4.1.10 trend until formal benchmark)
-    if(val>=95) return {key:"good",text:"GOOD"};
-    if(val>=90) return {key:"watch",text:"WATCH"};
+  if(val==null || isNaN(val)) return {key:"watch",text:"NO DATA"};
+  const t=TARGET[id];
+  if(!t) return {key:"watch",text:"NO DATA"};
+  if(t.dir==="higher"){
+    if(val>=t.good)  return {key:"good",text:"GOOD"};
+    if(val>=t.watch) return {key:"watch",text:"WATCH"};
     return {key:"action",text:"ACTION REQUIRED"};
   }
-  if(k.bench!=null && k.bench>0){ // MFR, ASR — variance to national benchmark
-    if(val<=k.bench*0.85) return {key:"good",text:"GOOD"};
-    if(val<=k.bench)      return {key:"watch",text:"WATCH"};
-    return {key:"action",text:"ACTION REQUIRED"};
-  }
-  // CMR, SSR — no national benchmark → trend-based monitoring (Ch.4.2.10 / 4.4.10)
-  // Spec mandates exactly three states: GOOD / WATCH / ACTION REQUIRED (colour+icon+text).
-  if(prevVal==null) return {key:"watch",text:"WATCH"};
-  const chg=(val-prevVal)/(prevVal||1);
-  if(chg<=-0.02) return {key:"good",text:"GOOD"};
-  if(chg>=0.10)  return {key:"action",text:"ACTION REQUIRED"};
-  if(chg>=0.02)  return {key:"watch",text:"WATCH"};
-  return {key:"good",text:"GOOD"};
+  if(val<=t.good)  return {key:"good",text:"GOOD"};
+  if(val<=t.watch) return {key:"watch",text:"WATCH"};
+  return {key:"action",text:"ACTION REQUIRED"};
 }
 const STATUS_ICON={good:I.check,watch:I.warn,action:I.alert};
 
@@ -1391,11 +1448,11 @@ function execInsight(cur,prev,ctx){
   if(ftwr!=null){const d=ftwrP!=null?ftwr-ftwrP:0;
     items.push(["good","Fit-to-Work Rate at "+fmt(ftwr,2)+"% "+(d>=0?"improved "+fmt(Math.abs(d),2)+" pp":"declined "+fmt(Math.abs(d),2)+" pp")+" versus prior month."]);}
   const mfr=kpiVal("MFR",cur);
-  if(mfr!=null) items.push([mfr<=BENCH.MFR?"good":"action","MFR is "+fmt(mfr,2)+" — "+(mfr<=BENCH.MFR?"below":"above")+" the national benchmark of "+fmt(BENCH.MFR,2)+"."]);
+  if(mfr!=null) items.push([statusFor("MFR",mfr,null).key,"MFR is "+fmt(mfr,2)+" — "+(mfr<=BENCH.MFR?"below":"above")+" the national benchmark of "+fmt(BENCH.MFR,2)+"."]);
   const asr=kpiVal("ASR",cur);
-  if(asr!=null) items.push([asr<=BENCH.ASR?"good":"action","ASR is "+fmt(asr,2)+" — "+(asr<=BENCH.ASR?"within":"above")+" the benchmark of "+fmt(BENCH.ASR,2)+"."]);
-  const oir=kpiVal("OIR",cur);
-  items.push([oir>0?"action":"good", oir>0? "Confirmed occupational illness recorded — immediate review required.":"No confirmed occupational illness cases this period."]);
+  if(asr!=null) items.push([statusFor("ASR",asr,null).key,"ASR is "+fmt(asr,2)+" — "+(asr<=BENCH.ASR?"within":"above")+" the benchmark of "+fmt(BENCH.ASR,2)+"."]);
+  const oir=kpiVal("OIR",cur); const oSt=statusFor("OIR",oir,null);
+  items.push([oSt.key, oir>0 ? ("Occupational disease (PAK) case(s) recorded — FR PAK "+fmt(oir,2)+" per 1M workers ("+oSt.text+").") : "No occupational disease (PAK) cases recorded this period."]);
   items.push(["watch","Continue enterprise health surveillance and review sites flagged below."]);
   items.forEach(([k,t])=>{const it=el("div","item",`<span class="dot ${k}"></span><p>${t}</p>`);ins.appendChild(it);});
   c.appendChild(ins);return c;
@@ -1418,8 +1475,8 @@ function recommendedActions(cur,prev,ctx){
     : "Strengthen return-to-work management; ASR "+fmt(asr,2)+" is above the benchmark ("+fmt(BENCH.ASR,2)+").");
   const oir=kpiVal("OIR",cur);
   items.push(oir>0
-    ? "Commission an occupational-physician case review — confirmed occupational illness recorded this period."
-    : "Preserve zero occupational-illness performance through ongoing health surveillance.");
+    ? "Commission an occupational-physician case review — occupational disease (PAK) case recorded this period."
+    : "Preserve strong occupational-disease (PAK) performance through ongoing health surveillance.");
   items.push("Review sites flagged in the Alerts panel and Risk Heat Map.");
   items.forEach((t,i)=>list.appendChild(el("div","ritem",`<span class="rnum">${i+1}</span><p>${t}</p>`)));
   c.appendChild(list);return c;
@@ -1804,7 +1861,7 @@ function evidenceTable(rm,sites,span){
     const bg=strong?' style="background:#F2EEDF"':'';
     const b=s=>strong?`<b>${s}</b>`:s;
     return `<td${bg}>${b(name)}</td><td class="num"${bg}>${b(fmtInt(ag.manpower))}</td><td class="num"${bg}>${b(fmtInt(ag.manhours))}</td>
-      <td class="num"${bg}>${b(fmtInt(ag.visits))}</td><td class="num"${bg}>${b(fmtInt(ag.visits))}</td><td class="num"${bg}>${b(fmtInt(ag.sickleave))}</td>
+      <td class="num"${bg}>${b(fmtInt(ag.visits))}</td><td class="num"${bg}>${b(fmtInt(ag.sickleave))}</td><td class="num"${bg}>${b(fmtInt(ag.sickleave))}</td>
       <td class="num"${bg}>${b(fmtInt(ag.lostdays))}</td><td class="num"${bg}>${b(fmtInt(ag.spell))}</td><td class="num"${bg}>${b(fmtInt(ag.pak))}</td>
       <td class="num"${bg}>${b(fmt(kpiVal("CMR",rows),2))}</td><td class="num"${bg}>${b(fmt(kpiVal("SSR",rows),2))}</td>
       <td class="num"${bg}>${b(fmt(kpiVal("MFR",rows),2))}</td><td class="num"${bg}>${b(fmt(kpiVal("ASR",rows),2))}</td>`;};
@@ -2423,7 +2480,7 @@ function p4Comp5Bench(){
   });
   t.appendChild(tb); wrap.appendChild(t); c.appendChild(wrap);
   c.appendChild(el("div","p4-strip",
-    `Benchmarks: MFR <b>${fmt(BENCH.MFR,2)}</b> per 1M Man-hours, ASR <b>${fmt(BENCH.ASR,2)}</b> per 1M Man-hours. OIR target is zero \u2014 any case requires immediate action.`));
+    `Benchmarks: MFR <b>${fmt(BENCH.MFR,2)}</b> per 1M Man-hours, ASR <b>${fmt(BENCH.ASR,2)}</b> per 1M Man-hours. FR PAK (OIR) governed against native-scale targets 0 / 2 / 5 cases per 1M workers.`));
   return c;
 }
 
@@ -2565,42 +2622,186 @@ function p4Insights(){
 /* ============================================================
    PAGE 5 — KPI DICTIONARY (Ch.6.9 / 7.14 / Ch.4)
    ============================================================ */
+/* ============================================================
+   PAGE 5 — KPI DICTIONARY  (owner-approved formula & target authority)
+   One approved design → six governed KPI states. Internal key "OIR"
+   is preserved for executable continuity; it is displayed as FR PAK.
+   ============================================================ */
+/* Corrected enterprise KPI reference (exposed metadata) */
 const DICT=[
-  ["Fit-to-Work Rate","FTWR","(Fit Workers ÷ Total Workforce) × 100","%","Fit Workers","Total Workforce","Higher","Target ≥ 90%","Medical Fitness / MCU","Monthly","SMKP Mining OHIH","ILO / ICOH Fitness-for-Work"],
-  ["Crude Morbidity Rate","CMR","(Sick Workers ÷ Total Workforce) × 100","%","Sick Workers (morbidity count)","Total Workforce","Lower","Trend-monitored","Medical Clinic Records","Monthly","SMKP Mining OHIH","Occupational epidemiology"],
-  ["Morbidity Frequency Rate","MFR","(Sick Workers ÷ Cumulative Man-hours) × 1,000,000","cases / 1M MH","Sick Workers (morbidity count)","Cumulative Man-hours","Lower","482.71","Medical + HR Man-hours","Monthly","SMKP Internal Audit 2025","Exposure-adjusted reporting"],
-  ["Sickness Severity Rate","SSR","(Lost Workdays ÷ Number of Spells) × 100","days / 100 spells","Lost Workdays","Number of Spells","Lower","Trend-monitored","Sick Leave Records","Monthly","SMKP Mining OHIH","Sickness-absence severity"],
-  ["Absence Severity Rate","ASR","(Lost Workdays ÷ Cumulative Man-hours) × 1,000,000","days / 1M MH","Lost Workdays","Cumulative Man-hours","Lower","452.19","Sick Leave + HR Man-hours","Monthly","SMKP Internal Audit 2025","Exposure-adjusted reporting"],
-  ["Occupational Illness Rate","OIR (PAK)","(Occupational Illness Cases ÷ Total Workforce) × 1,000,000","cases / 1M workers","Occ. Illness Cases","Total Workforce","Lower","0 (Zero)","Occ. Physician Determination","Monthly","SMKP Mining OHIH","ILO / ICOH / ICMM"]
+  ["Fit-to-Work Rate","FTWR","(Fit Workers Based on Examination ÷ Cumulative Workforce) × 100","%","Fit Workers Based on Examination","Cumulative Workforce","Higher","Stretch 100% · Normal 95% · Min 90%","Medical Fitness / MCU","Monthly","SMKP Mining OHIH","ILO / ICOH Fitness-for-Work"],
+  ["Crude Morbidity Rate","CMR","(Workers Sick Due to Illness, Excl. Accidents ÷ Cumulative Workforce) × 100","%","Workers Sick Due to Illness, Excl. Accidents","Cumulative Workforce","Lower","Stretch 10% · Normal 13% · Max 15%","Sick-Leave / Illness Records","Monthly","SMKP Mining OHIH","Occupational epidemiology"],
+  ["Morbidity Frequency Rate","MFR","(Workers Sick Due to Illness, Excl. Accidents ÷ Cumulative Man-hours) × 1,000,000","per 1M MH","Workers Sick Due to Illness, Excl. Accidents","Cumulative Man-hours","Lower","Stretch 417 · Normal 466 · Max 482.71","Illness Records + HR Man-hours","Monthly","SMKP Internal Audit 2025","Exposure-adjusted reporting"],
+  ["Sickness Severity Rate","SSR","(Lost Workdays Due to Illness, Excl. Accidents ÷ Number of Spells) × 100","days / 100 spells","Lost Workdays Due to Illness, Excl. Accidents","Number of Spells","Lower","Stretch 133 · Normal 147 · Max 155","Sick Leave Records","Monthly","SMKP Mining OHIH","Sickness-absence severity"],
+  ["Absence Severity Rate","ASR","(Lost Workdays Due to Illness, Excl. Accidents ÷ Cumulative Man-hours) × 1,000,000","days / 1M MH","Lost Workdays Due to Illness, Excl. Accidents","Cumulative Man-hours","Lower","Stretch 100 · Normal 201 · Max 452.19","Sick Leave + HR Man-hours","Monthly","SMKP Internal Audit 2025","Exposure-adjusted reporting"],
+  ["PAK Frequency Rate","FR PAK","(Occupational Disease Cases ÷ Total Workforce) × 1,000,000","cases / 1M workers","Occupational Disease Cases (Kasus PAK)","Total Workforce","Lower","Stretch 0 · Normal 2 · Max 5","Occ. Physician Determination","Monthly","SMKP Mining OHIH","ILO / ICOH / ICMM"]
 ];
+
+/* sole Page-5 selected-KPI navigation state (dictionary navigation only) */
+let p5Sel="FTWR";
+
+/* Page-5 KPI content authority. id = internal engine key; abbr = governed display.
+   All formulas/targets reproduce the owner-approved regulatory authority. */
+const P5KPI=[
+  {id:"FTWR",abbr:"FTWR",name:"Fit-to-Work Rate",icon:I.check,
+   formula:"(Fit Workers Based on Examination ÷ Cumulative Workforce) × 100",
+   numer:"Fit Workers Based on Examination",denom:"Cumulative Workforce",
+   unit:"%",dir:"Higher is Better",basis:"Corporate fitness target",
+   def:"Share of the cumulative workforce assessed as fit for work based on medical examination. A higher rate reflects a healthier, work-ready workforce.",
+   src:"Medical Fitness / MCU records",freq:"Monthly",idn:"SMKP Mining OHIH",intl:"ILO / ICOH Fitness-for-Work",
+   interp:"FTWR is governed against the corporate fitness target. Higher values are favourable."},
+  {id:"CMR",abbr:"CMR",name:"Crude Morbidity Rate",icon:I.pulse,
+   formula:"(Workers Sick Due to Illness, Excluding Accidents ÷ Cumulative Workforce) × 100",
+   numer:"Workers Sick Due to Illness, Excluding Accident Cases",denom:"Cumulative Workforce",
+   unit:"%",dir:"Lower is Better",basis:"Governed target band",
+   def:"Proportion of the workforce sick due to illness (excluding accident cases) in the reporting period. Lower values indicate a lower illness burden.",
+   src:"Sick-leave / illness records",freq:"Monthly",idn:"SMKP Mining OHIH",intl:"Occupational epidemiology",
+   interp:"CMR uses workers sick due to illness — not treatment visits. Lower values are favourable."},
+  {id:"MFR",abbr:"MFR",name:"Morbidity Frequency Rate",icon:I.pulse,
+   formula:"(Workers Sick Due to Illness, Excluding Accidents ÷ Cumulative Man-hours) × 1,000,000",
+   numer:"Workers Sick Due to Illness, Excluding Accident Cases",denom:"Cumulative Man-hours",
+   unit:"per 1M MH",dir:"Lower is Better",basis:"National benchmark",
+   def:"Exposure-adjusted frequency of illness cases per one million man-hours. Lower values indicate lower exposure-adjusted illness frequency.",
+   src:"Illness records + HR man-hours",freq:"Monthly",idn:"SMKP Internal Audit 2025",intl:"Exposure-adjusted reporting",
+   interp:"MFR uses the same illness-worker numerator as CMR — not treatment visits. Lower values are favourable."},
+  {id:"SSR",abbr:"SSR",name:"Sickness Severity Rate",icon:I.clock,
+   formula:"(Lost Workdays Due to Illness, Excluding Accidents ÷ Number of Spells) × 100",
+   numer:"Lost Workdays Due to Illness, Excluding Accident Cases",denom:"Number of Spells",
+   unit:"days / 100 spells",dir:"Lower is Better",basis:"Governed target band",
+   def:"Average sickness-absence severity expressed as lost workdays per one hundred sickness spells. Lower values indicate less severe absence per spell.",
+   src:"Sick-leave records",freq:"Monthly",idn:"SMKP Mining OHIH",intl:"Sickness-absence severity",
+   interp:"SSR = (Lost Workdays ÷ Number of Spells) × 100. Lower values are favourable."},
+  {id:"ASR",abbr:"ASR",name:"Absence Severity Rate",icon:I.clock,
+   formula:"(Lost Workdays Due to Illness, Excluding Accidents ÷ Cumulative Man-hours) × 1,000,000",
+   numer:"Lost Workdays Due to Illness, Excluding Accident Cases",denom:"Cumulative Man-hours",
+   unit:"days / 1M MH",dir:"Lower is Better",basis:"National benchmark",
+   def:"Exposure-adjusted sickness-absence severity per one million man-hours. Lower values indicate lower exposure-adjusted absence severity.",
+   src:"Sick-leave records + HR man-hours",freq:"Monthly",idn:"SMKP Internal Audit 2025",intl:"Exposure-adjusted reporting",
+   interp:"ASR is exposure-adjusted absence severity. Lower values are favourable."},
+  {id:"OIR",abbr:"FR PAK",name:"PAK Frequency Rate",icon:I.alert,
+   formula:"(Occupational Disease Cases ÷ Total Workforce) × 1,000,000",
+   numer:"Occupational Disease Cases (Kasus PAK)",denom:"Total Workforce",
+   unit:"cases / 1M workers",dir:"Lower is Better",basis:"PAK target governance",
+   def:"Frequency of confirmed occupational disease (Penyakit Akibat Kerja) cases per one million workers, governed against native-scale targets 0 / 2 / 5.",
+   src:"Occupational-physician determination",freq:"Monthly",idn:"SMKP Mining OHIH",intl:"ILO / ICOH / ICMM",
+   interp:"FR PAK targets are native-scale rates (0 / 2 / 5), not percentages. Lower values are favourable."}
+];
+function p5Fmt(id,v){ const t=TARGET[id]; const s=(v%1===0)?String(v):fmt(v,2); return t&&t.pct? s+"%" : s; }
+function p5Meta(id){ return P5KPI.find(k=>k.id===id); }
+
 function pageDict(host){
-  host.innerHTML="";host.appendChild(tag("5","KPI Dictionary"));
-  const g=el("div","grid grid-12");
-  const dc=card("Enterprise KPI Definitions","Authoritative reference — BDSE Master Spec Chapter 4 (frozen)","col-span-9");
-  const t=el("table","tbl zebra");t.style.fontSize="11px";
-  t.innerHTML=`<thead><tr><th>KPI</th><th>Abbr.</th><th>Formula</th><th>Unit</th><th>Numerator</th><th>Denominator</th><th>Dir.</th><th>Benchmark</th><th>Data Source</th><th>Freq.</th><th>Indonesian Ref.</th><th>Intl. Ref.</th></tr></thead>`;
-  const tb=el("tbody");
-  DICT.forEach(r=>{const dir=r[6]==="Higher"?svg(I.up,12):svg(I.down,12);
-    tb.appendChild(el("tr",null,`<td><b>${r[0]}</b></td><td><b>${r[1]}</b></td><td style="font-family:monospace;font-size:10.5px">${r[2]}</td>
-      <td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td><span class="delta ${r[6]==="Higher"?"up good":"down good"}">${dir}${r[6]}</span></td>
-      <td>${r[7]}</td><td>${r[8]}</td><td>${r[9]}</td><td>${r[10]}</td><td>${r[11]}</td>`));});
-  t.appendChild(tb);const wrap=el("div");wrap.style.overflowX="auto";wrap.appendChild(t);dc.appendChild(wrap);
-  g.appendChild(dc);
-  g.appendChild(statusLegendCard("col-span-3"));
-  host.appendChild(g);
+  host.classList.add("p5-page");
+  host.innerHTML="";
+  host.appendChild(p5Header());
+  host.appendChild(el("div","p5-navlbl","KPI Definition Navigator"));
+  const nav=el("div","p5-nav");
+  P5KPI.forEach(k=>{
+    const b=el("button","p5-sel"+(k.id===p5Sel?" active":""),`<span class="ab">${k.abbr}</span><span class="nm">${k.name}</span>`);
+    b.type="button"; b.setAttribute("aria-pressed",String(k.id===p5Sel));
+    b.addEventListener("click",()=>{ p5Sel=k.id; render(); });
+    nav.appendChild(b);
+  });
+  host.appendChild(nav);
+  const k=p5Meta(p5Sel), t=TARGET[p5Sel];
+  const r1=el("div","p5-row p5-row-2");
+  r1.appendChild(p5DefCard(k)); r1.appendChild(p5GovCard(k,t));
+  host.appendChild(r1);
+  const r2=el("div","p5-row p5-row-2");
+  r2.appendChild(p5RefCard(k)); r2.appendChild(p5StatusCard(k,t));
+  host.appendChild(r2);
+  host.appendChild(p5Matrix());
   host.appendChild(pageNo(5));
 }
-function statusLegendCard(span){
-  const c=card("Status Legend","Accessibility: colour + icon + text","");
-  c.className="card "+span;
-  const wrap=el("div","statlegend");
-  [["good","GOOD","Within target / benchmark."],
-   ["watch","WATCH","Close to target or needs monitoring."],
-   ["action","ACTION REQUIRED","Above target / benchmark; act now."]].forEach(([k,t,d])=>{
-    wrap.appendChild(el("div","ent",`<span class="badge">${pill({key:k,text:t})}</span>
-      <div><b style="color:var(--${k})">${t}</b><p>${d}</p></div>`));});
+function p5Header(){
+  const wrap=el("div","p5-head");
+  wrap.appendChild(el("div","p5-titlebox",
+    `<div class="page-tag"><span class="num">5</span></div>`+
+    `<div><h2>KPI Dictionary</h2>`+
+    `<p>Governed KPI definitions, formulas, and target governance — owner-approved regulatory formula authority.</p></div>`));
+  return wrap;
+}
+function p5DefCard(k){
+  const c=card("KPI Definition","","");
+  c.appendChild(el("div","p5-def-head",`<div class="p5-icon">${svg(k.icon,22)}</div><div><h3>${k.name}</h3><div class="ab">${k.abbr}</div></div>`));
+  c.appendChild(el("div","p5-field",`<div class="p5-lbl">Formula</div><div class="p5-formula">${k.formula}</div>`));
+  const two=el("div","p5-2col");
+  two.appendChild(el("div","p5-field",`<div class="p5-lbl">Unit</div><div class="p5-val">${k.unit}</div>`));
+  const dc=k.dir.indexOf("Higher")>=0?"higher":"lower", di=dc==="higher"?I.up:I.down;
+  two.appendChild(el("div","p5-field",`<div class="p5-lbl">Direction of Improvement</div><div class="p5-dir ${dc}">${svg(di,13)}${k.dir}</div>`));
+  c.appendChild(two);
+  c.appendChild(el("div","p5-field",`<div class="p5-lbl">Definition</div><div class="p5-def-txt">${k.def}</div>`));
+  return c;
+}
+function p5GovCard(k,t){
+  const c=card("Governance & Interpretation","","");
+  const two=el("div","p5-2col");
+  two.appendChild(el("div","p5-field",`<div class="p5-lbl">Numerator</div><div class="p5-val">${k.numer}</div>`));
+  two.appendChild(el("div","p5-field",`<div class="p5-lbl">Denominator</div><div class="p5-val">${k.denom}</div>`));
+  c.appendChild(two);
+  const thirdLbl=t.dir==="higher"?"Minimum":"Maximum";
+  const tg=el("div","p5-field",`<div class="p5-lbl">Benchmark / Monitoring Basis — ${k.basis}</div>`);
+  const box=el("div","p5-targets");
+  box.innerHTML=
+    `<div class="p5-tgt stretch"><div class="t-l">Stretch</div><div class="t-v">${p5Fmt(k.id,t.stretch)}</div></div>`+
+    `<div class="p5-tgt normal"><div class="t-l">Normal</div><div class="t-v">${p5Fmt(k.id,t.normal)}</div></div>`+
+    `<div class="p5-tgt max"><div class="t-l">${thirdLbl}</div><div class="t-v">${p5Fmt(k.id,t.bound)}</div></div>`;
+  tg.appendChild(box); c.appendChild(tg);
+  const two2=el("div","p5-2col");
+  two2.appendChild(el("div","p5-field",`<div class="p5-lbl">Data Source</div><div class="p5-val">${k.src}</div>`));
+  two2.appendChild(el("div","p5-field",`<div class="p5-lbl">Reporting Frequency</div><div class="p5-val">${k.freq}</div>`));
+  c.appendChild(two2);
+  c.appendChild(el("div","p5-strip",k.interp));
+  return c;
+}
+function p5RefCard(k){
+  const c=card("Reference Basis","","");
+  const wrap=el("div","p5-ref");
+  wrap.appendChild(el("div","p5-ref-item",`<div class="r-l">Indonesian Reference</div><div class="r-v">${k.idn}</div>`));
+  wrap.appendChild(el("div","p5-ref-item",`<div class="r-l">International Reference</div><div class="r-v">${k.intl}</div>`));
   c.appendChild(wrap);
-  c.appendChild(el("p","muted",`<br>Enterprise KPIs computed from aggregated numerators &amp; denominators across the filtered site population — site KPI values are never averaged (Ch.3.7 / 5.9).`));
+  return c;
+}
+function p5StatusCard(k,t){
+  const c=card("Status Governance","","");
+  const wrap=el("div","p5-status");
+  let g,w,ac;
+  if(t.dir==="higher"){
+    g="Value ≥ "+p5Fmt(k.id,t.good);
+    w=p5Fmt(k.id,t.watch)+" ≤ value < "+p5Fmt(k.id,t.good);
+    ac="Value < "+p5Fmt(k.id,t.watch);
+  }else{
+    g="Value ≤ "+p5Fmt(k.id,t.good);
+    w=p5Fmt(k.id,t.good)+" < value ≤ "+p5Fmt(k.id,t.watch);
+    ac="Value > "+p5Fmt(k.id,t.watch);
+  }
+  [["good","GOOD",g],["watch","WATCH",w],["action","ACTION REQUIRED",ac]].forEach(([key,lbl,d])=>{
+    wrap.appendChild(el("div","p5-st "+key,`<span class="pill ${key}">${svg(STATUS_ICON[key],12)}${lbl}</span><div class="p5-st-tx"><p>${d}</p></div>`));
+  });
+  c.appendChild(wrap);
+  c.appendChild(el("div","p5-agg","Enterprise KPIs are computed from aggregated numerators and denominators across the filtered site population — site KPI values are never averaged (Ch.3.7 / 5.9). Classification is governed by the single shared status authority."));
+  return c;
+}
+function p5Matrix(){
+  const c=card("Enterprise KPI Reference Matrix","Governed definitions — owner-approved formula & target authority","");
+  c.className+=" p5-matrix";
+  const t=el("table","tbl zebra");
+  t.innerHTML=`<thead><tr><th>KPI</th><th>Abbr.</th><th>Formula</th><th>Unit</th><th>Direction</th><th>Benchmark / Basis</th><th>Freq.</th></tr></thead>`;
+  const tb=el("tbody");
+  P5KPI.forEach(k=>{
+    const tt=TARGET[k.id];
+    const hi=k.dir.indexOf("Higher")>=0;
+    const thirdLbl=tt.dir==="higher"?"Min":"Max";
+    const basis=`Stretch ${p5Fmt(k.id,tt.stretch)} · Normal ${p5Fmt(k.id,tt.normal)} · ${thirdLbl} ${p5Fmt(k.id,tt.bound)}`;
+    tb.appendChild(el("tr", k.id===p5Sel?"sel":null,
+      `<td><b>${k.name}</b></td><td><b>${k.abbr}</b></td>`+
+      `<td style="font-family:monospace;font-size:10px">${k.formula}</td>`+
+      `<td>${k.unit}</td>`+
+      `<td><span class="delta ${hi?"up good":"down good"}">${svg(hi?I.up:I.down,12)}${hi?"Higher":"Lower"}</span></td>`+
+      `<td>${basis}</td><td>${k.freq}</td>`));
+  });
+  t.appendChild(tb);
+  const wrap=el("div"); wrap.style.overflowX="auto"; wrap.appendChild(t);
+  c.appendChild(wrap);
   return c;
 }
 
@@ -2853,11 +3054,11 @@ function buildFindings(a,cur,prev,rm){
   if(ftwr!=null){const d=ftwrP!=null?ftwr-ftwrP:0;
     out.push([d>=0?"good":"watch","Fit-to-Work Rate "+a.fmt(ftwr,2)+"% ("+(d>=0?"+":"")+a.fmt(d,2)+" pp vs prior month).WORKFORCE READINESS.".split(".")[0]]);}
   const mfr=a.kpiVal("MFR",cur);
-  if(mfr!=null)out.push([mfr<=a.BENCH.MFR?"good":"action","MFR "+a.fmt(mfr,2)+" is "+(mfr<=a.BENCH.MFR?"below":"above")+" the national benchmark "+a.fmt(a.BENCH.MFR,2)+"."]);
+  if(mfr!=null)out.push([a.statusFor("MFR",mfr,null).key,"MFR "+a.fmt(mfr,2)+" is "+(mfr<=a.BENCH.MFR?"below":"above")+" the national benchmark "+a.fmt(a.BENCH.MFR,2)+"."]);
   const asr=a.kpiVal("ASR",cur);
-  if(asr!=null)out.push([asr<=a.BENCH.ASR?"good":"action","ASR "+a.fmt(asr,2)+" is "+(asr<=a.BENCH.ASR?"within":"above")+" the benchmark "+a.fmt(a.BENCH.ASR,2)+"."]);
-  const oir=a.kpiVal("OIR",cur);
-  out.push([oir>0?"action":"good",oir>0?"Confirmed occupational illness recorded — immediate review required.":"No confirmed occupational illness cases this period (target: zero)."]);
+  if(asr!=null)out.push([a.statusFor("ASR",asr,null).key,"ASR "+a.fmt(asr,2)+" is "+(asr<=a.BENCH.ASR?"within":"above")+" the benchmark "+a.fmt(a.BENCH.ASR,2)+"."]);
+  const oir=a.kpiVal("OIR",cur); const oSt=a.statusFor("OIR",oir,null);
+  out.push([oSt.key,oir>0?("Occupational disease (PAK) case(s) recorded — FR PAK "+a.fmt(oir,2)+" per 1M workers ("+oSt.text+")."):"No occupational disease (PAK) cases recorded this period."]);
   // site alerts
   a.SITE_ORDER.filter(s=>a.dimRows().some(r=>r.site===s)).forEach(s=>{
     const rows=cur.filter(r=>r.site===s);if(!rows.length)return;
