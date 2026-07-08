@@ -85,6 +85,22 @@ img{max-width:100%}
   display:flex;align-items:center;gap:16px;padding:0 18px;position:sticky;top:0;z-index:30}
 .header .hlogo{display:none;height:36px;width:auto;max-width:150px;object-fit:contain}
 /* BDSE-CORE-V2 — restrained source-status treatment (minimal local accommodation) */
+.filt.msel{position:relative}
+.msel-btn{display:flex;align-items:center;gap:6px;min-width:96px;max-width:170px;padding:6px 9px;border:1px solid var(--line,#D9DCE1);border-radius:8px;background:#fff;font:inherit;font-size:11.5px;color:#1F2430;cursor:pointer;white-space:nowrap}
+.msel-btn:hover{border-color:#B9BFC9}
+.msel-btn:focus-visible{outline:2px solid var(--gold,#C2922E);outline-offset:1px}
+.msel-lbl{overflow:hidden;text-overflow:ellipsis}
+.msel-caret{margin-left:auto;font-size:9px;color:#6B7280}
+.msel-pop{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:60;min-width:150px;max-height:238px;overflow:auto;background:#fff;border:1px solid var(--line,#D9DCE1);border-radius:9px;box-shadow:0 8px 22px rgba(11,11,12,.14);padding:4px}
+.msel-pop.open{display:block}
+.msel-opt{display:flex;align-items:center;gap:7px;width:100%;padding:5px 8px;border:0;background:transparent;border-radius:6px;font:inherit;font-size:11.5px;color:#1F2430;cursor:pointer;text-align:left}
+.msel-opt:hover{background:#F4F1E7}
+.msel-opt:focus-visible{outline:2px solid var(--gold,#C2922E);outline-offset:-2px}
+.msel-opt .msel-check{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border:1px solid #C6CBD4;border-radius:4px;background:#fff;color:#fff;flex:none}
+.msel-opt.sel .msel-check{background:var(--gold,#C2922E);border-color:var(--gold,#C2922E)}
+.msel-opt.msel-all{font-weight:600;border-bottom:1px solid #EEF0F2;border-radius:6px 6px 0 0;margin-bottom:2px}
+.msel-opt.msel-clear{color:#6B7280;border-top:1px solid #EEF0F2;border-radius:0 0 6px 6px;margin-top:2px}
+@media print{.msel-pop{display:none!important}}
 .core-status{display:flex;align-items:center;gap:8px;margin-right:6px;max-width:420px;overflow:hidden}
 .core-status .core-ts{font-size:10.5px;color:var(--grey);white-space:nowrap}
 .core-status .core-warn{font-size:10.5px;color:var(--action);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
@@ -1217,19 +1233,31 @@ function coerceNum(v, field, ctx, errors){
   if(isNaN(n)){ errors.push("Non-numeric value in required field '"+field+"' at "+ctx); return 0; }
   return n;
 }
-const SITE_FIELDS = { manpower:["manpower"], manhours:["manhours"], fit:["pekerjalayakkerja"],
+/* OWNER-FROZEN FIELD SEMANTICS (BDSE CORE CORRECTION — highest KPI authority):
+   visits  = Kunjungan Pasien = Treatment = Patient Visit = Kunjungan Sakit (treatment)
+           = "jumlah pekerja yang sakit karena penyakit, tidak termasuk kecelakaan"
+           → governed numerator for CMR and MFR (NOT generic clinic traffic).
+   sickleave = governed Sick Leave / sickness-absence field → numerator for SSR and ASR.
+   lostdays is retained as a raw evidence measure only — it is NOT a KPI numerator. */
+const SITE_FIELDS = { manpower:["manpower"], manhours:["manhours"],
+  visits:["kunjungansakittreatment","kunjungansakit","kunjunganpasien","patientvisit","treatment","visits","kunjunganklinik"],
+  fit:["pekerjalayakkerja"],
   sickleave:["sickleave"], lostdays:["harihilangkarenasakit"], spell:["spell"], pak:["kasuspak"] };
-const ALL_FIELDS  = { manpower:["manpower"], manhours:["manhours"], fit:["pekerjalayakkerja"],
+const ALL_FIELDS  = { manpower:["manpower"], manhours:["manhours"],
+  visits:["kunjunganklinik","kunjunganpasien","patientvisit","treatment","visits"],
+  fit:["pekerjalayakkerja"],
   sickleave:["sickleave"], lostdays:["absensikarenasakit"], spell:["spell"], pak:["pak"] };
-const VISIT_KEYS  = ["kunjunganklinik","clinicvisits","visits","kunjungan"];
+/* one canonical site identity authority — source aliases never create new sites */
+const SITE_ALIAS = { WETAR:"BTR", BTRBKP:"BTR", PGP:"PGM" };
 function pick(o, keys){ for(const k of keys) if(k in o) return o[k]; return undefined; }
 
 function normalizeSite(objs, errors){
   const out=[]; const seen=new Set();
   objs.forEach((o,idx)=>{
     const ctx = "FEED_SITE row "+(idx+2);
-    const site = String(o.site||"").trim().toUpperCase();
+    let site = String(o.site||"").trim().toUpperCase().replace(/[^A-Z0-9]/g,"");
     if(!site) return;                                    // ignore fully blank rows
+    if(SITE_ALIAS[site]) site = SITE_ALIAS[site];        // canonical alias normalization (WETAR/BTRBKP→BTR, PGP→PGM)
     if(!META[site]){ errors.push("Unknown site code '"+site+"' at "+ctx); return; }
     const month = coerceNum(pick(o,["monthnum","month"]), "Month_Num", ctx, errors);
     const year  = coerceNum(o.year, "Year", ctx, errors);
@@ -1239,14 +1267,12 @@ function normalizeSite(objs, errors){
     seen.add(key);
     const row = { site, month, year,
       monthYear: year+"-"+String(month).padStart(2,"0"),
-      label: MONTHS[month-1]+" "+year, visits: 0 };
+      label: MONTHS[month-1]+" "+year };
     Object.keys(SITE_FIELDS).forEach(f=>{
       const raw = pick(o, SITE_FIELDS[f]);
       if(raw===undefined) errors.push("Missing required field for '"+f+"' at "+ctx);
       row[f] = coerceNum(raw, f, ctx, errors);
     });
-    const vRaw = pick(o, VISIT_KEYS);                    // optional display-only measure
-    if(vRaw!==undefined) row.visits = coerceNum(vRaw, "visits", ctx, errors);
     out.push(row);
   });
   return out;
@@ -1272,12 +1298,12 @@ function normalizeAll(objs, errors){
   });
   return out;
 }
-const RECON_MEASURES = ["manpower","manhours","fit","sickleave","lostdays","spell","pak"];
+const RECON_MEASURES = ["manpower","manhours","visits","fit","sickleave","lostdays","spell","pak"];
 function reconcile(candidateEnterprise, candidateRows, errors){
   const agg = {};
   candidateRows.forEach(r=>{
     const k = r.year+"|"+r.month;
-    const a = agg[k] || (agg[k]={manpower:0,manhours:0,fit:0,sickleave:0,lostdays:0,spell:0,pak:0});
+    const a = agg[k] || (agg[k]={manpower:0,manhours:0,visits:0,fit:0,sickleave:0,lostdays:0,spell:0,pak:0});
     RECON_MEASURES.forEach(m=> a[m]+=r[m]);
   });
   const entKeys = new Set();
@@ -1424,26 +1450,68 @@ const svg=(p,w=16)=>`<svg class="ic" width="${w}" height="${w}" viewBox="0 0 24 
    ============================================================ */
 function aggregate(rows){
   const a={manpower:sum(rows,"manpower"),manhours:sum(rows,"manhours"),visits:sum(rows,"visits"),
+           visits:sum(rows,"visits"),
            fit:sum(rows,"fit"),sickleave:sum(rows,"sickleave"),lostdays:sum(rows,"lostdays"),
            spell:sum(rows,"spell"),pak:sum(rows,"pak")};
   return a;
 }
-/* KPI definitions — single source = Chapter 4 */
+/* KPI definitions — single formula authority (owner-frozen field semantics):
+   FTWR=fit/manpower*100 · CMR=visits/manpower*100 · MFR=visits/manhours*1e6
+   SSR=sickleave/spell*100 · ASR=sickleave/manhours*1e6 · OIR=pak/manpower*1e6
+   visits = Kunjungan Pasien / Treatment / Patient Visit (jumlah pekerja yang sakit
+   karena penyakit, tidak termasuk kecelakaan). sickleave = governed Sick Leave. */
 const KPI = {
   FTWR:{ name:"Fit-to-Work Rate", unit:"%", dir:"higher", level:"Executive",
     calc:a=> a.manpower? a.fit/a.manpower*100 : null, dp:2 },
   CMR:{ name:"Crude Morbidity Rate", unit:"%", dir:"lower", level:"Operational",
-    calc:a=> a.manpower? a.sickleave/a.manpower*100 : null, dp:2 },
+    calc:a=> a.manpower? a.visits/a.manpower*100 : null, dp:2 },
   MFR:{ name:"Morbidity Frequency Rate", unit:"per 1M MH", dir:"lower", level:"Executive", bench:BENCH.MFR,
-    calc:a=> a.manhours? a.sickleave/a.manhours*1e6 : null, dp:2 },
+    calc:a=> a.manhours? a.visits/a.manhours*1e6 : null, dp:2 },
   SSR:{ name:"Sickness Severity Rate", unit:"per 100 spells", dir:"lower", level:"Operational",
-    calc:a=> a.spell? a.lostdays/a.spell*100 : null, dp:2 },
+    calc:a=> a.spell? a.sickleave/a.spell*100 : null, dp:2 },
   ASR:{ name:"Absence Severity Rate", unit:"per 1M MH", dir:"lower", level:"Executive", bench:BENCH.ASR,
-    calc:a=> a.manhours? a.lostdays/a.manhours*1e6 : null, dp:2 },
+    calc:a=> a.manhours? a.sickleave/a.manhours*1e6 : null, dp:2 },
   OIR:{ name:"Occupational Illness Rate", unit:"per 1M workers", dir:"lower", level:"Executive", bench:BENCH.OIR,
     calc:a=> a.manpower? a.pak/a.manpower*1e6 : null, dp:2 }
 };
-const kpiVal = (id,rows)=> KPI[id].calc(aggregate(rows));
+/* ---- CORE CORRECTION: multi-period observation semantics ----
+   Atomic analytical grain = one canonical site × one Month_Year × one KPI.
+   kpiSummary derives per-row monthly site KPI observations through the ONE
+   formula authority above, then reports exact / mean+median / empty.
+   NO pooled numerator/denominator, NO weighted means, NO raw-field medians. */
+const KPI_DENOM = { FTWR:"manpower", CMR:"manpower", OIR:"manpower",
+                    MFR:"manhours", ASR:"manhours", SSR:"spell" };
+/* future/unreported rows are not zero-performance observations */
+function isValidReportingRow(r){ return (r.manpower>0) || (r.manhours>0); }
+function kpiSummary(id, rows){
+  const dkey=KPI_DENOM[id];
+  const observations=[];
+  (rows||[]).forEach(r=>{
+    if(!(r[dkey]>0)) return;                       // KPI-specific denominator validity
+    const v=KPI[id].calc(r);                       // one KPI formula authority per site-month row
+    if(v==null || !isFinite(v)) return;            // exclude null/NaN/Infinity (zero numerator stays valid)
+    observations.push({site:r.site, monthYear:r.monthYear, v});
+  });
+  const n=observations.length;
+  if(!n) return {mode:"empty", value:null, mean:null, median:null, n:0, observations};
+  const vals=observations.map(o=>o.v).slice().sort((a,b)=>a-b);
+  const mean=vals.reduce((s,v)=>s+v,0)/n;
+  const median = n%2 ? vals[(n-1)/2] : (vals[n/2-1]+vals[n/2])/2;
+  if(n===1) return {mode:"exact", value:vals[0], mean:vals[0], median:vals[0], n:1, observations};
+  return {mode:"distribution", value:mean, mean, median, n, observations};
+}
+/* every consumer descends from the one summary authority (exact→exact, multi→mean) */
+const kpiVal = (id,rows)=> kpiSummary(id,rows).value;
+function prevCalMY(my){ if(!my) return null; let p=my.split("-").map(Number), y=p[0], m=p[1]-1;
+  if(m<1){m=12;y--;} return y+"-"+String(m).padStart(2,"0"); }
+/* exact previous-month population — only when the active selection resolves to ONE Month_Year */
+function selPrevRows(){
+  const mys=monthsInSelection();
+  if(mys.length!==1) return null;
+  const pmy=prevCalMY(mys[0]); if(!pmy) return null;
+  const rows=dimRows().filter(r=>r.monthYear===pmy);
+  return rows.length?rows:null;
+}
 
 /* ---- Shared target-governance matrix (owner-approved Page 5 matrix) ----
    Native KPI scale. FTWR is higher-is-better; all others lower-is-better.
@@ -1477,18 +1545,64 @@ const STATUS_ICON={good:I.check,watch:I.warn,action:I.alert};
 /* ============================================================
    STATE + FILTERS  (Ch.6.4 synchronized, cascading, persistent)
    ============================================================ */
-const S = { year:"all", month:"all", group:"all", site:"all", commodity:"all", optype:"all", page:"exec" };
+const S = { years:"all", months:"all", group:"all", site:"all", commodity:"all", optype:"all", page:"exec" };
+/* set-valued time predicates — "all" or ordered numeric arrays; empty state prohibited */
+const inYears  = y => S.years==="all"  || S.years.indexOf(+y)>=0;
+const inMonths = m => S.months==="all" || S.months.indexOf(+m)>=0;
+/* chronological Month_Years inside the active valid selection */
+function monthsInSelection(){ return uniq(activeRows().map(r=>r.monthYear)).sort(); }
+const selRows = ()=> activeRows();
+/* one shared truthful selection-context descriptor (cards, insights, titles, exports) */
+function selectionLabel(){
+  const ys = S.years==="all" ? null : S.years.slice().sort((a,b)=>a-b);
+  const ms = S.months==="all" ? null : S.months.slice().sort((a,b)=>a-b);
+  const contiguous = a => a.every((v,i)=> i===0 || v===a[i-1]+1);
+  if(ys && ys.length===1 && ms){
+    if(ms.length===1) return MONTHS[ms[0]-1]+" "+ys[0];
+    if(contiguous(ms)) return MONTHS[ms[0]-1]+"\u2013"+MONTHS[ms[ms.length-1]-1]+" "+ys[0];
+    return ms.map(m=>MONTHS[m-1]).join(", ")+" "+ys[0];
+  }
+  let yTxt;
+  if(!ys){ const d=uniq(validRows().map(r=>r.year)).sort();
+    yTxt = d.length>1 ? d[0]+"\u2013"+d[d.length-1] : (d.length?String(d[0]):"All years"); }
+  else if(ys.length===1) yTxt=String(ys[0]);
+  else if(contiguous(ys)) yTxt=ys[0]+"\u2013"+ys[ys.length-1];
+  else yTxt=ys.join(" + ");
+  const mTxt = !ms ? "All reported months"
+    : ms.length===1 ? MONTHS[ms[0]-1]
+    : (contiguous(ms) ? MONTHS[ms[0]-1]+"\u2013"+MONTHS[ms[ms.length-1]-1] : ms.map(m=>MONTHS[m-1]).join(", "));
+  return yTxt+" \u00b7 "+mTxt;
+}
+/* explicit multi-select state actions — the ONLY writers of S.years / S.months */
+function togglePeriod(dim, val){                 // dim: "years" | "months"
+  const domain=(dim==="years"?optionsFor("year"):optionsFor("month")).map(Number);
+  let cur = S[dim]==="all" ? domain.slice() : S[dim].slice();
+  val=+val;
+  if(cur.indexOf(val)>=0) cur=cur.filter(x=>x!==val); else cur.push(val);
+  S[dim] = cur.length ? cur : "all";             // empty prohibited → All
+  normalizeGlobalState(); render();
+}
+function setPeriodAll(dim){ S[dim]="all"; normalizeGlobalState(); render(); }
 
 /* BDSE-CORE-V2 §11: state action / normalization / option-domain derivation / rendering
    are separated. UI renderers are pure consumers and never mutate S.
    normalizeGlobalState clears now-invalid selections to "all" through governed
    normalization only. The same S object identity is always retained (mutation only). */
 function normalizeGlobalState(){
-  ["group","site","commodity","optype","year","month"].forEach(dim=>{
+  ["group","site","commodity","optype"].forEach(dim=>{
     if(S[dim]!=="all"){
       const opts = optionsFor(dim).map(String);
       if(!opts.includes(String(S[dim]))) S[dim]="all";
     }
+  });
+  /* set-valued Year/Month normalization: drop impossible selections; empty → All;
+     every-valid-option-selected → All; All never coexists with a partial set */
+  [["years","year"],["months","month"]].forEach(function(pair){
+    const dim=pair[0], opt=pair[1];
+    if(S[dim]==="all") return;
+    const domain=optionsFor(opt).map(Number);
+    let v=uniq(S[dim].map(Number)).filter(x=>domain.indexOf(x)>=0).sort((a,b)=>a-b);
+    S[dim] = (!v.length || (domain.length>0 && v.length===domain.length)) ? "all" : v;
   });
 }
 function setFilter(dimension, value){
@@ -1498,8 +1612,10 @@ function setFilter(dimension, value){
 }
 
 // dimension filter (population) — excludes the time dimension used for "reporting month"
+/* valid reporting rows only — future/blank source rows never enter analytics */
+function validRows(){ return ROWS.filter(isValidReportingRow); }
 function dimRows(){
-  return ROWS.filter(r=>{
+  return validRows().filter(r=>{
     const m=META[r.site];
     if(S.group!=="all" && m.group!==S.group) return false;
     if(S.site!=="all"  && r.site!==S.site) return false;
@@ -1511,8 +1627,8 @@ function dimRows(){
 // time filter applied on top
 function timeRows(rows){
   return rows.filter(r=>{
-    if(S.year!=="all"  && r.year!==+S.year) return false;
-    if(S.month!=="all" && r.month!==+S.month) return false;
+    if(!inYears(r.year)) return false;
+    if(!inMonths(r.month)) return false;
     return true;
   });
 }
@@ -1521,8 +1637,7 @@ const activeRows = ()=> timeRows(dimRows());
 
 // reporting month = latest month present in the dim+year filtered set
 function reportingMY(){
-  let rows=dimRows().filter(r=> S.year==="all"||r.year===+S.year);
-  if(S.month!=="all") rows=rows.filter(r=>r.month===+S.month);
+  let rows=dimRows().filter(r=> inYears(r.year) && inMonths(r.month));
   if(!rows.length) return null;
   return rows.reduce((mx,r)=> mkKey(r)>mkKey(mx)?r:mx, rows[0]).monthYear;
 }
@@ -1532,13 +1647,14 @@ function prevMY(my){ const all=uniq(dimRows().map(r=>r.monthYear)).sort(); const
 
 /* cascading options: a dimension's options reflect the OTHER active filters */
 function optionsFor(dim){
-  const base=ROWS.filter(r=>{
+  const base=validRows().filter(r=>{
     const m=META[r.site];
     if(dim!=="group"     && S.group!=="all"     && m.group!==S.group) return false;
     if(dim!=="site"      && S.site!=="all"       && r.site!==S.site) return false;
     if(dim!=="commodity" && S.commodity!=="all"  && m.commodity!==S.commodity) return false;
     if(dim!=="optype"    && S.optype!=="all"      && m.optype!==S.optype) return false;
-    if(dim!=="year"      && S.year!=="all"        && r.year!==+S.year) return false;
+    if(dim!=="year"      && !inYears(r.year)) return false;
+    if(dim!=="month"     && !inMonths(r.month)) return false;
     return true;
   });
   switch(dim){
@@ -1565,10 +1681,24 @@ function deltaChip(cur,prev,dir){
   const ic = flat?I.flat:(up?I.up:I.down);
   return `<span class="delta ${cls}">${svg(ic,12)}${flat?"0":fmt(Math.abs(d), Math.abs(d)<10?2:0)}</span>`;
 }
-function kpiCard(id,rows,prevRows){
-  const k=KPI[id], cur=kpiVal(id,rows), prev=prevRows?kpiVal(id,prevRows):null;
-  const st=statusFor(id,cur,prev);
-  const valTxt = cur==null?"—":(id==="FTWR"||id==="CMR"?fmt(cur,2):fmt(cur,2));
+/* shared multi-period disclosure line: exact → prev-month delta (only when a valid
+   exact previous monthly observation exists); distribution → Mean · n · Median */
+function kpiCompareHTML(id,sum){
+  const k=KPI[id], unit=k.unit==="%"?"%":"";
+  if(sum.mode==="distribution")
+    return `Mean \u00b7 ${sum.n} observations \u00b7 Median ${fmt(sum.median,2)}${unit}`;
+  if(sum.mode==="exact"){
+    const pr=selPrevRows();
+    const p=pr?kpiSummary(id,pr):null;
+    if(p && p.n>0) return `${deltaChip(sum.value,p.value,k.dir)} vs prev month${k.unit==="%"?" (pp)":""}`;
+    return `<span class="muted">No prior-month observation</span>`;
+  }
+  return `<span class="muted">No valid observations</span>`;
+}
+function kpiCard(id,rows){
+  const k=KPI[id], sum=kpiSummary(id,rows);
+  const st=statusFor(id,sum.value,null);
+  const valTxt = sum.value==null?"—":fmt(sum.value,2);
   const unit = k.unit==="%"?"%":"";
   let bench="";
   if(k.bench!=null && k.bench>0) bench=`Benchmark: ${fmt(k.bench,2)} ${k.unit.replace('per ','/ ')}`;
@@ -1579,16 +1709,16 @@ function kpiCard(id,rows,prevRows){
     <div class="klabel">${id}</div>
     <div class="kfull">${k.name}</div>
     <div class="kval">${valTxt}${unit?`<small>${unit}</small>`:""}</div>
-    <div class="kcompare">${deltaChip(cur,prev,k.dir)} vs prev month${k.unit==="%"?" (pp)":""}</div>
+    <div class="kcompare">${kpiCompareHTML(id,sum)}</div>
     <div class="kbench">${bench}</div>
     <div class="kfoot"><span class="muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.05em">Status</span>${pill(st)}</div>`);
 }
 
 /* Page 1 (Golden Master) KPI card — presentation variant only; identical KPI engine */
-function kpiCardExec(id,rows,prevRows){
-  const k=KPI[id], cur=kpiVal(id,rows), prev=prevRows?kpiVal(id,prevRows):null;
-  const st=statusFor(id,cur,prev);
-  const valTxt = cur==null?"—":fmt(cur,2);
+function kpiCardExec(id,rows){
+  const k=KPI[id], sum=kpiSummary(id,rows);
+  const st=statusFor(id,sum.value,null);
+  const valTxt = sum.value==null?"—":fmt(sum.value,2);
   const unit = k.unit==="%"?"%":"";
   let bench="";
   if(k.bench!=null && k.bench>0) bench=`Benchmark: ${fmt(k.bench,2)} ${k.unit.replace('per ','/ ')}`;
@@ -1598,7 +1728,7 @@ function kpiCardExec(id,rows,prevRows){
   return el("div",`kpi execv s-${st.key}`,`
     <div class="khead"><div><div class="klabel">${k.name}</div><div class="kfull">${id} · ${k.unit}</div></div>${pill(st)}</div>
     <div class="kval">${valTxt}${unit?`<small>${unit}</small>`:""}</div>
-    <div class="kcompare">${deltaChip(cur,prev,k.dir)} vs prior month${k.unit==="%"?" (pp)":""}</div>
+    <div class="kcompare">${kpiCompareHTML(id,sum)}</div>
     <div class="kbench">${bench}</div>`);
 }
 
@@ -1629,13 +1759,12 @@ function series(id,limitMonths){
    PAGE 1 — EXECUTIVE SUMMARY  (Ch.6.5 / 7.10)
    ============================================================ */
 function pageExec(host){
-  const rm=reportingMY();
-  const cur=rm?rowsForMY(rm):[]; const pm=rm?prevMY(rm):null; const prev=pm?rowsForMY(pm):null;
-  const ctxLabel = rm?labelOf(rm):"No data";
+  const cur=selRows(); const prev=selPrevRows(); const rm=reportingMY();
+  const ctxLabel = cur.length?selectionLabel():"No data";
 
   host.innerHTML="";
   host.appendChild(tag("1","Executive Summary"));
-  if(!rm){ host.appendChild(emptyState("No data for the current filter selection.")); return; }
+  if(!cur.length){ host.appendChild(emptyState("No data for the current filter selection.")); return; }
 
   // Golden Master layout: LEFT column (KPI row → Enterprise Trend → full-width Site
   // Performance table) beside a RIGHT sidebar of four stacked panels
@@ -1648,7 +1777,7 @@ function pageExec(host){
   leftCol.style.display="grid";leftCol.style.gap="var(--sp)";leftCol.style.alignContent="start";leftCol.style.minWidth="0";
 
   const cards=el("div","kpis");
-  ["FTWR","MFR","ASR","OIR"].forEach(id=>cards.appendChild(kpiCardExec(id,cur,prev)));
+  ["FTWR","MFR","ASR","OIR"].forEach(id=>cards.appendChild(kpiCardExec(id,cur)));
   leftCol.appendChild(cards);
 
   const trend=card("Enterprise Trend — Last 24 Months",`${ctxLabel} reporting context`,"");
@@ -1699,8 +1828,10 @@ function execInsight(cur,prev,ctx){
   const ins=el("div","insight");
   const items=[];
   const ftwr=kpiVal("FTWR",cur),ftwrP=prev?kpiVal("FTWR",prev):null;
-  if(ftwr!=null){const d=ftwrP!=null?ftwr-ftwrP:0;
-    items.push(["good","Fit-to-Work Rate at "+fmt(ftwr,2)+"% "+(d>=0?"improved "+fmt(Math.abs(d),2)+" pp":"declined "+fmt(Math.abs(d),2)+" pp")+" versus prior month."]);}
+  if(ftwr!=null){
+    if(ftwrP!=null){const d=ftwr-ftwrP;
+      items.push(["good","Fit-to-Work Rate at "+fmt(ftwr,2)+"% "+(d>=0?"improved "+fmt(Math.abs(d),2)+" pp":"declined "+fmt(Math.abs(d),2)+" pp")+" versus prior month."]);}
+    else items.push(["good","Fit-to-Work Rate at "+fmt(ftwr,2)+"% across the selected period."]);}
   const mfr=kpiVal("MFR",cur);
   if(mfr!=null) items.push([statusFor("MFR",mfr,null).key,"MFR is "+fmt(mfr,2)+" — "+(mfr<=BENCH.MFR?"below":"above")+" the national benchmark of "+fmt(BENCH.MFR,2)+"."]);
   const asr=kpiVal("ASR",cur);
@@ -1736,26 +1867,26 @@ function recommendedActions(cur,prev,ctx){
   c.appendChild(list);return c;
 }
 function execAlerts(rm){
-  const c=card("Alerts",labelOf(rm),"");
+  const c=card("Alerts",selectionLabel(),"");
   const wrap=el("div","alerts");
   const sites=SITE_ORDER.filter(s=>dimRows().some(r=>r.site===s));
   let any=false;
   sites.forEach(s=>{
-    const rows=rowsForMY(rm).filter(r=>r.site===s);if(!rows.length)return;
+    const rows=selRows().filter(r=>r.site===s);if(!rows.length)return;
     const checks=[["MFR",kpiVal("MFR",rows)],["ASR",kpiVal("ASR",rows)],["OIR",kpiVal("OIR",rows)],["FTWR",kpiVal("FTWR",rows)]];
     checks.forEach(([id,v])=>{const st=statusFor(id,v,null);
       if(st.key==="action"){any=true;wrap.appendChild(el("div","alert action",`${svg(I.alert,15)}<div><b>${META[s].name}:</b> ${id} ${st.text.toLowerCase()} (${fmt(v,2)}).</div>`));}});
   });
-  if(!any) wrap.appendChild(el("div","alert good",`${svg(I.check,15)}<div><b>All sites within range:</b> no executive-level alerts for ${labelOf(rm)}.</div>`));
+  if(!any) wrap.appendChild(el("div","alert good",`${svg(I.check,15)}<div><b>All sites within range:</b> no executive-level alerts for ${selectionLabel()}.</div>`));
   c.appendChild(wrap);return c;
 }
 function sitePerfTable(rm,span){
-  const c=card("Site Performance Summary",labelOf(rm),span);
+  const c=card("Site Performance Summary",selectionLabel(),span);
   const t=el("table","tbl");
   t.innerHTML=`<thead><tr><th>Site</th><th class="num">FTWR %</th><th class="num">MFR</th><th class="num">ASR</th><th class="num">OIR</th><th>Status</th></tr></thead>`;
   const tb=el("tbody");
   SITE_ORDER.filter(s=>dimRows().some(r=>r.site===s)).forEach(s=>{
-    const rows=rowsForMY(rm).filter(r=>r.site===s);if(!rows.length)return;
+    const rows=selRows().filter(r=>r.site===s);if(!rows.length)return;
     const f=kpiVal("FTWR",rows),m=kpiVal("MFR",rows),a=kpiVal("ASR",rows),o=kpiVal("OIR",rows);
     const worst=["FTWR","MFR","ASR","OIR"].map(id=>statusFor(id,kpiVal(id,rows),null).key);
     const ov= worst.includes("action")?{key:"action",text:"ACTION REQUIRED"}:worst.includes("watch")?{key:"watch",text:"WATCH"}:{key:"good",text:"GOOD"};
@@ -1765,7 +1896,7 @@ function sitePerfTable(rm,span){
   t.appendChild(tb);c.appendChild(t);return c;
 }
 function riskHeat(rm,span){
-  const c=card("Risk Heat Map by KPI",labelOf(rm),span);
+  const c=card("Risk Heat Map by KPI",selectionLabel(),span);
   const ids=["FTWR","MFR","ASR","OIR"];
   const sites=SITE_ORDER.filter(s=>dimRows().some(r=>r.site===s));
   const heat=el("div","heat");
@@ -1773,7 +1904,7 @@ function riskHeat(rm,span){
   hdr.appendChild(el("div","hhdr",""));ids.forEach(id=>hdr.appendChild(el("div","hhdr",id)));
   heat.appendChild(hdr);
   sites.forEach(s=>{
-    const rows=rowsForMY(rm).filter(r=>r.site===s);
+    const rows=selRows().filter(r=>r.site===s);
     const row=el("div","hrow");row.style.gridTemplateColumns=`1.7fr repeat(${ids.length},1fr)`;
     row.appendChild(el("div","hname",META[s].name));
     ids.forEach(id=>{const v=kpiVal(id,rows);const st=statusFor(id,v,null);
@@ -1797,11 +1928,13 @@ function heatLegend(){
    PAGE 2 — ENTERPRISE HEALTH PERFORMANCE (Ch.6.6 / 7.11)
    ============================================================ */
 function pagePerf(host){
-  const rm=reportingMY();
+  const cur=selRows(), prev=selPrevRows(), ctx=selectionLabel();
+  const selMys=monthsInSelection();
+  const rm=selMys.length?selMys[selMys.length-1]:null;
+  const pm=selMys.length===1?prevCalMY(selMys[0]):null;
   host.innerHTML="";
   host.appendChild(tag("2","Enterprise Health Performance"));
-  if(!rm){host.appendChild(emptyState("No data for the current filter selection."));return;}
-  const cur=rowsForMY(rm),pm=prevMY(rm),prev=pm?rowsForMY(pm):null,ctx=labelOf(rm);
+  if(!cur.length){host.appendChild(emptyState("No data for the current filter selection."));return;}
   const sites=SITE_ORDER.filter(s=>dimRows().some(r=>r.site===s));
   const a0=aggregate(cur);
   const KIDS=["FTWR","MFR","ASR","OIR"];
@@ -1814,13 +1947,13 @@ function pagePerf(host){
   const SEV={good:0,watch:1,action:2};
   const STC={good:C.green,watch:C.amber,action:C.red};
   const stText=k=>k==="good"?"GOOD":k==="watch"?"WATCH":"ACTION";
-  const mys3=monthsInDim().slice(-3);
+  const mys3=monthsInSelection().slice(-3);
   const spark3=(s,key)=>sparkSVG(mys3.map(my=>kpiVal("MFR",rowsForMY(my).filter(x=>x.site===s))),key);
 
   /* ===== TOP SUMMARY ROW ===== */
   const top=el("div","p2-top");
   const kpiCardM=id=>{
-    const k=KPI[id], c=kpiVal(id,cur), p=prev?kpiVal(id,prev):null, st=statusFor(id,c,p);
+    const k=KPI[id], sum=kpiSummary(id,cur), st=statusFor(id,sum.value,null);
     let bench="";
     if(k.bench!=null&&k.bench>0) bench=`Benchmark: ${fmt(k.bench,2)}`;
     else if(id==="OIR") bench="Target: 0 (zero cases)";
@@ -1830,8 +1963,8 @@ function pagePerf(host){
     return el("div",`kpi m s-${st.key}`,`
       <div class="klabel">${k.name}</div>
       <div class="kfull">${sub}</div>
-      <div class="kval">${c==null?"—":fmt(c,2)}${unit?`<small>${unit}</small>`:""}</div>
-      <div class="kcompare">${deltaChip(c,p,k.dir)} vs prior month</div>
+      <div class="kval">${sum.value==null?"—":fmt(sum.value,2)}${unit?`<small>${unit}</small>`:""}</div>
+      <div class="kcompare">${kpiCompareHTML(id,sum)}</div>
       <div class="kbench">${bench}</div>
       <div class="kfoot">${pill(st)}</div>`);
   };
@@ -2041,7 +2174,7 @@ function snapCard(label,v,pv){
 }
 const MATRIX_LABEL={good:"STABLE",watch:"MONITOR",action:"REQUIRES ATTENTION"};
 function siteStatus(rm,pm,s){ // evidence: worst KPI status (benchmark + trend) — no composite score
-  const rows=rowsForMY(rm).filter(r=>r.site===s), prev=pm?rowsForMY(pm).filter(r=>r.site===s):null;
+  const rows=selRows().filter(r=>r.site===s), prev=pm?rowsForMY(pm).filter(r=>r.site===s):null;
   let worst="good";
   ["CMR","SSR","MFR","ASR"].forEach(id=>{
     const st=statusFor(id,kpiVal(id,rows),prev?kpiVal(id,prev):null);
@@ -2062,22 +2195,22 @@ function sparkSVG(vals,key){
     <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.6" fill="${col}"/></svg>`;
 }
 function siteMatrix(rm,pm,sites){
-  const c=card("Site Performance Matrix",labelOf(rm),"col-span-12");c.classList.add("matrix-card");
+  const c=card("Site Performance Matrix",selectionLabel(),"col-span-12");c.classList.add("matrix-card");
   c.querySelector(".card-head").insertAdjacentHTML("beforeend",
     `<span class="matrix-legend"><span class="dotl"><span class="d" style="background:${C.red}"></span>Requires Attention</span>
      <span class="dotl"><span class="d" style="background:${C.amber}"></span>Monitor</span>
      <span class="dotl"><span class="d" style="background:${C.green}"></span>Stable</span></span>`);
   const t=el("table","tbl matrix");
   t.innerHTML=`<thead><tr><th>Operating Site</th><th>Status (evidence-based)</th>
-    <th class="num">CMR (%)</th><th class="num">SSR (days/100 spells)</th><th class="num">MFR (/1M hrs)</th><th class="num">ASR (/1M hrs)</th>
+    <th class="num">CMR (%)</th><th class="num">SSR (/100 spells)</th><th class="num">MFR (/1M hrs)</th><th class="num">ASR (/1M hrs)</th>
     <th class="num">Sick Workers</th><th class="num">Lost Workdays</th><th class="num">6-mo Trend</th></tr></thead>`;
   const tb=el("tbody");
-  const mys6=monthsInDim().slice(-6);
+  const mys6=monthsInSelection().slice(-6);
   const order={action:0,watch:1,good:2};
   sites.map(s=>({s,key:siteStatus(rm,pm,s)}))
     .sort((x,y)=>order[x.key]-order[y.key])
     .forEach(({s,key})=>{
-      const rows=rowsForMY(rm).filter(r=>r.site===s), prev=pm?rowsForMY(pm).filter(r=>r.site===s):null;
+      const rows=selRows().filter(r=>r.site===s), prev=pm?rowsForMY(pm).filter(r=>r.site===s):null;
       const ag=aggregate(rows);
       const kv=id=>{const v=kpiVal(id,rows),st=statusFor(id,v,prev?kpiVal(id,prev):null);
         return `<td class="num kv s-${st.key}">${fmt(v,id==="CMR"?2:1)}</td>`;};
@@ -2090,21 +2223,21 @@ function siteMatrix(rm,pm,sites){
         <td class="num">${spark}</td>`);
       tb.appendChild(tr);
     });
-  const ent=rowsForMY(rm), entPrev=pm?rowsForMY(pm):null, ea=aggregate(ent);
+  const ent=selRows(), entPrev=pm?rowsForMY(pm):null, ea=aggregate(ent);
   const ekv=id=>`<td class="num" style="background:#F2EEDF"><b>${fmt(kpiVal(id,ent),id==="CMR"?2:1)}</b></td>`;
   tb.appendChild(el("tr",null,`<td style="background:#F2EEDF"><b>ENTERPRISE</b></td>
     <td style="background:#F2EEDF">${pill(statusFor("MFR",kpiVal("MFR",ent),entPrev?kpiVal("MFR",entPrev):null))}</td>
     ${ekv("CMR")}${ekv("SSR")}${ekv("MFR")}${ekv("ASR")}
     <td class="num" style="background:#F2EEDF"><b>${fmtInt(ea.visits)}</b></td>
     <td class="num" style="background:#F2EEDF"><b>${fmtInt(ea.lostdays)}</b></td>
-    <td class="num" style="background:#F2EEDF">${sparkSVG(monthsInDim().slice(-6).map(my=>kpiVal("MFR",rowsForMY(my))),"watch")}</td>`));
+    <td class="num" style="background:#F2EEDF">${sparkSVG(monthsInSelection().slice(-6).map(my=>kpiVal("MFR",rowsForMY(my))),"watch")}</td>`));
   t.appendChild(tb);c.appendChild(t);
   c.appendChild(el("div","matrix-foot",
     `Status derived from KPI values vs national benchmark (MFR ${fmt(BENCH.MFR,2)} · ASR ${fmt(BENCH.ASR,2)}) and month-over-month trend direction (Ch.4 rules). No composite scoring applied — the matrix presents evidence; management makes decisions.`));
   return c;
 }
 function evidenceTable(rm,sites,span){
-  const c=card("Site Operational Evidence",labelOf(rm)+" — filtered population",span);
+  const c=card("Site Operational Evidence",selectionLabel()+" — filtered population",span);
   const t=el("table","tbl zebra");
   t.innerHTML=`<thead><tr><th>Site</th><th class="num">Workforce</th><th class="num">Man-hours</th>
     <th class="num">Treatment Visits</th><th class="num">Sick Workers</th><th class="num">Sick Leave Cases</th>
@@ -2115,17 +2248,17 @@ function evidenceTable(rm,sites,span){
     const bg=strong?' style="background:#F2EEDF"':'';
     const b=s=>strong?`<b>${s}</b>`:s;
     return `<td${bg}>${b(name)}</td><td class="num"${bg}>${b(fmtInt(ag.manpower))}</td><td class="num"${bg}>${b(fmtInt(ag.manhours))}</td>
-      <td class="num"${bg}>${b(fmtInt(ag.visits))}</td><td class="num"${bg}>${b(fmtInt(ag.sickleave))}</td><td class="num"${bg}>${b(fmtInt(ag.sickleave))}</td>
+      <td class="num"${bg}>${b(fmtInt(ag.visits))}</td><td class="num"${bg}>${b(fmtInt(ag.visits))}</td><td class="num"${bg}>${b(fmtInt(ag.sickleave))}</td>
       <td class="num"${bg}>${b(fmtInt(ag.lostdays))}</td><td class="num"${bg}>${b(fmtInt(ag.spell))}</td><td class="num"${bg}>${b(fmtInt(ag.pak))}</td>
       <td class="num"${bg}>${b(fmt(kpiVal("CMR",rows),2))}</td><td class="num"${bg}>${b(fmt(kpiVal("SSR",rows),2))}</td>
       <td class="num"${bg}>${b(fmt(kpiVal("MFR",rows),2))}</td><td class="num"${bg}>${b(fmt(kpiVal("ASR",rows),2))}</td>`;};
-  sites.forEach(s=>tb.appendChild(el("tr",null,rowHTML(META[s].name,rowsForMY(rm).filter(r=>r.site===s)))));
-  tb.appendChild(el("tr",null,rowHTML("ENTERPRISE",rowsForMY(rm),true)));
+  sites.forEach(s=>tb.appendChild(el("tr",null,rowHTML(META[s].name,selRows().filter(r=>r.site===s)))));
+  tb.appendChild(el("tr",null,rowHTML("ENTERPRISE",selRows(),true)));
   t.appendChild(tb);c.appendChild(t);return c;
 }
 function monthlyPerfTable(span){
   const c=card("Monthly Performance Table","Enterprise — filtered population",span);
-  const mys=monthsInDim().slice(-12).reverse();
+  const mys=monthsInSelection().slice(-12).reverse();
   const t=el("table","tbl zebra");
   t.innerHTML=`<thead><tr><th>Month</th><th class="num">FTWR %</th><th class="num">CMR %</th><th class="num">MFR</th><th class="num">SSR</th><th class="num">ASR</th><th class="num">OIR</th><th class="stcol">Status</th></tr></thead>`;
   const tb=el("tbody");
@@ -2173,7 +2306,7 @@ const P3_UNIT={FTWR:"%",CMR:"%",MFR:"per 1M MH",SSR:"per 100 spells",ASR:"per 1M
 const P3_DIRTXT={FTWR:"Higher is Better",CMR:"Lower is Better",MFR:"Lower is Better",SSR:"Lower is Better",ASR:"Lower is Better",OIR:"Lower is Better"};
 
 function p3Sites(){ return SITE_ORDER.filter(s=>dimRows().some(r=>r.site===s)); }
-function p3Rows(rm,s){ return rowsForMY(rm).filter(r=>r.site===s); }
+function p3Rows(rm,s){ return selRows().filter(r=>r.site===s); }  /* selection population — each site = mean of its valid monthly KPI observations via kpiSummary */
 function p3Prev(id,s,rm){ const p=prevMY(rm); if(!p) return null; return kpiVal(id,rowsForMY(p).filter(r=>r.site===s)); }
 function p3Stat(id,s,rm){
   const v=kpiVal(id,p3Rows(rm,s));
@@ -2260,7 +2393,7 @@ function p3DrawRadar(rm,sites){
 
 /* ---------- Component 2: Site Benchmark Matrix ---------- */
 function p3Matrix(rm,sites){
-  const c=card("2. Site Benchmark Matrix",labelOf(rm),"p3-card p3-matrix-card");
+  const c=card("2. Site Benchmark Matrix",selectionLabel(),"p3-card p3-matrix-card");
   const heads=[["OPERATING SITE",""],["FTWR (%)",P3_DIRTXT.FTWR],["CMR (%)",P3_DIRTXT.CMR],
     ["MFR (/1M MH)",P3_DIRTXT.MFR],["SSR",P3_DIRTXT.SSR],["ASR (/1M MH)",P3_DIRTXT.ASR],["OIR (/1M workers)",P3_DIRTXT.OIR]];
   const t=el("table","p3-matrix");
@@ -2304,7 +2437,7 @@ function p3FillBest(rm,sites){
   const view=showAll?rank:rank.slice(0,compact);
   const rows=view.map((o,i)=>`<tr><td class="rk">#${i+1}</td><td><b>${META[o.s].name}</b></td>
     <td class="num">${o.v==null?"—":fmt(o.v,2)}</td><td class="st">${pill(o.st)}</td></tr>`).join("");
-  body.innerHTML=`<div class="p3-cue">${P3_DIRTXT[id]} · unit ${P3_UNIT[id]} · reporting period <span class="per">${labelOf(rm)}</span></div>
+  body.innerHTML=`<div class="p3-cue">${P3_DIRTXT[id]} · unit ${P3_UNIT[id]} · period <span class="per">${selectionLabel()}</span></div>
     <table class="p3-rank"><thead><tr><th>Rank</th><th>Operating Site</th><th class="num">${id} (${P3_UNIT[id]})</th><th class="st" style="text-align:center">Status</th></tr></thead>
     <tbody>${rows}</tbody></table>`;
   if(rank.length>compact){
@@ -2372,7 +2505,7 @@ function p3FillDist(rm,sites){
   const pct=k=>N?Math.round(cnt[k]/N*100):0;
   const block=(k,lab)=>`<div class="db ${k}"><div class="lab">${lab}</div><div class="cnt">${cnt[k]}</div>
     <div class="pct">${pct(k)}%</div><div class="ref">${p3RefWord(id,k)}</div></div>`;
-  body.innerHTML=`<div class="p3-cue">${P3_DIRTXT[id]} · governed status · reporting period <span class="per">${labelOf(rm)}</span></div>
+  body.innerHTML=`<div class="p3-cue">${P3_DIRTXT[id]} · governed status · period <span class="per">${selectionLabel()}</span></div>
     <div class="p3-dist">${block("good","GOOD")}${block("watch","WATCH")}${block("action","ACTION REQUIRED")}</div>
     <div class="p3-dist-tot">Total Sites: ${N}</div>
     <div class="p3-util"><button class="p3-util-link" id="p3-thr-btn">${svg(P3I.info,15)}Understanding thresholds</button>
@@ -2383,7 +2516,7 @@ function p3FillDist(rm,sites){
 /* ---------- Component 5: Site Insights ---------- */
 function p3Insights(rm,sites){
   const c=card("5. Site Insights","","p3-card p3-insights");
-  const head=el("div","p3-insight-head",labelOf(rm)); c.appendChild(head);
+  const head=el("div","p3-insight-head",selectionLabel()); c.appendChild(head);
 
   // governed six-KPI status per visible site (single governed path: p3Stat -> statusFor)
   const perSite=sites.map(s=>{
@@ -2399,7 +2532,7 @@ function p3Insights(rm,sites){
   const banner=el("div","p3-banner"+(attn===0?" calm":""));
   banner.innerHTML=`<span class="bic">${svg(attn===0?P3I.shieldCheck:P3I.alertCircle,20)}</span>
     <div><div class="bt">${attn} Site${attn===1?"":"s"} Have Action-Required KPI Status</div>
-    <div class="bs">Based on governed KPI status outcomes for ${labelOf(rm)}</div></div>`;
+    <div class="bs">Based on governed KPI status outcomes for ${selectionLabel()}</div></div>`;
   c.appendChild(banner);
 
   const ins=[];
@@ -2437,7 +2570,7 @@ function p3Insights(rm,sites){
   util.innerHTML=`<button class="p3-util-link" id="p3-det-btn">${svg(P3I.search,15)}View detailed insight</button>
     <div class="p3-util-panel${p3DetOpen?"":" p3-hidden"}" id="p3-det-panel">
     <h5>Governed KPI status evidence by site</h5>
-    <p class="meta">Direct summary of the six governed KPI outcomes · reporting period ${labelOf(rm)}</p>
+    <p class="meta">Direct summary of the six governed KPI outcomes · period ${selectionLabel()}</p>
     <table class="p3-det-tbl"><thead><tr><th>Operating Site</th><th>Action</th><th>Watch</th><th>Good</th><th>Action KPIs</th><th>Watch KPIs</th></tr></thead>
     <tbody>${detRows}</tbody></table></div>`;
   c.appendChild(util);
@@ -2517,9 +2650,9 @@ function p4Header(){
 function p4TrendDomain(){
   const all=monthsInDim();               // chronological months in CURRENT dimRows() population
   if(!all.length) return [];
-  if(S.month!=="all"){ const rm=reportingMY(); return rm?[rm]:[]; } // CASE C & D: single resolved anchor
-  if(S.year!=="all"){ const y=+S.year; return all.filter(my=>+my.split("-")[0]===y); } // CASE B: selected year only
-  return all;                            // CASE A: full history (CASE E handled via dimRows())
+  /* multi-select authority: only selected Year/Month observations appear in the
+     filtered trend display domain (rolling stat still computed from full history) */
+  return all.filter(my=>{ const p=my.split("-").map(Number); return inYears(p[0]) && inMonths(p[1]); });
 }
 /* monthly KPI series over a display domain (governed engine, current population) */
 function p4MonthlySeries(id, domainMys){
@@ -2543,7 +2676,7 @@ function p4RollingAt(id,my){ return p4RollingSeries(id,[my])[0]; }
 /* comparison-year authority shared by MFR YoY and ASR YoY */
 function p4YoyYears(){
   let cur;
-  if(S.year!=="all") cur=+S.year;
+  if(S.years!=="all") cur=Math.max.apply(null,S.years);
   else { const rm=reportingMY(); cur = rm? +rm.split("-")[0] : (uniq(dimRows().map(r=>r.year)).length?Math.max.apply(null,uniq(dimRows().map(r=>r.year))):null); }
   return {cur, prev: cur==null?null:cur-1};
 }
@@ -2635,7 +2768,7 @@ function p4YoyCard(id,num,title){
   const cw=el("div","chart-wrap"); cw.style.height="205px";
   const cv=el("canvas"); cv.id=(id==="MFR"?"p4-mfr-yoy":"p4-asr-yoy"); cw.appendChild(cv);
   const yy=p4YoyYears(); const Y=yy.cur, PY=yy.prev;
-  const monthMode = S.month==="all";
+  const monthMode = S.months==="all";
   const side=el("div","p4-side");
   if(Y==null){
     side.innerHTML='<span class="p4-na">Comparison unavailable</span>';
@@ -2650,30 +2783,31 @@ function p4YoyCard(id,num,title){
       `<div class="p4-s-lbl" style="margin-top:5px">YoY Change</div>`+
       `<div class="p4-s-row">${(curV==null||prevV==null)?'<span class="p4-na">Prior-year period unavailable</span>':p4Delta(curV,prevV,"lower")}</div>`;
   }else{
-    const m=+S.month, base=dimRows();
-    const curRows=base.filter(r=>r.year===Y&&r.month===m);
-    const prevRows=base.filter(r=>r.year===PY&&r.month===m);
+    const msSel=S.months.slice().sort((a,b)=>a-b), base=dimRows();
+    const mLbl=msSel.map(m=>MONTHS[m-1]).join(", ");
+    const curRows=base.filter(r=>r.year===Y&&msSel.indexOf(r.month)>=0);
+    const prevRows=base.filter(r=>r.year===PY&&msSel.indexOf(r.month)>=0);
     const curV=curRows.length?kpiVal(id,curRows):null;
     const prevV=prevRows.length?kpiVal(id,prevRows):null;
     side.innerHTML=
-      `<div class="p4-s-lbl">Selected Period (${MONTHS[m-1]} ${Y})</div>`+
+      `<div class="p4-s-lbl">Selected Period (${mLbl} ${Y})</div>`+
       `<div class="p4-s-val">${curV==null?"\u2014":fmt(curV,2)}<small>/1M MH</small></div>`+
       `<div class="p4-s-lbl" style="margin-top:5px">YoY Change</div>`+
-      `<div class="p4-s-row">${(curV==null||prevV==null)?'<span class="p4-na">Prior-year month unavailable</span>':p4Delta(curV,prevV,"lower")}</div>`;
+      `<div class="p4-s-row">${(curV==null||prevV==null)?'<span class="p4-na">Prior-year period unavailable</span>':p4Delta(curV,prevV,"lower")}</div>`;
   }
   comp.appendChild(cw); comp.appendChild(side);
   c.appendChild(comp);
   let strip;
   if(Y==null) strip="Year-over-year comparison unavailable.";
   else if(monthMode) strip=`Current year (${Y}) monthly ${id} compared with the same months of the previous year (${PY}).`;
-  else strip=`${MONTHS[+S.month-1]} ${id} for ${Y} compared with the same calendar month in ${PY}.`;
+  else strip=`${S.months.slice().sort((a,b)=>a-b).map(m=>MONTHS[m-1]).join(", ")} ${id} for ${Y} compared with the same calendar month(s) in ${PY}.`;
   c.appendChild(el("div","p4-strip",strip));
   return c;
 }
 function p4DrawYoyChart(id){
   const ctx=$("#"+(id==="MFR"?"p4-mfr-yoy":"p4-asr-yoy")); if(!ctx) return;
   const yy=p4YoyYears(); const Y=yy.cur, PY=yy.prev; if(Y==null) return;
-  const monthNums = S.month==="all" ? [1,2,3,4,5,6,7,8,9,10,11,12] : [+S.month];
+  const monthNums = S.months==="all" ? [1,2,3,4,5,6,7,8,9,10,11,12] : S.months.slice().sort((a,b)=>a-b);
   const labels=monthNums.map(m=>MONTHS[m-1]);
   const curD=p4YoyData(id,Y,monthNums);
   const prevD=p4YoyData(id,PY,monthNums);
@@ -2742,7 +2876,7 @@ function p4Comp5Bench(){
    Component 6 — Historical KPI Performance (Latest 5 Months)
    ============================================================ */
 function p4TrailingMonths(n){
-  const all=monthsInDim(); const rm=reportingMY();
+  const all=monthsInSelection(); const rm=reportingMY();
   if(!rm) return [];
   const idx=all.indexOf(rm); if(idx<0) return [];
   return all.slice(Math.max(0,idx-(n-1)), idx+1);
@@ -2815,7 +2949,7 @@ function p4Comp6Hist(){
   const panel=el("div","p4-hist-panel"); panel.id="p4-hist-panel";
   panel.appendChild(el("div","p4-hist-cap","Complete filtered reporting history (most recent first)."));
   const fullWrap=el("div","p4-vtable-wrap");
-  const all=monthsInDim(); const rm=reportingMY();
+  const all=monthsInSelection(); const rm=reportingMY();
   const idx=rm?all.indexOf(rm):-1;
   const fullMys=(idx>=0?all.slice(0,idx+1):all).slice().reverse();
   fullWrap.appendChild(p4HistTable(fullMys));
@@ -2884,10 +3018,10 @@ function p4Insights(){
 /* Corrected enterprise KPI reference (exposed metadata) */
 const DICT=[
   ["Fit-to-Work Rate","FTWR","(Fit Workers Based on Examination ÷ Cumulative Workforce) × 100","%","Fit Workers Based on Examination","Cumulative Workforce","Higher","Stretch 100% · Normal 95% · Min 90%","Medical Fitness / MCU","Monthly","SMKP Mining OHIH","ILO / ICOH Fitness-for-Work"],
-  ["Crude Morbidity Rate","CMR","(Workers Sick Due to Illness, Excl. Accidents ÷ Cumulative Workforce) × 100","%","Workers Sick Due to Illness, Excl. Accidents","Cumulative Workforce","Lower","Stretch 10% · Normal 13% · Max 15%","Sick-Leave / Illness Records","Monthly","SMKP Mining OHIH","Occupational epidemiology"],
-  ["Morbidity Frequency Rate","MFR","(Workers Sick Due to Illness, Excl. Accidents ÷ Cumulative Man-hours) × 1,000,000","per 1M MH","Workers Sick Due to Illness, Excl. Accidents","Cumulative Man-hours","Lower","Stretch 417 · Normal 466 · Max 482.71","Illness Records + HR Man-hours","Monthly","SMKP Internal Audit 2025","Exposure-adjusted reporting"],
-  ["Sickness Severity Rate","SSR","(Lost Workdays Due to Illness, Excl. Accidents ÷ Number of Spells) × 100","days / 100 spells","Lost Workdays Due to Illness, Excl. Accidents","Number of Spells","Lower","Stretch 133 · Normal 147 · Max 155","Sick Leave Records","Monthly","SMKP Mining OHIH","Sickness-absence severity"],
-  ["Absence Severity Rate","ASR","(Lost Workdays Due to Illness, Excl. Accidents ÷ Cumulative Man-hours) × 1,000,000","days / 1M MH","Lost Workdays Due to Illness, Excl. Accidents","Cumulative Man-hours","Lower","Stretch 100 · Normal 201 · Max 452.19","Sick Leave + HR Man-hours","Monthly","SMKP Internal Audit 2025","Exposure-adjusted reporting"],
+  ["Crude Morbidity Rate","CMR","(Kunjungan Pasien / Treatment ÷ Cumulative Workforce) × 100","%","Kunjungan Pasien / Treatment — jumlah pekerja yang sakit karena penyakit, tidak termasuk kecelakaan","Cumulative Workforce","Lower","Stretch 10% · Normal 13% · Max 15%","Kunjungan Pasien / Treatment Records","Monthly","SMKP Mining OHIH","Occupational epidemiology"],
+  ["Morbidity Frequency Rate","MFR","(Kunjungan Pasien / Treatment ÷ Cumulative Man-hours) × 1,000,000","per 1M MH","Kunjungan Pasien / Treatment — jumlah pekerja yang sakit karena penyakit, tidak termasuk kecelakaan","Cumulative Man-hours","Lower","Stretch 417 · Normal 466 · Max 482.71","Kunjungan Pasien / Treatment + HR Man-hours","Monthly","SMKP Internal Audit 2025","Exposure-adjusted reporting"],
+  ["Sickness Severity Rate","SSR","(Sick Leave ÷ Number of Spells) × 100","per 100 spells","Sick Leave (governed sickness-absence field)","Number of Spells","Lower","Stretch 133 · Normal 147 · Max 155","Sick Leave Records","Monthly","SMKP Mining OHIH","Sickness-absence severity"],
+  ["Absence Severity Rate","ASR","(Sick Leave ÷ Cumulative Man-hours) × 1,000,000","per 1M MH","Sick Leave (governed sickness-absence field)","Cumulative Man-hours","Lower","Stretch 100 · Normal 201 · Max 452.19","Sick Leave + HR Man-hours","Monthly","SMKP Internal Audit 2025","Exposure-adjusted reporting"],
   ["PAK Frequency Rate","FR PAK","(Occupational Disease Cases ÷ Total Workforce) × 1,000,000","cases / 1M workers","Occupational Disease Cases (Kasus PAK)","Total Workforce","Lower","Stretch 0 · Normal 2 · Max 5","Occ. Physician Determination","Monthly","SMKP Mining OHIH","ILO / ICOH / ICMM"]
 ];
 
@@ -2905,33 +3039,33 @@ const P5KPI=[
    src:"Medical Fitness / MCU records",freq:"Monthly",idn:"SMKP Mining OHIH",intl:"ILO / ICOH Fitness-for-Work",
    interp:"FTWR is governed against the corporate fitness target. Higher values are favourable."},
   {id:"CMR",abbr:"CMR",name:"Crude Morbidity Rate",icon:I.pulse,
-   formula:"(Workers Sick Due to Illness, Excluding Accidents ÷ Cumulative Workforce) × 100",
-   numer:"Workers Sick Due to Illness, Excluding Accident Cases",denom:"Cumulative Workforce",
+   formula:"(Kunjungan Pasien / Treatment ÷ Cumulative Workforce) × 100",
+   numer:"Kunjungan Pasien / Treatment / Patient Visit — jumlah pekerja yang sakit karena penyakit, tidak termasuk kecelakaan",denom:"Cumulative Workforce",
    unit:"%",dir:"Lower is Better",basis:"Governed target band",
-   def:"Proportion of the workforce sick due to illness (excluding accident cases) in the reporting period. Lower values indicate a lower illness burden.",
-   src:"Sick-leave / illness records",freq:"Monthly",idn:"SMKP Mining OHIH",intl:"Occupational epidemiology",
-   interp:"CMR uses workers sick due to illness — not treatment visits. Lower values are favourable."},
+   def:"Proportion of the workforce sick due to illness (jumlah pekerja yang sakit karena penyakit, tidak termasuk kecelakaan) in the reporting period, using the governed Kunjungan Pasien / Treatment source field. Lower values indicate a lower illness burden.",
+   src:"Kunjungan Pasien / Treatment records",freq:"Monthly",idn:"SMKP Mining OHIH",intl:"Occupational epidemiology",
+   interp:"CMR uses the governed Kunjungan Pasien / Treatment / Patient Visit field — jumlah pekerja yang sakit karena penyakit, tidak termasuk kecelakaan — not generic clinic traffic. Lower values are favourable."},
   {id:"MFR",abbr:"MFR",name:"Morbidity Frequency Rate",icon:I.pulse,
-   formula:"(Workers Sick Due to Illness, Excluding Accidents ÷ Cumulative Man-hours) × 1,000,000",
-   numer:"Workers Sick Due to Illness, Excluding Accident Cases",denom:"Cumulative Man-hours",
+   formula:"(Kunjungan Pasien / Treatment ÷ Cumulative Man-hours) × 1,000,000",
+   numer:"Kunjungan Pasien / Treatment / Patient Visit — jumlah pekerja yang sakit karena penyakit, tidak termasuk kecelakaan",denom:"Cumulative Man-hours",
    unit:"per 1M MH",dir:"Lower is Better",basis:"National benchmark",
-   def:"Exposure-adjusted frequency of illness cases per one million man-hours. Lower values indicate lower exposure-adjusted illness frequency.",
-   src:"Illness records + HR man-hours",freq:"Monthly",idn:"SMKP Internal Audit 2025",intl:"Exposure-adjusted reporting",
-   interp:"MFR uses the same illness-worker numerator as CMR — not treatment visits. Lower values are favourable."},
+   def:"Exposure-adjusted illness frequency per one million man-hours, using the governed Kunjungan Pasien / Treatment source field. Lower values indicate lower exposure-adjusted illness frequency.",
+   src:"Kunjungan Pasien / Treatment records + HR man-hours",freq:"Monthly",idn:"SMKP Internal Audit 2025",intl:"Exposure-adjusted reporting",
+   interp:"MFR uses the same governed Kunjungan Pasien / Treatment numerator as CMR — jumlah pekerja yang sakit karena penyakit, tidak termasuk kecelakaan. Lower values are favourable."},
   {id:"SSR",abbr:"SSR",name:"Sickness Severity Rate",icon:I.clock,
-   formula:"(Lost Workdays Due to Illness, Excluding Accidents ÷ Number of Spells) × 100",
-   numer:"Lost Workdays Due to Illness, Excluding Accident Cases",denom:"Number of Spells",
-   unit:"days / 100 spells",dir:"Lower is Better",basis:"Governed target band",
-   def:"Average sickness-absence severity expressed as lost workdays per one hundred sickness spells. Lower values indicate less severe absence per spell.",
-   src:"Sick-leave records",freq:"Monthly",idn:"SMKP Mining OHIH",intl:"Sickness-absence severity",
-   interp:"SSR = (Lost Workdays ÷ Number of Spells) × 100. Lower values are favourable."},
+   formula:"(Sick Leave ÷ Number of Spells) × 100",
+   numer:"Sick Leave (governed sickness-absence field)",denom:"Number of Spells",
+   unit:"per 100 spells",dir:"Lower is Better",basis:"Governed target band",
+   def:"Average sickness-absence severity expressed as governed Sick Leave per one hundred sickness spells. Lower values indicate less severe absence per spell.",
+   src:"Sick Leave records",freq:"Monthly",idn:"SMKP Mining OHIH",intl:"Sickness-absence severity",
+   interp:"SSR = (Sick Leave ÷ Number of Spells) × 100, using the governed Sick Leave / sickness-absence field. Lower values are favourable."},
   {id:"ASR",abbr:"ASR",name:"Absence Severity Rate",icon:I.clock,
-   formula:"(Lost Workdays Due to Illness, Excluding Accidents ÷ Cumulative Man-hours) × 1,000,000",
-   numer:"Lost Workdays Due to Illness, Excluding Accident Cases",denom:"Cumulative Man-hours",
-   unit:"days / 1M MH",dir:"Lower is Better",basis:"National benchmark",
-   def:"Exposure-adjusted sickness-absence severity per one million man-hours. Lower values indicate lower exposure-adjusted absence severity.",
-   src:"Sick-leave records + HR man-hours",freq:"Monthly",idn:"SMKP Internal Audit 2025",intl:"Exposure-adjusted reporting",
-   interp:"ASR is exposure-adjusted absence severity. Lower values are favourable."},
+   formula:"(Sick Leave ÷ Cumulative Man-hours) × 1,000,000",
+   numer:"Sick Leave (governed sickness-absence field)",denom:"Cumulative Man-hours",
+   unit:"per 1M MH",dir:"Lower is Better",basis:"National benchmark",
+   def:"Exposure-adjusted sickness absence (governed Sick Leave) per one million man-hours. Lower values indicate lower exposure-adjusted absence severity.",
+   src:"Sick Leave records + HR man-hours",freq:"Monthly",idn:"SMKP Internal Audit 2025",intl:"Exposure-adjusted reporting",
+   interp:"ASR is exposure-adjusted governed Sick Leave per one million man-hours. Lower values are favourable."},
   {id:"OIR",abbr:"FR PAK",name:"PAK Frequency Rate",icon:I.alert,
    formula:"(Occupational Disease Cases ÷ Total Workforce) × 1,000,000",
    numer:"Occupational Disease Cases (Kasus PAK)",denom:"Total Workforce",
@@ -3108,9 +3242,63 @@ function buildSidebar(){
   if(upd) upd.innerHTML=`Last reporting period<b>${mys.length?labelOf(mys[mys.length-1]):"—"}</b>
     <span style="font-size:10px">Live source · Merdeka OHIH governed sheet</span>`;
 }
+/* ---- compact Year/Month multi-select popover (no native <select multiple>) ---- */
+let MSEL_OPEN=null;                                  // presentation-only open flag (not analytical state)
+function closeAllMsel(){
+  MSEL_OPEN=null;
+  document.querySelectorAll(".msel-pop").forEach(p=>p.classList.remove("open"));
+  document.querySelectorAll(".msel-btn").forEach(b=>b.setAttribute("aria-expanded","false"));
+}
+function collapsedPeriodLabel(dim){
+  const isY=dim==="years";
+  if(S[dim]==="all") return isY?"All Years":"All Months";
+  const v=S[dim].slice().sort((a,b)=>a-b);
+  const nm=x=>isY?String(x):MONTHS[x-1];
+  if(v.length===1) return nm(v[0]);
+  if(v.length===2) return nm(v[0])+" + "+nm(v[1]);
+  return v.length+(isY?" years":" months")+" selected";
+}
+function buildMultiSelect(bar,dim,lbl){
+  const isY=dim==="years";
+  const domain=(isY?optionsFor("year"):optionsFor("month")).map(Number);
+  const f=el("div","filt msel");
+  f.appendChild(el("label",null,lbl));
+  const btn=el("button","msel-btn",`<span class="msel-lbl">${collapsedPeriodLabel(dim)}</span><span class="msel-caret">\u25be</span>`);
+  btn.type="button"; btn.id="f-"+(isY?"year":"month");
+  btn.setAttribute("aria-haspopup","listbox");
+  btn.setAttribute("aria-expanded", String(MSEL_OPEN===dim));
+  const pop=el("div","msel-pop"+(MSEL_OPEN===dim?" open":""));
+  pop.setAttribute("role","listbox"); pop.setAttribute("aria-multiselectable","true");
+  const allOn=S[dim]==="all";
+  const mkOpt=(text,checked,onClick,cls)=>{
+    const o=el("button","msel-opt"+(checked?" sel":"")+(cls?" "+cls:""),
+      `<span class="msel-check">${checked?svg(I.check,11):""}</span><span>${text}</span>`);
+    o.type="button"; o.setAttribute("role","option"); o.setAttribute("aria-selected",String(!!checked));
+    o.addEventListener("click",e=>{ e.stopPropagation(); MSEL_OPEN=dim; onClick(); });
+    return o; };
+  pop.appendChild(mkOpt(isY?"All Years":"All Months", allOn, ()=>setPeriodAll(dim), "msel-all"));
+  domain.forEach(v=>{
+    const checked=allOn || S[dim].indexOf(v)>=0;
+    pop.appendChild(mkOpt(isY?String(v):MONTHS[v-1], checked, ()=>togglePeriod(dim,v)));
+  });
+  pop.appendChild(mkOpt("Clear", false, ()=>setPeriodAll(dim), "msel-clear"));   // Clear resolves to All
+  btn.addEventListener("click",e=>{
+    e.stopPropagation();
+    const open = MSEL_OPEN!==dim;
+    closeAllMsel();
+    if(open){ MSEL_OPEN=dim; pop.classList.add("open"); btn.setAttribute("aria-expanded","true"); }
+  });
+  btn.addEventListener("keydown",e=>{ if(e.key==="Escape") closeAllMsel(); });
+  pop.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeAllMsel(); btn.focus(); } });
+  pop.addEventListener("click",e=>e.stopPropagation());
+  f.appendChild(btn); f.appendChild(pop);
+  bar.appendChild(f);
+}
 function buildFilters(){
-  const defs=[["year","Year"],["month","Month"],["group","Business Group"],["site","Operating Site"],["commodity","Commodity"],["optype","Operation Type"]];
-  const bar=$("#filterbar");bar.innerHTML="";
+  const defs=[["group","Business Group"],["site","Operating Site"],["commodity","Commodity"],["optype","Operation Type"]];
+  const bar=$("#filterbar");bar.innerHTML="";            // rebuilt each render → no orphaned popovers/listeners
+  buildMultiSelect(bar,"years","Year");
+  buildMultiSelect(bar,"months","Month");
   defs.forEach(([dim,lbl])=>{
     const opts=optionsFor(dim);
     const f=el("div","filt");
@@ -3131,7 +3319,7 @@ function buildFilters(){
     f.appendChild(el("label",null,lbl));f.appendChild(sel);bar.appendChild(f);
   });
   const reset=el("button","btn filt-reset",`${svg(I.flat,14)}Reset filters`);
-  reset.addEventListener("click",()=>{Object.assign(S,{year:"all",month:"all",group:"all",site:"all",commodity:"all",optype:"all"});normalizeGlobalState();render();});
+  reset.addEventListener("click",()=>{Object.assign(S,{years:"all",months:"all",group:"all",site:"all",commodity:"all",optype:"all"});normalizeGlobalState();render();});
   bar.appendChild(reset);
 }
 
@@ -3154,6 +3342,9 @@ function mountChrome(){
   // manual refresh — must call ingestion, never render-only
   const rbtn=$("#btnRefresh");
   if(rbtn) rbtn.addEventListener("click", MANUAL_REFRESH_HANDLER);
+  // Year/Month multi-select popovers: click-outside + Escape close (installed once)
+  document.addEventListener("click",()=>{ if(MSEL_OPEN) closeAllMsel(); });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape" && MSEL_OPEN) closeAllMsel(); });
   // exports (resolved at click time)
   $("#btnExecPdf").addEventListener("click",()=>window.OHIH_EXPORTS.execPdf());
   $("#btnPdf").addEventListener("click",()=>window.OHIH_EXPORTS.dashPdf());
@@ -3164,7 +3355,9 @@ function mountChrome(){
    EXPORTS (Ch.6.11 / 8.8 / 10.8) — defined in exports.js
    ============================================================ */
 window.OHIH_APP={ get S(){return S;}, render, reportingMY, rowsForMY, dimRows, monthsInDim,
-  kpiVal, aggregate, statusFor, KPI, META, GROUPS, BENCH, LOGOS, SITE_ORDER, labelOf, fmt, fmtInt, pill, DICT,
+  kpiVal, kpiSummary, aggregate, statusFor, KPI, META, GROUPS, BENCH, LOGOS, SITE_ORDER, labelOf, fmt, fmtInt, pill, DICT,
+  activeRows, selRows, selPrevRows, selectionLabel, monthsInSelection, validRows, isValidReportingRow,
+  togglePeriod, setPeriodAll,
   get STORE(){return STORE;}, ingest, setFilter, optionsFor, coreStateNow,
   /* dev/QA-only transport seam — never used by production code paths */
   __setGvizImpl(fn){ __gvizImpl = fn||gvizFetchReal; } };
@@ -3180,11 +3373,12 @@ window.OHIH_CORE_QA = async function(){
   T("2 FEED_ALL rows non-zero", STORE.enterprise.length>0, "rows="+STORE.enterprise.length);
   { const errs=[]; if(STORE.rows.length&&STORE.enterprise.length) reconcile(STORE.enterprise,STORE.rows,errs);
     T("3 FEED_ALL↔FEED_SITE reconciliation zero mismatches", STORE.rows.length>0&&errs.length===0, errs[0]||"0 mismatches"); }
-  /* 4–5 anti-visits: changing visits must not change CMR/MFR */
-  { const base={manpower:1000,manhours:1e6,fit:990,sickleave:25,lostdays:40,spell:20,pak:1,visits:0};
-    const hi=Object.assign({},base,{visits:99999});
-    T("4 anti-visits CMR", KPI.CMR.calc(base)===KPI.CMR.calc(hi) && KPI.CMR.calc(base)===2.5, "CMR="+KPI.CMR.calc(base));
-    T("5 anti-visits MFR", KPI.MFR.calc(base)===KPI.MFR.calc(hi) && KPI.MFR.calc(base)===25, "MFR="+KPI.MFR.calc(base)); }
+  /* 4–5 owner-frozen numerators: visits drives CMR/MFR; sickleave drives SSR/ASR (not lostdays) */
+  { const base={manpower:1000,manhours:1e6,fit:990,sickleave:25,lostdays:40,spell:20,pak:1,visits:50};
+    T("4 owner semantics: CMR=visits/manpower·100 and MFR=visits/manhours·1e6",
+      KPI.CMR.calc(base)===5 && KPI.MFR.calc(base)===50, "CMR="+KPI.CMR.calc(base)+" MFR="+KPI.MFR.calc(base));
+    T("5 owner semantics: SSR=sickleave/spell·100 and ASR=sickleave/manhours·1e6 (lostdays is not a numerator)",
+      KPI.SSR.calc(base)===125 && KPI.ASR.calc(base)===25, "SSR="+KPI.SSR.calc(base)+" ASR="+KPI.ASR.calc(base)); }
   /* 6–13 benchmark boundary behaviour */
   T("6 MFR 466 → GOOD", statusFor("MFR",466).text==="GOOD");
   T("7 MFR 466.01 → WATCH", statusFor("MFR",466.01).text==="WATCH");
@@ -3226,6 +3420,105 @@ window.OHIH_CORE_QA = async function(){
     /* restore untouched-good state */
     __gvizImpl=savedImpl; STORE.lastSuccess=savedLS; STORE.state=savedState; STORE.error=savedErr;
     STORE.refreshReason="QA_RESTORE"; render(); }
+  /* ============ BDSE CORE CORRECTION ASSERTIONS (§19 numerical + §20 interaction) ============ */
+  {
+    const approx=(a,b,tol)=> a!=null && b!=null && isFinite(a) && Math.abs(a-b)<=tol;
+    const one=(st,y,m)=> STORE.rows.filter(r=>r.site===st&&r.year===y&&r.month===m);
+    const sy =(st,y)=> STORE.rows.filter(r=>r.site===st&&r.year===y);
+    const V=(id,rows)=>kpiSummary(id,rows);
+    if(!STORE.rows.length){
+      T("C0 correction tests require committed STORE rows", false, "no data — run after successful ingestion");
+    }else{
+      /* exact monthly formula tests (owner-frozen: MFR=visits/manhours·1e6, ASR=sickleave/manhours·1e6) */
+      T("C1 MTI Jun 2023 MFR exact", approx(V("MFR",one("MTI",2023,6)).value, 894.2735549, 0.01));
+      T("C2 SCM Jun 2024 MFR exact", approx(V("MFR",one("SCM",2024,6)).value, 375.5534472, 0.01));
+      T("C3 PGM Jun 2025 MFR exact", approx(V("MFR",one("PGM",2025,6)).value, 766.8080884, 0.01));
+      const b26=one("BTR",2026,6), s26=one("SCM",2026,6), m26=one("MTI",2026,6), p26=one("PGM",2026,6);
+      T("C4 BTR Jun 2026 row exists · MFR exact", b26.length===1 && approx(V("MFR",b26).value, 384.5380736, 0.01));
+      T("C4b BTR Jun 2026 ASR = sickleave/manhours·1e6 (formula-derived)",
+        b26.length===1 && approx(V("ASR",b26).value, b26[0].sickleave/b26[0].manhours*1e6, 1e-9),
+        "value="+(b26.length?V("ASR",b26).value:null));
+      T("C5 SCM Jun 2026 row exists · MFR & ASR exact", s26.length===1
+        && approx(V("MFR",s26).value, 515.7639532, 0.01) && approx(V("ASR",s26).value, 6.748628763, 0.01));
+      T("C6 MTI Jun 2026 row exists · MFR exact", m26.length===1 && approx(V("MFR",m26).value, 1043.514276, 0.01));
+      T("C6b MTI Jun 2026 ASR = sickleave/manhours·1e6 (formula-derived)",
+        m26.length===1 && approx(V("ASR",m26).value, m26[0].sickleave/m26[0].manhours*1e6, 1e-9),
+        "value="+(m26.length?V("ASR",m26).value:null));
+      T("C7 PGM Jun 2026 row exists · MFR & ASR exact", p26.length===1
+        && approx(V("MFR",p26).value, 141.0884703, 0.01) && approx(V("ASR",p26).value, 1.558988622, 0.01));
+      const pApr=one("PGM",2026,4);
+      T("C8 PGM Apr 2026 fit=3991 and FTWR derived from 3991", pApr.length===1 && pApr[0].fit===3991
+        && approx(V("FTWR",pApr).value, 3991/pApr[0].manpower*100, 1e-9), "fit="+(pApr.length?pApr[0].fit:null));
+      /* multi-period distribution tests — mean & median of monthly site KPI observations */
+      const D=(st,y,id,n,mean,med)=>{const su=V(id,sy(st,y));
+        T("C9+ "+st+" "+y+" "+id+" n/mean/median", su.n===n && approx(su.mean,mean,0.02) && approx(su.median,med,0.02),
+          "n="+su.n+" mean="+(su.mean==null?null:su.mean.toFixed(2))+" med="+(su.median==null?null:su.median.toFixed(2)));};
+      D("BTR",2023,"MFR",12,555.59,614.48); D("BTR",2023,"ASR",12,110.87,106.63);
+      D("BTR",2026,"MFR",6,442.71,408.61);  D("BTR",2026,"ASR",6,77.80,76.96);
+      D("SCM",2023,"MFR",12,1506.50,566.68);D("SCM",2023,"ASR",12,119.03,51.68);
+      D("SCM",2024,"MFR",12,369.33,233.84); D("SCM",2024,"ASR",12,26.23,26.42);
+      D("SCM",2025,"MFR",12,26.94,22.78);   D("SCM",2025,"ASR",12,12.87,12.58);
+      D("SCM",2026,"MFR",6,434.08,425.35);  D("SCM",2026,"ASR",6,5.50,5.62);
+      D("MTI",2023,"MFR",12,873.63,854.19); D("MTI",2023,"ASR",12,47.10,37.74);
+      D("PGM",2025,"MFR",12,699.22,721.89); D("PGM",2025,"ASR",12,9.97,7.09);
+      D("PGM",2026,"MFR",6,190.66,198.88);  D("PGM",2026,"ASR",6,2.14,1.77);
+      /* mean is NOT a pooled rate: SCM 2023 pooled would differ materially from 1506.50 */
+      { const rows=sy("SCM",2023), ag=aggregate(rows), pooled=ag.visits/ag.manhours*1e6, su=V("MFR",rows);
+        T("C10 distribution mean is observation mean (not pooled rate)",
+          approx(su.mean,1506.50,0.02) && Math.abs(pooled-su.mean)>1,
+          "obsMean="+su.mean.toFixed(2)+" pooled="+pooled.toFixed(2)); }
+      /* interaction tests — one S, set-valued Year/Month */
+      const snap=JSON.parse(JSON.stringify({years:S.years,months:S.months,group:S.group,site:S.site,commodity:S.commodity,optype:S.optype,page:S.page}));
+      Object.assign(S,{years:"all",months:"all",group:"all",site:"all",commodity:"all",optype:"all"}); normalizeGlobalState(); render();
+      togglePeriod("years",2023); // from all → deselect 2023 → all-minus-2023
+      T("C18a Year multi-select retains a partial set in the one S", Array.isArray(S.years) && S.years.indexOf(2023)<0);
+      Object.assign(S,{years:[2023,2024]}); normalizeGlobalState(); render();
+      T("C18b S contains 2023 + 2024 · collapsed label", JSON.stringify(S.years)==="[2023,2024]"
+        && collapsedPeriodLabel("years")==="2023 + 2024", collapsedPeriodLabel("years"));
+      Object.assign(S,{months:[1,6,12]}); normalizeGlobalState(); render();
+      T("C19 Months Jan+Jun+Dec retained · excluded months absent from analytical series",
+        JSON.stringify(S.months)==="[1,6,12]"
+        && monthsInSelection().every(my=>[1,6,12].indexOf(+my.split("-")[1])>=0)
+        && collapsedPeriodLabel("months")==="3 months selected", collapsedPeriodLabel("months"));
+      Object.assign(S,{months:"all"}); normalizeGlobalState();
+      Object.assign(S,{years:optionsFor("year").map(Number)}); normalizeGlobalState(); render();
+      T("C20 selecting every available year normalizes to All Years", S.years==="all"
+        && collapsedPeriodLabel("years")==="All Years");
+      Object.assign(S,{months:[1,2,3,4,5,6,7,8,9,10,11,12]}); normalizeGlobalState(); render();
+      T("C21 selecting all 12 months normalizes to All Months", S.months==="all"
+        && collapsedPeriodLabel("months")==="All Months");
+      Object.assign(S,{years:[2024]}); normalizeGlobalState(); setPeriodAll("years");
+      T("C22 Clear Year resolves to All Years", S.years==="all");
+      Object.assign(S,{months:[6]}); normalizeGlobalState(); setPeriodAll("months");
+      T("C23 Clear Month resolves to All Months", S.months==="all");
+      /* 2026 + All Months → future blank months excluded from n / mean / trends */
+      Object.assign(S,{years:[2026],months:"all",site:"all"}); normalizeGlobalState(); render();
+      const btr26=activeRows().filter(r=>r.site==="BTR");
+      T("C24 2026 + All Months excludes future blanks (BTR n=6, no Jul–Dec)",
+        V("MFR",btr26).n===6 && monthsInSelection().every(my=>+my.split("-")[1]<=6),
+        "n="+V("MFR",btr26).n);
+      /* Page 1 All/All renders mean-primary + median-secondary (not latest-month-only) */
+      Object.assign(S,{years:"all",months:"all",page:"exec"}); normalizeGlobalState(); render();
+      const ws=document.getElementById("workspace");
+      T("C25 Page 1 All Years + All Months renders distribution disclosure",
+        ws && ws.querySelectorAll(".kpi.execv").length===4
+        && ws.innerHTML.indexOf("Mean \u00b7")>=0 && ws.innerHTML.indexOf("Median")>=0
+        && kpiSummary("MFR",selRows()).n===STORE.rows.filter(isValidReportingRow).length,
+        "n="+kpiSummary("MFR",selRows()).n);
+      /* export parity at the data layer: exports consume the same authorities */
+      T("C30 exports consume selection authorities (activeRows/selPrevRows/selectionLabel exposed)",
+        typeof window.OHIH_APP.activeRows==="function" && typeof window.OHIH_APP.selPrevRows==="function"
+        && typeof window.OHIH_APP.selectionLabel==="function"
+        && window.OHIH_APP.kpiVal("MFR",window.OHIH_APP.activeRows())===kpiVal("MFR",selRows()));
+      /* authority inspection */
+      T("C32 one S · one KPI · one TARGET · no *_V2 authorities",
+        typeof window.KPI_V2==="undefined" && typeof window.KPI_MULTI==="undefined"
+        && typeof window.TARGET_V2==="undefined" && typeof window.S2==="undefined"
+        && KPI.CMR.calc.toString().indexOf("visits")>=0 && KPI.MFR.calc.toString().indexOf("visits")>=0
+        && KPI.SSR.calc.toString().indexOf("sickleave")>=0 && KPI.ASR.calc.toString().indexOf("sickleave")>=0);
+      Object.assign(S,snap); normalizeGlobalState(); render();
+    }
+  }
   const pass=results.every(r=>r.pass);
   try{ console.table(results); }catch(e){}
   console.log("BDSE CORE QA:", pass?"PASS":"FAIL");
@@ -3265,8 +3558,7 @@ function ctxLabel(){
   parts.push(S.site!=="all"?a.META[S.site].name:"All Sites");
   if(S.commodity!=="all")parts.push(S.commodity);
   if(S.optype!=="all")parts.push(S.optype);
-  const rm=a.reportingMY();
-  parts.push(rm?a.labelOf(rm):"No data");
+  parts.push(a.selectionLabel());
   return parts.join("  ·  ");
 }
 function activeLogo(){
@@ -3285,9 +3577,8 @@ async function execPdf(){
     const doc=new jsPDF({unit:"pt",format:"a4"});
     const W=doc.internal.pageSize.getWidth(), H=doc.internal.pageSize.getHeight(), M=40;
     const rm=a.reportingMY();
-    const cur=rm?a.rowsForMY(rm):[];
-    // previous month
-    const mys=a.monthsInDim();const idx=mys.indexOf(rm);const prev=idx>0?a.rowsForMY(mys[idx-1]):null;
+    const cur=a.activeRows();                 // same universal selection authority as the rendered pages
+    const prev=a.selPrevRows();               // exact previous month only for single-month selections
 
     // Header band
     doc.setFillColor(...BLACK);doc.rect(0,0,W,70,"F");
@@ -3386,8 +3677,10 @@ async function execPdf(){
 function buildFindings(a,cur,prev,rm){
   const out=[];
   const ftwr=a.kpiVal("FTWR",cur),ftwrP=prev?a.kpiVal("FTWR",prev):null;
-  if(ftwr!=null){const d=ftwrP!=null?ftwr-ftwrP:0;
-    out.push([d>=0?"good":"watch","Fit-to-Work Rate "+a.fmt(ftwr,2)+"% ("+(d>=0?"+":"")+a.fmt(d,2)+" pp vs prior month).WORKFORCE READINESS.".split(".")[0]]);}
+  if(ftwr!=null){
+    if(ftwrP!=null){const d=ftwr-ftwrP;
+      out.push([d>=0?"good":"watch","Fit-to-Work Rate "+a.fmt(ftwr,2)+"% ("+(d>=0?"+":"")+a.fmt(d,2)+" pp vs prior month)"]);}
+    else out.push(["good","Fit-to-Work Rate "+a.fmt(ftwr,2)+"% across the selected period"]);}
   const mfr=a.kpiVal("MFR",cur);
   if(mfr!=null)out.push([a.statusFor("MFR",mfr,null).key,"MFR "+a.fmt(mfr,2)+" is "+(mfr<=a.BENCH.MFR?"below":"above")+" the national benchmark "+a.fmt(a.BENCH.MFR,2)+"."]);
   const asr=a.kpiVal("ASR",cur);
