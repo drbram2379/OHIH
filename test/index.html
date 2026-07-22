@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OHIH Medical Incident — Enterprise Hub</title>
+<link rel="preconnect" href="https://googleapis.com">
+<link rel="preconnect" href="https://gstatic.com" crossorigin>
+<link href="https://googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   OHIH Medical Incident Enterprise Dashboard
+   Design tokens — BDSE Master Spec Master Copy (Replicated)
+   ============================================================ */
+:root{
+  --black:#0B0B0C;          /* Corporate Black */
+  --ink:#1A1B1E;            /* Body text */
+  --navy:#0E1C4E;           /* Merdeka identity navy */
+  --gold:#C2922E;           /* Corporate Gold */
+  --gold-soft:#E7D49B;
+  --white:#FFFFFF;
+  --bg:#F4F5F7;             /* App background */
+  --panel:#FFFFFF;
+  --grey:#6B7280;           
+  --grey-2:#9AA1AB;
+  --line:#E6E8EC;           
+  /* Status Colors */
+  --good:#2E9E5B;   --good-bg:#E8F6EE;
+  --watch:#E0A100;  --watch-bg:#FCF4DD;
+  --action:#D64545; --action-bg:#FBE9E9;
+  
+  --radius:12px; --pad:16px;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --sidebar-w:248px; --header-h:64px;
+}
+
+*{box-sizing:border-box}
+body{font-family:var(--font);color:var(--ink);background:var(--bg);margin:0;font-size:13px;line-height:1.45}
+
+#app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh}
+
+/* ---------- SIDEBAR CORPORATE ---------- */
+.sidebar{background:var(--black);color:#E7E8EA;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sb-brand .sb-grp-name{font-size:10px;letter-spacing:.14em;color:var(--gold-soft);text-transform:uppercase;font-weight:600}
+.sb-section{padding:14px 16px 6px;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--grey-2);font-weight:600}
+.sb-sites{padding:4px 10px 10px;display:flex;flex-direction:column;gap:4px}
+.sb-site{display:flex;align-items:center;justify-content:between;padding:10px 12px;border-radius:8px;cursor:pointer;color:#C7C9CE;border:none;background:none;width:100%;text-align:left;font-size:12.5px;font-weight:500;transition: all 0.15s;}
+.sb-site:hover{background:rgba(255,255,255,.06);color:#fff}
+.sb-site.active{background:var(--gold);color:#1a1300;font-weight:600}
+
+.main{display:flex;flex-direction:column;min-width:0}
+
+/* ---------- HEADER & FILTER BAR ---------- */
+.header{height:var(--header-h);background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 18px;}
+.header h1{font-size:16px;font-weight:700;margin:0;color:var(--black);letter-spacing: 0.02em;}
+.filterbar{background:var(--panel);border-bottom:1px solid var(--line);padding:12px 18px;display:flex;gap:14px;}
+.filt{display:flex;flex-direction:column;gap:4px;flex:1}
+.filt label{font-size:10px;text-transform:uppercase;color:var(--grey);font-weight:600;letter-spacing: 0.05em;}
+.filt select{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;font-weight:500;font-size:12.5px;color:var(--ink);appearance:none;}
+
+/* ---------- CONTENT ---------- */
+.content{padding:20px;display:flex;flex-direction:column;gap:20px}
+
+/* LAYER 1: MCKINSEY NARRATIVE CARD */
+.executive-story-card {
+  background: var(--black);
+  color: var(--white);
+  padding: 22px;
+  border-radius: var(--radius);
+  border-left: 5px solid var(--gold);
+  box-shadow: 0 4px 16px rgba(16,24,40,0.06);
+}
+.executive-story-card h2 { color: var(--gold-soft); margin: 0 0 10px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; }
+.executive-story-card p { margin: 0; font-size: 13.5px; font-weight: 400; line-height: 1.65; color: #E7E8EA; }
+.executive-story-card p b { color: var(--white); font-weight: 600; }
+.executive-story-card p span.alert-text { color: #FFA3A3; font-weight: 600; }
+
+/* LAYER 2: KPI METRIC GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:14px}
+.kpi-card{background:var(--panel);padding:16px;border-radius:var(--radius);border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,0.02)}
+.kpi-card .lbl{font-size:10.5px;color:var(--grey);text-transform:uppercase;font-weight:600;margin-bottom:6px;letter-spacing: 0.02em;}
+.kpi-card .val{font-size:24px;font-weight:700;color:var(--black);line-height:1.2;}
+.kpi-card .badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:10.5px;font-weight:600;margin-top:10px}
+
+/* LAYER 3: GRANULAR TABLE PANEL */
+.table-panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow: 0 1px 3px rgba(0,0,0,0.02)}
+.table-header{padding:14px 16px;border-bottom:1px solid var(--line);font-weight:600;font-size:13px;background:#fff;color:var(--black)}
+.table-responsive{window-x:auto;max-height: 400px;overflow-y: auto;}
+table{width:100%;border-collapse:collapse;text-align:left}
+th{background:#F8F9FA;padding:11px 16px;color:var(--grey);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing: 0.03em;position: sticky;top: 0;z-index: 10;border-bottom: 1px solid var(--line);}
+td{padding:11px 16px;border-bottom:1px solid var(--line-soft);font-size:12.5px;white-space: nowrap;max-width: 300px;overflow: hidden;text-overflow: ellipsis;}
+tr:hover td { background: #FAFBFB; }
+
+.status-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+.badge-good { background: var(--good-bg); color: var(--good); }
+.badge-watch { background: var(--watch-bg); color: var(--watch); }
+.badge-action { background: var(--action-bg); color: var(--action); }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Sidebar Multi-Site Berbasis Skema Sukses Anda -->
+  <div class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-grp-name">OHIH Hub Ecosystem</div>
+    </div>
+    <div class="sb-section">Operational Sites</div>
+    <div class="sb-sites" id="sidebarSites">
+      <button class="sb-site active" onclick="filterSite('All')">All Sites (Corporate)</button>
+      <button class="sb-site" onclick="filterSite('BSI')">BSI Site</button>
+      <button class="sb-site" onclick="filterSite('BTR')">BTR / BKP Site</button>
+      <button class="sb-site" onclick="filterSite('MTI')">MTI Morowali</button>
+      <button class="sb-site" onclick="filterSite('SCM')">SCM Konawe</button>
+      <button class="sb-site" onclick="filterSite('Pani')">Pani Gold Project</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="header">
+      <h1>Occupational Health Integrated Hub — Medical Incident Tracker</h1>
+    </div>
+
+    <!-- Filter Dropdown Kontrol Berjenjang -->
+    <div class="filterbar">
+      <div class="filt">
+        <label>Filter Tahun Kejadian</label>
+        <select id="filterYear" onchange="applyFilters()">
+          <option value="All">All Years</option>
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+          <option value="2024">2024</option>
+          <option value="2023">2023</option>
+        </select>
+      </div>
+      <div class="filt">
+        <label>Asal Perusahaan</label>
+        <select id="filterCompany" onchange="applyFilters()">
+          <option value="All">All Entities</option>
+          <option value="Merdeka">Merdeka & Anak Perusahaan</option>
+          <option value="Kontraktor">Kontraktor / Vendor</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="content">
+      
+      <!-- LAYER 1 PIRAMIDA: MCKINSEY STRATEGIC STORY STATEMENT -->
+      <div class="executive-story-card">
+        <h2>Executive Summary & Strategic Narrative (McKinsey Style)</h2>
+        <p id="executiveNarrative">Loading operational intelligence...</p>
+      </div>
+
+      <!-- LAYER 2 PIRAMIDA: PRIMARY PERFORMANCE DRIVERS (KPIs) -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="lbl">Illness Fatality</div>
+          <div class="val" id="kpiFatality">0</div>
+          <span id="badgeFatality" class="badge">Safe</span>
+        </div>
+        <div class="kpi-card">
+          <div class="lbl">Medevac Cases</div>
+          <div class="val" id="kpiMedevac">0</div>
+          <span id="badgeMedevac" class="badge">Stable</span>
+        </div>
+        <div class="kpi-card">
+          <div class="lbl">Medical Referral</div>
+          <div class="val" id="kpiReferral">0</div>
+          <span id="badgeReferral" class="badge">Normal</span>
+        </div>
+        <div class="kpi-card">
+          <div class="lbl">Sick Leave Logged</div>
+          <div class="val" id="kpiSickLeave">0</div>
+          <span id="badgeSickLeave" class="badge">Monitored</span>
+        </div>
+        <div class="kpi-card">
+          <div class="lbl">Return to Work (RTW)</div>
+          <div class="val" id="kpiRtw">0</div>
+          <span id="badgeRtw" class="badge">Rehab Active</span>
+        </div>
+      </div>
+
+      <!-- LAYER 3 PIRAMIDA: GRANULAR ROW LOG TABLE -->
+      <div class="table-panel">
+        <div class="table-header" id="tableTitle">Incident & Health Recovery Records — Granular Track</div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Tanggal</th>
+                <th>Nama Pasien</th>
+                <th>Site</th>
+                <th>Kriteria</th>
+                <th>Kasus Medis / Diagnosa</th>
+                <th>Tindakan / Rujukan</th>
+                <th>Status Medis</th>
+                <th>Laik Kerja</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+Use code with caution.
+// RAW INCIDENT DATABASE - Diekstrak langsung dari Google Sheet / Excel Anda
+const rawIncidentData = [
+{no:1, date:"2026-01-01", name:"Syarifuddin", site:"BSI", criteria:"Illness Non Work Related", action:"Medical Referral", case:"HIPERTENSI + HIPERCHOLESTEROLEMIA + CARDIOMEGALI", status:"Rawat Jalan", fit:"Fit with Note"},
+{no:2, date:"2026-01-02", name:"I Gede Sugono", site:"BSI", criteria:"Illness Non Work Related", action:"Medical Referral", case:"Aritmia + CAD Mild Disease", status:"Rawat Jalan", fit:"Fit with Note"},
+{no:3, date:"2026-01-02", name:"Farid", site:"BSI", criteria:"Illness Non Work Related", action:"Medical Referral", case:"Bells Palsy", status:"Rawat Jalan", fit:"Fit with Note"},
+{no:4, date:"2026-01-02", name:"Wahyu Ratna Putra", site:"BSI", criteria:"Illness Non Work Related", action:"Medical Referral", case:"Typhoid", status:"Rawat Jalan", fit:"Fit with Note"},
+{no:5, date:"2026-01-02", name:"Angga Yuda Mahardika", site:"BSI", criteria:"Illness Non Work Related", action:"Medical Referral", case:"Susp. Frozen Shoulder (s)", status:"Rawat Jalan", fit:"Fit with Note"},
+{no:6, date:"2026-03-03", name:"Wahyudin", site:"BSI", criteria:"Medical Treatment [MT]", action:"Medevac", case:"Susp. Fraktur Cholles dextra", status:"Rawat Jalan", fit:"Fit"},
+{no:7, date:"2026-03-03", name:"Endah Dharma", site:"BSI", criteria:"Illness Non Work Related", action:"Medevac", case:"Aborominal Pain / Appendicitis Accute", status:"Rawat Inap", fit:"Fit"},
+{no:8, date:"2025-11-11", name:"SOFIAN AFFANDI", site:"BSI", criteria:"Illness Non Work Related", action:"Medevac", case:"AMI (Serangan Jantung)", status:"Illness Fatality", fit:"Meninggal di RS"},
+{no:9, date:"2024-08-14", name:"Aris Widodo", site:"BSI", criteria:"Illness Non Work Related", action:"Tidak Rujuk", case:"Heart Attack (Serangan Jantung)", status:"Illness Fatality", fit:"Meninggal di Site"},
+{no:10, date:"2024-01-14", name:"Jordan Romora", site:"BTR", criteria:"Illness Non Work Related", action:"Medevac", case:"Melena ec. Perdarahan Saluran Cerna", status:"Illness Fatality", fit:"Meninggal di RS"},
+{no:11, date:"2023-01-23", name:"Aldy Marten", site:"BTR", criteria:"Illness Non Work Related", action:"Medevac", case:"Myocardial Infraction", status:"Illness Fatality", fit:"Meninggal di RS"},
+{no:12, date:"2023-07-08", name:"H. Subari", site:"BTR", criteria:"Loss Time Incident [LTI]", action:"Medevac", case:"Left Ribs Fracture (Kecelakaan Volvo ADT)", status:"Rawat Inap", fit:"Temporary Unfit"},
+{no:13, date:"2024-02-08", name:"Muhammad Fauzi Lubis", site:"BSI", criteria:"Restricted to Work [RTW]", action:"Medevac", case:"Susp CVA second Attack (Stroke)", status:"Rawat Inap", fit:"Temporary Unfit"},
+{no:14, date:"2023-01-01", name:"Salmon Malicang", site:"BTR", criteria:"Illness Non Work Related", action:"Sick Leave", case:"Fever, unspecified (Demam)", status:"Rawat Jalan", fit:"Fit"},
+{no:15, date:"2023-01-02", name:"Fridolin Maitimu", site:"BTR", criteria:"Illness Non Work Related", action:"Sick Leave", case:"Gastritis (Nyeri ulu hati)", status:"Rawat Jalan", fit:"Fit"}
+];
+let currentSite = 'All';
+function filterSite(siteName) {
+currentSite = siteName;
+// Update Active Class on Sidebar
+const buttons = document.querySelectorAll('.sb-site');
+buttons.forEach(btn => btn.classList.remove('active'));
+event.target.classList.add('active');
+applyFilters();
+}
+function applyFilters() {
+const selectedYear = document.getElementById('filterYear').value;
+const selectedCompany = document.getElementById('filterCompany').value;
+// Jalankan Pipeline Filter Data
+let filtered = rawIncidentData.filter(item => {
+// 1. Filter Wilayah Operasional (Site)
+let siteMatch = true;
+if (currentSite !== 'All') {
+if (currentSite === 'BTR') siteMatch = (item.site === 'BTR' || item.site === 'BKP');
+else siteMatch = (item.site === currentSite);
+}
+// 2. Filter Waktu (Tahun)
+let yearMatch = selectedYear === 'All' || item.date.startsWith(selectedYear);
+// 3. Filter Entitas Korban (Replikasi Parsial dari Struktur Bisnis Anda)
+let companyMatch = true;
+if (selectedCompany === 'Merdeka') companyMatch = !item.name.includes("Vendor") && !item.name.includes("Kontraktor");
+return siteMatch && yearMatch && companyMatch;
+});
+renderDashboard(filtered);
+}
+function renderDashboard(data) {
+// Hitung Metrik Agregat Utama (Lapisan 2)
+const fatalityCount = data.filter(i => itemSeverityIsFatal(i)).length;
+const medevacCount = data.filter(i => i.action === 'Medevac').length;
+const referralCount = data.filter(i => i.action === 'Medical Referral').length;
+const sickLeaveCount = data.filter(i => i.action === 'Sick Leave').length;
+const rtwCount = data.filter(i => i.criteria.includes('RTW') || i.fit.includes('Note')).length;
+// Push ke UI KPI Cards
+document.getElementById('kpiFatality').innerText = fatalityCount;
+document.getElementById('kpiMedevac').innerText = medevacCount;
+document.getElementById('kpiReferral').innerText = referralCount;
+document.getElementById('kpiSickLeave').innerText = sickLeaveCount;
+document.getElementById('kpiRtw').innerText = rtwCount;
+// Dynamic Badging System
+updateBadge('badgeFatality', fatalityCount, 0, 1, 'Nihil Kasus', 'Kritis');
+updateBadge('badgeMedevac', medevacCount, 2, 5, 'Normal', 'High Rate');
+updateBadge('badgeReferral', referralCount, 5, 12, 'Stabel', 'Tinggi');
+// LAPISAN 1: REPLIKASI MCKINSEY STORYTELLING GENERATOR
+let siteText = currentSite === 'All' ? 'seluruh wilayah korporasi' : wilayah operasional ${currentSite};
+let narrative = '';
+if (fatalityCount > 0) {
+narrative = Pada periode data yang difilter di ${siteText}, laporan kesehatan menunjukkan kondisi <span class="alert-text">Kritis</span> dengan adanya <b>${fatalityCount} Kasus Illness Fatality</b> (Serangan Jantung/Melena). Manajemen wajib segera mengaudit efektivitas skrining <i>High-Risk Condition</i> pada Annual MCU dan memperketat kepatuhan <i>Fitness to Work</i> sebelum mobilisasi kru lapangan.;
+} else {
+narrative = Performa kesehatan kerja di ${siteText} terpantau berada dalam kondisi <b>Stabel dan Aman (Nihil Kasus Illness Fatality)</b>. Operasional klinik didominasi oleh penanganan kasus non-work related ringan dan rujukan berkala. Fokus kendali saat ini diarahkan pada optimalisasi program <b>Return to Work (RTW)</b> guna memitigasi hilangnya hari kerja efektif karyawan.;
+}
+document.getElementById('executiveNarrative').innerHTML = narrative;
+// LAPISAN 3: RENDER ROW LOG DATA GRANULAR
+const tbody = document.getElementById('tableBody');
+tbody.innerHTML = '';
+if(data.length === 0) {
+tbody.innerHTML = <tr><td colspan="9" style="text-align:center; color:var(--grey);">No medical records found for current criteria.</td></tr>;
+return;
+}
+data.forEach(item => {
+let row = document.createElement('tr');
+// Class Pewarnaan Status Laik Kerja
+let badgeClass = 'badge-good';
+if(item.fit.includes('Unfit') || item.fit.includes('Meninggal')) badgeClass = 'badge-action';
+else if(item.fit.includes('Note')) badgeClass = 'badge-watch';
+row.innerHTML = <td>${item.no}</td> <td>${item.date}</td> <td><b>${item.name}</b></td> <td>${item.site}</td> <td>${item.criteria}</td> <td>${item.case}</td> <td>${item.action}</td> <td>${item.status}</td> <td><span class="status-badge ${badgeClass}">${item.fit}</span></td>;
+tbody.appendChild(row);
+});
+}
+function itemSeverityIsFatal(item) {
+return item.status === 'Illness Fatality' || item.fit.includes('Meninggal');
+}
+function updateBadge(id, value, watchCeil, actionCeil, goodText, badText) {
+const el = document.getElementById(id);
+el.className = 'badge';
+if (value === 0 || value < watchCeil) { el.classList.add('badge-good'); el.innerText = '✓ ' + goodText; }
+else if (value <= actionCeil) { el.classList.add('badge-watch'); el.innerText = '⚠ ' + badText; }
+else { el.classList.add('badge-action'); el.innerText = '▲ Urgent Action'; }
+}
+// Initial Data Booting
+applyFilters();
+
+
+
+---
+
+### Part 4: Pengembangan Analitis Selajutnya (Metrik *Leading* Terintegrasi)
+
+Data *Medical Incident* yang Anda berikan menunjukkan dominasi kasus **Illness Non Work Related** (Penyakit Umum seperti Penyakit Jantung Koroner/CAD, Diabetes Melitus, Hipertensi, dan HNP) dibandingkan kecelakaan kerja murni [source: 1].
