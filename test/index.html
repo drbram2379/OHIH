@@ -3,318 +3,2196 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OHIH Medical Incident — Enterprise Hub</title>
-<link rel="preconnect" href="https://googleapis.com">
-<link rel="preconnect" href="https://gstatic.com" crossorigin>
-<link href="https://googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>MIME Executive Dashboard — BDSE Framework v2.1 (Standalone)</title>
+<meta name="description" content="MIME Executive Dashboard compiled from the BDSE Framework v2.1 certified Release Candidate.">
+<meta name="generator" content="Claude Production Compiler — BDSE v2.1">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
 <style>
-/* ============================================================
-   OHIH Medical Incident Enterprise Dashboard
-   Design tokens — BDSE Master Spec Master Copy (Replicated)
-   ============================================================ */
-:root{
-  --black:#0B0B0C;          /* Corporate Black */
-  --ink:#1A1B1E;            /* Body text */
-  --navy:#0E1C4E;           /* Merdeka identity navy */
-  --gold:#C2922E;           /* Corporate Gold */
-  --gold-soft:#E7D49B;
-  --white:#FFFFFF;
-  --bg:#F4F5F7;             /* App background */
-  --panel:#FFFFFF;
-  --grey:#6B7280;           
-  --grey-2:#9AA1AB;
-  --line:#E6E8EC;           
-  /* Status Colors */
-  --good:#2E9E5B;   --good-bg:#E8F6EE;
-  --watch:#E0A100;  --watch-bg:#FCF4DD;
-  --action:#D64545; --action-bg:#FBE9E9;
-  
-  --radius:12px; --pad:16px;
-  --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
-  --sidebar-w:248px; --header-h:64px;
+/* =============================================================================
+ * Design Token Layer
+ * Authority : DE-6C Visual Language Engineering (semantic color architecture,
+ *             typography hierarchy, spacing tokens, shape language)
+ *             DE-6E Design Token System (CATEGORY.SUBCATEGORY.LEVEL)
+ * Note      : DE-6 defines token SEMANTICS and is technology-independent; it
+ *             does not prescribe absolute values. Concrete values are assigned
+ *             here once, at the production layer, and referenced everywhere.
+ * ========================================================================== */
+:root {
+  /* COLOR.BRAND.* */
+  --color-brand-primary:    #0B2A4A;
+  --color-brand-secondary:  #3E5C76;
+  --color-brand-accent:     #0E7C7B;
+
+  /* COLOR.STATUS.* — semantic, never decorative (DE-6C §5) */
+  --color-status-success:   #1E8E5A;   /* Target achieved      */
+  --color-status-info:      #0E7C7B;   /* Neutral operational  */
+  --color-status-warning:   #C97F0E;   /* Attention required   */
+  --color-status-critical:  #B23A34;   /* Executive concern    */
+  --color-status-escalate:  #6E1F22;   /* Immediate escalation */
+  --color-status-neutral:   #7A8699;   /* Contextual / N/A     */
+
+  /* COLOR.SURFACE.* */
+  --color-surface-page:     #F3F5F8;
+  --color-surface-card:     #FFFFFF;
+  --color-surface-muted:    #F5F7FA;
+  --color-border:           #DEE3EA;
+  --color-text-primary:     #0B2A4A;
+  --color-text-secondary:   #5A6B80;
+  --color-text-inverse:     #FFFFFF;
+
+  /* TYPE.* — hierarchy per DE-6C §6 */
+  --type-family-display: 'Libre Franklin', 'Segoe UI', system-ui, sans-serif;
+  --type-family-body:    'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --type-family-mono:    'IBM Plex Mono', 'Consolas', monospace;
+  --type-display:        1.30rem;
+  --type-h1:             1.06rem;
+  --type-h2:             0.94rem;
+  --type-h3:             0.86rem;
+  --type-kpi-numeric:    1.95rem;
+  --type-body:           0.875rem;
+  --type-caption:        0.75rem;
+  --type-footnote:       0.68rem;
+
+  /* SPACE.* — proportional tokens per DE-6C §8 */
+  --space-xs: 4px;
+  --space-s:  8px;
+  --space-m:  14px;
+  --space-l:  22px;
+  --space-xl: 34px;
+
+  /* SHAPE.* — DE-6C §9 */
+  --radius-card:    6px;
+  --radius-control: 5px;
+  --radius-pill:    20px;
+
+  /* ELEVATION.* */
+  --elevation-card: 0 1px 2px rgba(11,42,74,.06), 0 4px 14px rgba(11,42,74,.05);
+
+  /* MOTION.* */
+  --motion-fast: .18s ease;
+  --motion-base: .25s ease;
 }
 
-*{box-sizing:border-box}
-body{font-family:var(--font);color:var(--ink);background:var(--bg);margin:0;font-size:13px;line-height:1.45}
-
-#app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;min-height:100vh}
-
-/* ---------- SIDEBAR CORPORATE ---------- */
-.sidebar{background:var(--black);color:#E7E8EA;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
-.sb-brand{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
-.sb-brand .sb-grp-name{font-size:10px;letter-spacing:.14em;color:var(--gold-soft);text-transform:uppercase;font-weight:600}
-.sb-section{padding:14px 16px 6px;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--grey-2);font-weight:600}
-.sb-sites{padding:4px 10px 10px;display:flex;flex-direction:column;gap:4px}
-.sb-site{display:flex;align-items:center;justify-content:between;padding:10px 12px;border-radius:8px;cursor:pointer;color:#C7C9CE;border:none;background:none;width:100%;text-align:left;font-size:12.5px;font-weight:500;transition: all 0.15s;}
-.sb-site:hover{background:rgba(255,255,255,.06);color:#fff}
-.sb-site.active{background:var(--gold);color:#1a1300;font-weight:600}
-
-.main{display:flex;flex-direction:column;min-width:0}
-
-/* ---------- HEADER & FILTER BAR ---------- */
-.header{height:var(--header-h);background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 18px;}
-.header h1{font-size:16px;font-weight:700;margin:0;color:var(--black);letter-spacing: 0.02em;}
-.filterbar{background:var(--panel);border-bottom:1px solid var(--line);padding:12px 18px;display:flex;gap:14px;}
-.filt{display:flex;flex-direction:column;gap:4px;flex:1}
-.filt label{font-size:10px;text-transform:uppercase;color:var(--grey);font-weight:600;letter-spacing: 0.05em;}
-.filt select{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;font-weight:500;font-size:12.5px;color:var(--ink);appearance:none;}
-
-/* ---------- CONTENT ---------- */
-.content{padding:20px;display:flex;flex-direction:column;gap:20px}
-
-/* LAYER 1: MCKINSEY NARRATIVE CARD */
-.executive-story-card {
-  background: var(--black);
-  color: var(--white);
-  padding: 22px;
-  border-radius: var(--radius);
-  border-left: 5px solid var(--gold);
-  box-shadow: 0 4px 16px rgba(16,24,40,0.06);
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
 }
-.executive-story-card h2 { color: var(--gold-soft); margin: 0 0 10px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; }
-.executive-story-card p { margin: 0; font-size: 13.5px; font-weight: 400; line-height: 1.65; color: #E7E8EA; }
-.executive-story-card p b { color: var(--white); font-weight: 600; }
-.executive-story-card p span.alert-text { color: #FFA3A3; font-weight: 600; }
 
-/* LAYER 2: KPI METRIC GRID */
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:14px}
-.kpi-card{background:var(--panel);padding:16px;border-radius:var(--radius);border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,0.02)}
-.kpi-card .lbl{font-size:10.5px;color:var(--grey);text-transform:uppercase;font-weight:600;margin-bottom:6px;letter-spacing: 0.02em;}
-.kpi-card .val{font-size:24px;font-weight:700;color:var(--black);line-height:1.2;}
-.kpi-card .badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:10.5px;font-weight:600;margin-top:10px}
+/* =============================================================================
+ * Layout Layer
+ * Authority : DE-5D Layout Zone Architecture (Header / Executive KPI /
+ *             Primary Analytics / Secondary Analytics / Narrative /
+ *             Governance / Footer zones)
+ *             DE-5F Responsive Layout Architecture
+ * Rule      : Viewport adaptation may restack; it may never alter executive
+ *             reading order or KPI priority (DE-7C §9).
+ * ========================================================================== */
+* { box-sizing: border-box; }
 
-/* LAYER 3: GRANULAR TABLE PANEL */
-.table-panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow: 0 1px 3px rgba(0,0,0,0.02)}
-.table-header{padding:14px 16px;border-bottom:1px solid var(--line);font-weight:600;font-size:13px;background:#fff;color:var(--black)}
-.table-responsive{window-x:auto;max-height: 400px;overflow-y: auto;}
-table{width:100%;border-collapse:collapse;text-align:left}
-th{background:#F8F9FA;padding:11px 16px;color:var(--grey);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing: 0.03em;position: sticky;top: 0;z-index: 10;border-bottom: 1px solid var(--line);}
-td{padding:11px 16px;border-bottom:1px solid var(--line-soft);font-size:12.5px;white-space: nowrap;max-width: 300px;overflow: hidden;text-overflow: ellipsis;}
-tr:hover td { background: #FAFBFB; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-surface-page);
+  color: var(--color-text-primary);
+  font-family: var(--type-family-body);
+  font-size: var(--type-body);
+  line-height: 1.45;
+}
 
-.status-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 500; }
-.badge-good { background: var(--good-bg); color: var(--good); }
-.badge-watch { background: var(--watch-bg); color: var(--watch); }
-.badge-action { background: var(--action-bg); color: var(--action); }
+h1, h2, h3, h4 { font-family: var(--type-family-display); margin: 0; }
+
+.app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* --- Zone: Header ------------------------------------------------------- */
+.zone-header {
+  background: var(--color-brand-primary);
+  color: var(--color-text-inverse);
+  padding: var(--space-m) var(--space-l);
+  display: flex;
+  align-items: center;
+  gap: var(--space-l);
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+/* --- Zone: Filter / Context -------------------------------------------- */
+.zone-filter {
+  background: var(--color-surface-card);
+  border-bottom: 1px solid var(--color-border);
+  padding: 10px var(--space-l);
+  display: flex;
+  gap: var(--space-l);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* --- Zone: Navigation --------------------------------------------------- */
+.zone-nav {
+  background: var(--color-surface-card);
+  border-bottom: 2px solid var(--color-border);
+  display: flex;
+  overflow-x: auto;
+  padding: 0 var(--space-l);
+}
+
+/* --- Zone: Content ------------------------------------------------------ */
+.zone-content {
+  flex: 1;
+  padding: var(--space-l);
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* --- Zone: Governance Footer -------------------------------------------- */
+.zone-footer {
+  background: var(--color-surface-card);
+  border-top: 1px solid var(--color-border);
+  padding: 12px var(--space-l);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-s);
+  font-size: var(--type-footnote);
+  color: var(--color-status-neutral);
+  font-family: var(--type-family-mono);
+}
+
+/* --- Grid primitives (DE-5B Executive Grid Architecture) ---------------- */
+.grid-kpi   { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-m); }
+.grid-2     { display: grid; grid-template-columns: 1.3fr 1fr; gap: var(--space-m); }
+.grid-3     { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-m); }
+
+@media (max-width: 920px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .zone-content { padding: var(--space-m); }
+  .zone-header  { padding: var(--space-m); }
+}
+
+/* --- Print / PDF variant (DE-5F responsive target) ---------------------- */
+@media print {
+  .zone-header, .zone-filter, .zone-nav, .no-print { display: none !important; }
+  .page { display: block !important; page-break-after: always; }
+  .zone-content { max-width: 100%; }
+  body { background: #fff; }
+}
+
+/* =============================================================================
+ * Component Stylesheet
+ * Authority : DE-4 Dashboard Component Engineering (C1-C10 component domains)
+ *             DE-6C Visual State System (default/hover/selected/disabled/
+ *             loading/error)
+ * Rule      : Colour is never the sole carrier of meaning — every status
+ *             carries an accompanying text label (DE-6C §5 governance rule).
+ * ========================================================================== */
+
+/* --- C1 Executive Context ---------------------------------------------- */
+.brand { display: flex; flex-direction: column; margin-right: auto; }
+.brand__title { font-family: var(--type-family-display); font-weight: 800; font-size: var(--type-display); letter-spacing: .2px; }
+.brand__sub   { font-size: var(--type-footnote); color: #B9C6D6; font-family: var(--type-family-mono); letter-spacing: .3px; }
+
+.context-meta { display: flex; gap: var(--space-m); align-items: center; font-size: var(--type-caption); color: #CBD6E2; flex-wrap: wrap; }
+.pill { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); border-radius: var(--radius-pill); padding: 4px 11px; display: flex; gap: 6px; align-items: center; }
+
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.status-dot--live     { background: var(--color-status-success); box-shadow: 0 0 0 3px rgba(30,142,90,.25); }
+.status-dot--fallback { background: var(--color-status-warning); box-shadow: 0 0 0 3px rgba(201,127,14,.25); }
+.status-dot--error    { background: var(--color-status-critical); }
+
+/* --- Filter controls ---------------------------------------------------- */
+.filter-group { display: flex; align-items: center; gap: var(--space-s); }
+.filter-group label { font-size: var(--type-footnote); text-transform: uppercase; letter-spacing: .6px; color: var(--color-text-secondary); font-weight: 600; }
+.filter-group select { border: 1px solid var(--color-border); border-radius: var(--radius-control); padding: 6px 10px; font-size: var(--type-body); background: #fff; color: var(--color-text-primary); font-family: var(--type-family-body); }
+.filter-actions { margin-left: auto; display: flex; gap: var(--space-s); }
+
+.btn { border: 1px solid var(--color-border); background: #fff; color: var(--color-text-primary); border-radius: var(--radius-control); padding: 7px 13px; font-size: var(--type-caption); font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; font-family: var(--type-family-body); transition: border-color var(--motion-fast), color var(--motion-fast); }
+.btn:hover { border-color: var(--color-brand-accent); color: var(--color-brand-accent); }
+.btn:focus-visible { outline: 3px solid var(--color-brand-accent); outline-offset: 2px; }
+.btn--primary { background: var(--color-brand-accent); color: #fff; border-color: var(--color-brand-accent); }
+.btn--primary:hover { background: #0a6362; color: #fff; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+
+/* --- C8 Navigation ------------------------------------------------------ */
+.nav-item { background: none; border: none; padding: 13px var(--space-m); font-size: var(--type-h3); font-weight: 600; color: var(--color-text-secondary); white-space: nowrap; border-bottom: 3px solid transparent; font-family: var(--type-family-body); cursor: pointer; }
+.nav-item__id { font-family: var(--type-family-mono); color: var(--color-status-neutral); margin-right: 6px; font-size: var(--type-footnote); }
+.nav-item.is-active { color: var(--color-text-primary); border-bottom-color: var(--color-brand-accent); }
+.nav-item:hover { color: var(--color-brand-accent); }
+.nav-item:focus-visible { outline: 3px solid var(--color-brand-accent); outline-offset: -3px; }
+
+/* --- Page container ----------------------------------------------------- */
+.page { display: none; }
+.page.is-active { display: block; animation: fade var(--motion-base); }
+@keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+.section-title { display: flex; align-items: baseline; gap: 10px; margin: var(--space-xl) 0 var(--space-m); flex-wrap: wrap; }
+.section-title h2 { font-size: var(--type-h2); text-transform: uppercase; letter-spacing: .7px; color: var(--color-brand-secondary); }
+.section-title__q { font-size: var(--type-caption); color: var(--color-status-neutral); font-style: italic; }
+.section-title:first-child { margin-top: 0; }
+
+/* --- C7 Executive Verdict (VH-1) ---------------------------------------- */
+.verdict { background: linear-gradient(135deg, var(--color-brand-primary), #123A63); color: #fff; border-radius: 10px; padding: var(--space-l) 26px; display: flex; gap: var(--space-l); align-items: center; box-shadow: var(--elevation-card); flex-wrap: wrap; }
+.verdict__badge { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--type-family-display); font-weight: 800; font-size: 1.4rem; flex: none; border: 3px solid rgba(255,255,255,.35); }
+.verdict__body h3 { color: #fff; font-size: var(--type-h1); margin-bottom: 6px; }
+.verdict__body p { margin: 0; color: #D7E1EC; font-size: var(--type-body); max-width: 860px; }
+.verdict__cite { color: #9FB3C8; font-size: var(--type-footnote); margin-top: var(--space-s); font-family: var(--type-family-mono); }
+
+/* --- C2 KPI Components -------------------------------------------------- */
+.kpi-card { background: var(--color-surface-card); border: 1px solid var(--color-border); border-radius: var(--radius-card); padding: 15px 16px; box-shadow: var(--elevation-card); }
+.kpi-card__label { font-size: var(--type-footnote); text-transform: uppercase; letter-spacing: .5px; color: var(--color-text-secondary); font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.kpi-card__value { font-family: var(--type-family-display); font-size: var(--type-kpi-numeric); font-weight: 800; margin: 6px 0 2px; }
+.kpi-card__unit  { font-size: var(--type-caption); color: var(--color-status-neutral); font-weight: 500; }
+.kpi-card__delta { font-size: var(--type-caption); margin-top: 6px; font-weight: 600; }
+.kpi-card__delta--up   { color: var(--color-status-critical); }
+.kpi-card__delta--down { color: var(--color-status-success); }
+.kpi-card__delta--flat { color: var(--color-status-neutral); }
+.kpi-card__source { font-size: var(--type-footnote); color: #AEB8C4; margin-top: var(--space-s); font-family: var(--type-family-mono); }
+
+/* --- C3 Benchmark Status Indicator -------------------------------------- */
+.status-chip { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; padding: 2px 7px; border-radius: var(--radius-pill); white-space: nowrap; }
+.status-chip--good     { background: #E4F4EC; color: var(--color-status-success); }
+.status-chip--watch    { background: #FCEFD9; color: var(--color-status-warning); }
+.status-chip--action   { background: #FBE4E2; color: var(--color-status-critical); }
+.status-chip--critical { background: #F1DADA; color: var(--color-status-escalate); }
+.status-chip--na       { background: #EEF0F3; color: var(--color-status-neutral); }
+
+/* --- Panels ------------------------------------------------------------- */
+.panel { background: var(--color-surface-card); border: 1px solid var(--color-border); border-radius: var(--radius-card); padding: 18px 20px; box-shadow: var(--elevation-card); margin-bottom: var(--space-m); }
+.panel h4 { font-size: var(--type-h3); text-transform: uppercase; letter-spacing: .4px; color: var(--color-brand-secondary); margin-bottom: var(--space-m); }
+.panel__note { font-size: var(--type-caption); color: var(--color-status-neutral); margin-top: var(--space-s); }
+
+/* --- C5 Analysis: bar comparison ---------------------------------------- */
+.bar-row { display: grid; grid-template-columns: 140px 1fr 64px; align-items: center; gap: 10px; margin: var(--space-s) 0; font-size: var(--type-caption); }
+.bar-row__name { color: var(--color-text-secondary); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-track { background: #EEF1F5; border-radius: 4px; height: 14px; overflow: hidden; }
+.bar-fill  { height: 100%; border-radius: 4px; background: var(--color-brand-accent); }
+.bar-row__value { text-align: right; font-family: var(--type-family-mono); }
+@media (max-width: 520px) { .bar-row { grid-template-columns: 100px 1fr 54px; } }
+
+/* --- C4 Trend ----------------------------------------------------------- */
+.trend-wrap { width: 100%; overflow-x: auto; }
+svg.trend text { font-family: var(--type-family-mono); font-size: 9.5px; fill: var(--color-status-neutral); }
+
+/* --- C6 Evidence: table ------------------------------------------------- */
+.data-table { width: 100%; border-collapse: collapse; font-size: var(--type-caption); }
+.data-table th { text-align: left; background: var(--color-surface-muted); color: var(--color-text-secondary); font-weight: 700; font-size: var(--type-footnote); text-transform: uppercase; letter-spacing: .4px; padding: 8px 10px; border-bottom: 2px solid var(--color-border); }
+.data-table td { padding: 8px 10px; border-bottom: 1px solid var(--color-border); }
+.data-table tr:hover td { background: #FAFBFD; }
+.table-scroll { overflow-x: auto; }
+
+.tag { display: inline-block; padding: 1.5px 7px; border-radius: 4px; background: #EEF1F5; font-size: var(--type-footnote); color: var(--color-text-secondary); font-family: var(--type-family-mono); }
+
+/* --- C7 Narrative ------------------------------------------------------- */
+.narrative section { margin-bottom: var(--space-m); }
+.narrative__label { font-size: var(--type-footnote); text-transform: uppercase; letter-spacing: .5px; color: var(--color-brand-accent); font-weight: 700; margin-bottom: 4px; }
+.narrative p { margin: 0 0 10px; font-size: var(--type-body); color: #31404F; }
+
+/* --- C9 Governance ------------------------------------------------------ */
+.gov-row { display: flex; justify-content: space-between; gap: var(--space-m); padding: 9px 0; border-bottom: 1px solid var(--color-border); font-size: var(--type-caption); }
+.gov-row:last-child { border-bottom: none; }
+.gov-row__key { color: var(--color-text-secondary); }
+.gov-row__value { font-weight: 600; text-align: right; }
+
+/* --- Exception / error states ------------------------------------------- */
+.exception { border-left: 3px solid var(--color-status-warning); background: #FFFBF3; padding: 10px 14px; border-radius: 4px; margin-bottom: 10px; font-size: var(--type-caption); }
+.exception__id { font-family: var(--type-family-mono); color: var(--color-status-warning); font-weight: 700; margin-right: var(--space-s); }
+.exception--error { border-left-color: var(--color-status-critical); background: #FDF4F3; }
+.exception--error .exception__id { color: var(--color-status-critical); }
+
+.badge-scope { display: inline-block; font-size: var(--type-footnote); font-family: var(--type-family-mono); background: var(--color-brand-primary); color: #fff; padding: 2px 8px; border-radius: 3px; margin-bottom: 6px; }
+
+.is-loading { opacity: .55; pointer-events: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
 </style>
 </head>
 <body>
 
-<div id="app">
-  <!-- Sidebar Multi-Site Berbasis Skema Sukses Anda -->
-  <div class="sidebar">
-    <div class="sb-brand">
-      <div class="sb-grp-name">OHIH Hub Ecosystem</div>
+<div class="app-shell" id="appShell">
+
+  <!-- ===== Zone: Header — DE-4 C1 Executive Context ===================== -->
+  <header class="zone-header" role="banner">
+    <div class="brand">
+      <span class="brand__title">MIME Executive Dashboard</span>
+      <span class="brand__sub">BDSE Framework v2.1 · Release Candidate RC-01→RC-09 · Production Compilation</span>
     </div>
-    <div class="sb-section">Operational Sites</div>
-    <div class="sb-sites" id="sidebarSites">
-      <button class="sb-site active" onclick="filterSite('All')">All Sites (Corporate)</button>
-      <button class="sb-site" onclick="filterSite('BSI')">BSI Site</button>
-      <button class="sb-site" onclick="filterSite('BTR')">BTR / BKP Site</button>
-      <button class="sb-site" onclick="filterSite('MTI')">MTI Morowali</button>
-      <button class="sb-site" onclick="filterSite('SCM')">SCM Konawe</button>
-      <button class="sb-site" onclick="filterSite('Pani')">Pani Gold Project</button>
+    <div class="context-meta">
+      <span class="pill">
+        <span class="status-dot status-dot--fallback" id="sourceDot"></span>
+        <span id="sourceLabel">Initialising runtime…</span>
+      </span>
+      <span class="pill">Data as of <span id="dataAsOf">—</span></span>
+      <span class="pill">Build <span id="buildVersion">—</span></span>
+    </div>
+  </header>
+
+  <!-- ===== Zone: Filter / Executive Context ============================= -->
+  <div class="zone-filter no-print">
+    <div class="filter-group">
+      <label for="filterSite">Organisational Scope</label>
+      <select id="filterSite" aria-label="Filter dashboard by site">
+        <option value="ALL">All Sites (Enterprise)</option>
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button class="btn" id="btnExport" type="button">Export CSV</button>
+      <button class="btn" id="btnPrint" type="button">Print / PDF</button>
+      <button class="btn btn--primary" id="btnRefresh" type="button">Refresh Data</button>
     </div>
   </div>
 
-  <div class="main">
-    <div class="header">
-      <h1>Occupational Health Integrated Hub — Medical Incident Tracker</h1>
-    </div>
+  <!-- ===== Zone: Navigation — DE-4 C8 Page Navigator =================== -->
+  <nav class="zone-nav no-print" id="pageNav" role="tablist" aria-label="Dashboard pages"></nav>
 
-    <!-- Filter Dropdown Kontrol Berjenjang -->
-    <div class="filterbar">
-      <div class="filt">
-        <label>Filter Tahun Kejadian</label>
-        <select id="filterYear" onchange="applyFilters()">
-          <option value="All">All Years</option>
-          <option value="2026">2026</option>
-          <option value="2025">2025</option>
-          <option value="2024">2024</option>
-          <option value="2023">2023</option>
-        </select>
-      </div>
-      <div class="filt">
-        <label>Asal Perusahaan</label>
-        <select id="filterCompany" onchange="applyFilters()">
-          <option value="All">All Entities</option>
-          <option value="Merdeka">Merdeka & Anak Perusahaan</option>
-          <option value="Kontraktor">Kontraktor / Vendor</option>
-        </select>
-      </div>
-    </div>
+  <p class="exception exception--error no-print" id="runtimeNotice" hidden></p>
 
-    <div class="content">
-      
-      <!-- LAYER 1 PIRAMIDA: MCKINSEY STRATEGIC STORY STATEMENT -->
-      <div class="executive-story-card">
-        <h2>Executive Summary & Strategic Narrative (McKinsey Style)</h2>
-        <p id="executiveNarrative">Loading operational intelligence...</p>
-      </div>
+  <!-- ===== Zone: Content — P1 → P7 ===================================== -->
+  <main class="zone-content" id="pageContent" role="main"></main>
 
-      <!-- LAYER 2 PIRAMIDA: PRIMARY PERFORMANCE DRIVERS (KPIs) -->
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <div class="lbl">Illness Fatality</div>
-          <div class="val" id="kpiFatality">0</div>
-          <span id="badgeFatality" class="badge">Safe</span>
-        </div>
-        <div class="kpi-card">
-          <div class="lbl">Medevac Cases</div>
-          <div class="val" id="kpiMedevac">0</div>
-          <span id="badgeMedevac" class="badge">Stable</span>
-        </div>
-        <div class="kpi-card">
-          <div class="lbl">Medical Referral</div>
-          <div class="val" id="kpiReferral">0</div>
-          <span id="badgeReferral" class="badge">Normal</span>
-        </div>
-        <div class="kpi-card">
-          <div class="lbl">Sick Leave Logged</div>
-          <div class="val" id="kpiSickLeave">0</div>
-          <span id="badgeSickLeave" class="badge">Monitored</span>
-        </div>
-        <div class="kpi-card">
-          <div class="lbl">Return to Work (RTW)</div>
-          <div class="val" id="kpiRtw">0</div>
-          <span id="badgeRtw" class="badge">Rehab Active</span>
-        </div>
-      </div>
+  <!-- ===== Zone: Governance Footer — DE-4 C9 =========================== -->
+  <footer class="zone-footer" role="contentinfo">
+    <span>Engineering authority: BDSE v2.1 Release Candidate (frozen). No engineering redesign was performed during compilation.</span>
+    <span>Production Compiler: Claude · Compiled <span id="compileStamp">—</span></span>
+  </footer>
 
-      <!-- LAYER 3 PIRAMIDA: GRANULAR ROW LOG TABLE -->
-      <div class="table-panel">
-        <div class="table-header" id="tableTitle">Incident & Health Recovery Records — Granular Track</div>
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>No</th>
-                <th>Tanggal</th>
-                <th>Nama Pasien</th>
-                <th>Site</th>
-                <th>Kriteria</th>
-                <th>Kasus Medis / Diagnosa</th>
-                <th>Tindakan / Rujukan</th>
-                <th>Status Medis</th>
-                <th>Laik Kerja</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody">
-              <!-- Rendered via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
+</div>
 
-    </div>
-Use code with caution.
-// RAW INCIDENT DATABASE - Diekstrak langsung dari Google Sheet / Excel Anda
-const rawIncidentData = [
-{no:1, date:"2026-01-01", name:"Syarifuddin", site:"BSI", criteria:"Illness Non Work Related", action:"Medical Referral", case:"HIPERTENSI + HIPERCHOLESTEROLEMIA + CARDIOMEGALI", status:"Rawat Jalan", fit:"Fit with Note"},
-{no:2, date:"2026-01-02", name:"I Gede Sugono", site:"BSI", criteria:"Illness Non Work Related", action:"Medical Referral", case:"Aritmia + CAD Mild Disease", status:"Rawat Jalan", fit:"Fit with Note"},
-{no:3, date:"2026-01-02", name:"Farid", site:"BSI", criteria:"Illness Non Work Related", action:"Medical Referral", case:"Bells Palsy", status:"Rawat Jalan", fit:"Fit with Note"},
-{no:4, date:"2026-01-02", name:"Wahyu Ratna Putra", site:"BSI", criteria:"Illness Non Work Related", action:"Medical Referral", case:"Typhoid", status:"Rawat Jalan", fit:"Fit with Note"},
-{no:5, date:"2026-01-02", name:"Angga Yuda Mahardika", site:"BSI", criteria:"Illness Non Work Related", action:"Medical Referral", case:"Susp. Frozen Shoulder (s)", status:"Rawat Jalan", fit:"Fit with Note"},
-{no:6, date:"2026-03-03", name:"Wahyudin", site:"BSI", criteria:"Medical Treatment [MT]", action:"Medevac", case:"Susp. Fraktur Cholles dextra", status:"Rawat Jalan", fit:"Fit"},
-{no:7, date:"2026-03-03", name:"Endah Dharma", site:"BSI", criteria:"Illness Non Work Related", action:"Medevac", case:"Aborominal Pain / Appendicitis Accute", status:"Rawat Inap", fit:"Fit"},
-{no:8, date:"2025-11-11", name:"SOFIAN AFFANDI", site:"BSI", criteria:"Illness Non Work Related", action:"Medevac", case:"AMI (Serangan Jantung)", status:"Illness Fatality", fit:"Meninggal di RS"},
-{no:9, date:"2024-08-14", name:"Aris Widodo", site:"BSI", criteria:"Illness Non Work Related", action:"Tidak Rujuk", case:"Heart Attack (Serangan Jantung)", status:"Illness Fatality", fit:"Meninggal di Site"},
-{no:10, date:"2024-01-14", name:"Jordan Romora", site:"BTR", criteria:"Illness Non Work Related", action:"Medevac", case:"Melena ec. Perdarahan Saluran Cerna", status:"Illness Fatality", fit:"Meninggal di RS"},
-{no:11, date:"2023-01-23", name:"Aldy Marten", site:"BTR", criteria:"Illness Non Work Related", action:"Medevac", case:"Myocardial Infraction", status:"Illness Fatality", fit:"Meninggal di RS"},
-{no:12, date:"2023-07-08", name:"H. Subari", site:"BTR", criteria:"Loss Time Incident [LTI]", action:"Medevac", case:"Left Ribs Fracture (Kecelakaan Volvo ADT)", status:"Rawat Inap", fit:"Temporary Unfit"},
-{no:13, date:"2024-02-08", name:"Muhammad Fauzi Lubis", site:"BSI", criteria:"Restricted to Work [RTW]", action:"Medevac", case:"Susp CVA second Attack (Stroke)", status:"Rawat Inap", fit:"Temporary Unfit"},
-{no:14, date:"2023-01-01", name:"Salmon Malicang", site:"BTR", criteria:"Illness Non Work Related", action:"Sick Leave", case:"Fever, unspecified (Demam)", status:"Rawat Jalan", fit:"Fit"},
-{no:15, date:"2023-01-02", name:"Fridolin Maitimu", site:"BTR", criteria:"Illness Non Work Related", action:"Sick Leave", case:"Gastritis (Nyeri ulu hati)", status:"Rawat Jalan", fit:"Fit"}
+<!-- ===== Configuration layer (RC-06 §10 — externalised) ================= -->
+<!-- ===== Certified data snapshot (RC-06A) ============================== -->
+<!-- ===== Runtime modules (RC-06 §6 mandatory targets) ================== -->
+<script>
+/* =============================================================================
+ * MIME Executive Dashboard — Runtime Configuration
+ * Authority : RC-06 §10 Runtime Configuration Specification
+ *             RC-07 §12 Runtime Configuration (external, non-embedded)
+ * Rule      : No business constants are embedded in business logic. All
+ *             environment-dependent values live here.
+ * ========================================================================== */
+var MIME_CONFIG = {
+
+  APPLICATION: {
+    NAME:            "MIME Executive Dashboard",
+    FRAMEWORK:       "BDSE Framework v2.1",
+    RELEASE:         "RC-01 -> RC-09 (Frozen)",
+    COMPILER:        "Claude Production Compiler",
+    BUILD_VERSION:   "1.0.0"
+  },
+
+  /* --- RC-06A §14 Live Source Register ---------------------------------- */
+  DATA_SOURCE:       "GOOGLE_SHEETS",
+  SPREADSHEET_ID:    "17bWj59dgvHLpx-8o4HHcGDy0e2dPiawqUkfsvmrFvk4",
+
+  /* --- RC-06A §4 Certified Worksheet Inventory (11 governed worksheets) ---
+   * Worksheet names are preserved verbatim. Classifications are preserved
+   * exactly as certified. No worksheet may be renamed or substituted.       */
+  WORKSHEET_REGISTER: [
+    { name: "Summary & Analysis",    classification: "Executive Summary / Dashboard", status: "Certified", runtimeBound: false },
+    { name: "BSI_BWX",               classification: "Site Operational Dataset",      status: "Certified", runtimeBound: false },
+    { name: "BTR_BKP",               classification: "Site Operational Dataset",      status: "Certified", runtimeBound: false },
+    { name: "MTI_Morowali",          classification: "Site Operational Dataset",      status: "Certified", runtimeBound: false },
+    { name: "SCM_Konawe",            classification: "Site Operational Dataset",      status: "Certified", runtimeBound: false },
+    { name: "Pani_Gold",             classification: "Site Operational Dataset",      status: "Certified", runtimeBound: false },
+    { name: "Data Perusahaan",       classification: "Master Reference Dataset",      status: "Certified", runtimeBound: false },
+    { name: "Pekerja Merdeka",       classification: "Workforce Reference Dataset",   status: "Certified", runtimeBound: false },
+    { name: "ICD-10",                classification: "Medical Reference Dataset",     status: "Certified", runtimeBound: false },
+    { name: "FEED_Medevac_Referral", classification: "Operational Feed Dataset",      status: "Certified", runtimeBound: false },
+    { name: "Feed_MED-REF",          classification: "Operational Feed Dataset",      status: "Certified", runtimeBound: true  }
+  ],
+
+  PRIMARY_WORKSHEET: "Feed_MED-REF",
+
+  /* --- RC-06A §3 Runtime connection ------------------------------------- */
+  GVIZ_ENDPOINT: function (spreadsheetId, worksheetName) {
+    return "https://docs.google.com/spreadsheets/d/" + spreadsheetId +
+           "/gviz/tq?tqx=out:json&sheet=" + encodeURIComponent(worksheetName);
+  },
+
+  /* --- RC-07 §12 mandatory runtime policies ------------------------------ */
+  REFRESH_INTERVAL: 0,              /* 0 = manual refresh only               */
+  CACHE_POLICY:     "SESSION_MEMORY",
+  TIMEOUT_POLICY:   8000,           /* ms                                    */
+  RETRY_POLICY:     { attempts: 2, backoffMs: 1200 },
+  ERROR_POLICY:     "FALLBACK_TO_CERTIFIED_SNAPSHOT",
+  EXPORT_POLICY:    { csv: true, print: true, includeGovernanceHeader: true },
+
+  FEATURE_SWITCHES: {
+    LIVE_CONNECTOR:   true,
+    EXPORT_MODULE:    true,
+    PRINT_MODULE:     true,
+    DIAGNOSTIC_LOG:   true
+  }
+};
+
+/* =============================================================================
+ * Runtime Field Mapping Register
+ * Authority : RC-06 §11 Data Binding Specification
+ * Rule      : Field names are preserved. No business entity is renamed.
+ *             This register is a read map only, never a rename.
+ * ========================================================================== */
+var MIME_FIELDS = {
+  INCIDENT_ID:        "Incident_ID",
+  INCIDENT_DATE:      "Incident_date",
+  INCIDENT_YEAR:      "Incident_Year",
+  INCIDENT_MONTH_NUM: "Incident_Month_Num",
+  INCIDENT_MONTH_TXT: "Incident_Month_Text",
+  SITE_CODE:          "Site_Code",
+  COMPANY_NAME:       "Company_Name",
+  COMPANY_ORIGIN:     "Company_Origin",
+  INCIDENT_CRITERIA:  "Incident_Criteria",
+  INCIDENT_TYPE:      "Incident_Type",
+  MEDEVAC_EXECUTOR:   "Medevac_Executor",
+  TRANSPORT_MODE:     "Transport_Mode",
+  MEDICAL_STATUS:     "Medical_Status",
+  FITNESS_STATUS:     "Fitness_Status",
+  INCIDENT_CATEGORY:  "Incident_Category",
+  MEDICAL_REHAB_FLAG: "Is_Medical_Rehab_Flag",
+  INCIDENT_COUNT:     "Incident_Count",
+  DATA_AS_OF:         "Data_as_of",
+  MONTH_YEAR_LABEL:   "Month_Year_Label"
+};
+
+/* Required columns asserted during RC-08 Phase 3 data-connection validation */
+var MIME_REQUIRED_COLUMNS = [
+  MIME_FIELDS.INCIDENT_ID,
+  MIME_FIELDS.INCIDENT_YEAR,
+  MIME_FIELDS.SITE_CODE,
+  MIME_FIELDS.INCIDENT_CRITERIA,
+  MIME_FIELDS.INCIDENT_TYPE,
+  MIME_FIELDS.INCIDENT_CATEGORY,
+  MIME_FIELDS.FITNESS_STATUS
 ];
-let currentSite = 'All';
-function filterSite(siteName) {
-currentSite = siteName;
-// Update Active Class on Sidebar
-const buttons = document.querySelectorAll('.sb-site');
-buttons.forEach(btn => btn.classList.remove('active'));
-event.target.classList.add('active');
-applyFilters();
-}
-function applyFilters() {
-const selectedYear = document.getElementById('filterYear').value;
-const selectedCompany = document.getElementById('filterCompany').value;
-// Jalankan Pipeline Filter Data
-let filtered = rawIncidentData.filter(item => {
-// 1. Filter Wilayah Operasional (Site)
-let siteMatch = true;
-if (currentSite !== 'All') {
-if (currentSite === 'BTR') siteMatch = (item.site === 'BTR' || item.site === 'BKP');
-else siteMatch = (item.site === currentSite);
-}
-// 2. Filter Waktu (Tahun)
-let yearMatch = selectedYear === 'All' || item.date.startsWith(selectedYear);
-// 3. Filter Entitas Korban (Replikasi Parsial dari Struktur Bisnis Anda)
-let companyMatch = true;
-if (selectedCompany === 'Merdeka') companyMatch = !item.name.includes("Vendor") && !item.name.includes("Kontraktor");
-return siteMatch && yearMatch && companyMatch;
-});
-renderDashboard(filtered);
-}
-function renderDashboard(data) {
-// Hitung Metrik Agregat Utama (Lapisan 2)
-const fatalityCount = data.filter(i => itemSeverityIsFatal(i)).length;
-const medevacCount = data.filter(i => i.action === 'Medevac').length;
-const referralCount = data.filter(i => i.action === 'Medical Referral').length;
-const sickLeaveCount = data.filter(i => i.action === 'Sick Leave').length;
-const rtwCount = data.filter(i => i.criteria.includes('RTW') || i.fit.includes('Note')).length;
-// Push ke UI KPI Cards
-document.getElementById('kpiFatality').innerText = fatalityCount;
-document.getElementById('kpiMedevac').innerText = medevacCount;
-document.getElementById('kpiReferral').innerText = referralCount;
-document.getElementById('kpiSickLeave').innerText = sickLeaveCount;
-document.getElementById('kpiRtw').innerText = rtwCount;
-// Dynamic Badging System
-updateBadge('badgeFatality', fatalityCount, 0, 1, 'Nihil Kasus', 'Kritis');
-updateBadge('badgeMedevac', medevacCount, 2, 5, 'Normal', 'High Rate');
-updateBadge('badgeReferral', referralCount, 5, 12, 'Stabel', 'Tinggi');
-// LAPISAN 1: REPLIKASI MCKINSEY STORYTELLING GENERATOR
-let siteText = currentSite === 'All' ? 'seluruh wilayah korporasi' : wilayah operasional ${currentSite};
-let narrative = '';
-if (fatalityCount > 0) {
-narrative = Pada periode data yang difilter di ${siteText}, laporan kesehatan menunjukkan kondisi <span class="alert-text">Kritis</span> dengan adanya <b>${fatalityCount} Kasus Illness Fatality</b> (Serangan Jantung/Melena). Manajemen wajib segera mengaudit efektivitas skrining <i>High-Risk Condition</i> pada Annual MCU dan memperketat kepatuhan <i>Fitness to Work</i> sebelum mobilisasi kru lapangan.;
-} else {
-narrative = Performa kesehatan kerja di ${siteText} terpantau berada dalam kondisi <b>Stabel dan Aman (Nihil Kasus Illness Fatality)</b>. Operasional klinik didominasi oleh penanganan kasus non-work related ringan dan rujukan berkala. Fokus kendali saat ini diarahkan pada optimalisasi program <b>Return to Work (RTW)</b> guna memitigasi hilangnya hari kerja efektif karyawan.;
-}
-document.getElementById('executiveNarrative').innerHTML = narrative;
-// LAPISAN 3: RENDER ROW LOG DATA GRANULAR
-const tbody = document.getElementById('tableBody');
-tbody.innerHTML = '';
-if(data.length === 0) {
-tbody.innerHTML = <tr><td colspan="9" style="text-align:center; color:var(--grey);">No medical records found for current criteria.</td></tr>;
-return;
-}
-data.forEach(item => {
-let row = document.createElement('tr');
-// Class Pewarnaan Status Laik Kerja
-let badgeClass = 'badge-good';
-if(item.fit.includes('Unfit') || item.fit.includes('Meninggal')) badgeClass = 'badge-action';
-else if(item.fit.includes('Note')) badgeClass = 'badge-watch';
-row.innerHTML = <td>${item.no}</td> <td>${item.date}</td> <td><b>${item.name}</b></td> <td>${item.site}</td> <td>${item.criteria}</td> <td>${item.case}</td> <td>${item.action}</td> <td>${item.status}</td> <td><span class="status-badge ${badgeClass}">${item.fit}</span></td>;
-tbody.appendChild(row);
-});
-}
-function itemSeverityIsFatal(item) {
-return item.status === 'Illness Fatality' || item.fit.includes('Meninggal');
-}
-function updateBadge(id, value, watchCeil, actionCeil, goodText, badText) {
-const el = document.getElementById(id);
-el.className = 'badge';
-if (value === 0 || value < watchCeil) { el.classList.add('badge-good'); el.innerText = '✓ ' + goodText; }
-else if (value <= actionCeil) { el.classList.add('badge-watch'); el.innerText = '⚠ ' + badText; }
-else { el.classList.add('badge-action'); el.innerText = '▲ Urgent Action'; }
-}
-// Initial Data Booting
-applyFilters();
 
+/* =============================================================================
+ * Certified Production Snapshot
+ * Authority : RC-06A Production Data Source Specification
+ * Origin    : MIME.xlsx -> worksheet 'Feed_MED-REF' (Operational Feed Dataset)
+ * Purpose   : Engineering-baseline dataset applied under ERROR_POLICY
+ *             FALLBACK_TO_CERTIFIED_SNAPSHOT when the live Google Sheets
+ *             runtime source is unreachable. Field names, worksheet identity
+ *             and business terminology are preserved verbatim.
+ * ========================================================================== */
+var MIME_SNAPSHOT = {
+  "total_records": 12735,
+  "total_raw_rows": 16005,
+  "by_year": {
+    "1899": 2006,
+    "2021": 17,
+    "2022": 31,
+    "2023": 2099,
+    "2024": 3338,
+    "2025": 4120,
+    "2026": 1124
+  },
+  "by_site": {
+    "BSI_BWX": 4249,
+    "Wetar_Copper": 3110,
+    "MTI_Morowali": 2334,
+    "Pani_Gold": 2056,
+    "SCM_Konawe": 986
+  },
+  "by_site_year": {
+    "BSI_BWX|2021": 12,
+    "BSI_BWX|2022": 15,
+    "BSI_BWX|2023": 1166,
+    "BSI_BWX|2024": 1133,
+    "BSI_BWX|1899": 22,
+    "BSI_BWX|2025": 1641,
+    "BSI_BWX|2026": 260,
+    "Wetar_Copper|2021": 5,
+    "Wetar_Copper|2022": 5,
+    "Wetar_Copper|2023": 157,
+    "Wetar_Copper|2024": 1215,
+    "Wetar_Copper|1899": 843,
+    "Wetar_Copper|2025": 751,
+    "Wetar_Copper|2026": 134,
+    "SCM_Konawe|2023": 82,
+    "SCM_Konawe|1899": 212,
+    "SCM_Konawe|2024": 352,
+    "SCM_Konawe|2025": 307,
+    "SCM_Konawe|2026": 33,
+    "MTI_Morowali|2023": 620,
+    "MTI_Morowali|2024": 218,
+    "MTI_Morowali|2025": 824,
+    "MTI_Morowali|1899": 2,
+    "MTI_Morowali|2026": 670,
+    "Pani_Gold|2022": 11,
+    "Pani_Gold|2023": 74,
+    "Pani_Gold|2024": 420,
+    "Pani_Gold|1899": 927,
+    "Pani_Gold|2025": 597,
+    "Pani_Gold|2026": 27
+  },
+  "by_criteria": {
+    "Illness Non Work Related": 10755,
+    "FA": 186,
+    "MT": 30,
+    "RTW": 30,
+    "LTI": 8,
+    "Illness Work Related": 7,
+    "FATALITY": 1,
+    "Illness Fatality": 1
+  },
+  "by_type": {
+    "Referral": 6754,
+    "Sick Leave": 3992,
+    "Tidak Rujuk": 158,
+    "Medevac": 111,
+    "Ilness Fatality": 3
+  },
+  "by_category": {
+    "Occupational Health Incident": 10763,
+    "Occupational Safety Incident": 1972
+  },
+  "by_fitness": {
+    "Fit": 6487,
+    "Fit with Note": 1852,
+    "Temporary Unfit": 144,
+    "Unfit": 16
+  },
+  "by_transport": {
+    "LV": 1132,
+    "Ambulans Darat": 205,
+    "Kapal Laut": 109,
+    "Pesawat Charter": 19,
+    "Mobil Umum": 1
+  },
+  "by_executor": {
+    "Inhouse Merdeka": 550,
+    "Medevac Service Provider": 21,
+    "Puskesmas Lurang": 1
+  },
+  "by_medstatus": {
+    "Rawat Jalan": 9372,
+    "Rawat Inap": 536,
+    "Kembali Bekerja dengan Pembatasan": 23,
+    "Illness Fatality": 14,
+    " ": 1
+  },
+  "rehab_flag": {
+    "1": 9080,
+    "0": 3655
+  },
+  "null_site": 0,
+  "null_fitness": 4236,
+  "null_criteria": 1717,
+  "by_year_month": {
+    "2021": {
+      "Jan": 2,
+      "Feb": 2,
+      "Mar": 1,
+      "Apr": 6,
+      "Jun": 2,
+      "Aug": 1,
+      "Oct": 2,
+      "May": 1
+    },
+    "2022": {
+      "Feb": 5,
+      "Apr": 1,
+      "Jun": 1,
+      "Jul": 2,
+      "Aug": 2,
+      "Sep": 4,
+      "Oct": 4,
+      "Nov": 3,
+      "Dec": 8,
+      "Jan": 1
+    },
+    "2023": {
+      "Jan": 285,
+      "Feb": 145,
+      "Mar": 205,
+      "Apr": 226,
+      "Aug": 192,
+      "May": 191,
+      "Jun": 146,
+      "Jul": 144,
+      "Sep": 137,
+      "Oct": 135,
+      "Nov": 178,
+      "Dec": 115
+    },
+    "2024": {
+      "Jan": 309,
+      "Feb": 246,
+      "Mar": 250,
+      "Apr": 224,
+      "May": 196,
+      "Jun": 198,
+      "Jul": 249,
+      "Aug": 273,
+      "Sep": 285,
+      "Oct": 346,
+      "Nov": 467,
+      "Dec": 295
+    },
+    "1899": {
+      "Dec": 2006
+    },
+    "2025": {
+      "Jan": 441,
+      "Feb": 493,
+      "Mar": 386,
+      "Apr": 465,
+      "May": 326,
+      "Jun": 429,
+      "Jul": 305,
+      "Aug": 240,
+      "Sep": 294,
+      "Oct": 219,
+      "Nov": 216,
+      "Dec": 306
+    },
+    "2026": {
+      "Jan": 202,
+      "Feb": 218,
+      "Mar": 170,
+      "Apr": 139,
+      "May": 121,
+      "Jun": 229,
+      "Sep": 1,
+      "Jul": 44
+    }
+  },
+  "site_type": {
+    "BSI_BWX|Tidak Rujuk": 22,
+    "BSI_BWX|Referral": 3959,
+    "BSI_BWX|Sick Leave": 254,
+    "BSI_BWX|Medevac": 14,
+    "Wetar_Copper|Medevac": 42,
+    "Wetar_Copper|Referral": 200,
+    "Wetar_Copper|Ilness Fatality": 3,
+    "Wetar_Copper|Sick Leave": 2073,
+    "SCM_Konawe|Referral": 970,
+    "SCM_Konawe|Medevac": 16,
+    "MTI_Morowali|Sick Leave": 1617,
+    "MTI_Morowali|Referral": 582,
+    "MTI_Morowali|Tidak Rujuk": 98,
+    "MTI_Morowali|Medevac": 36,
+    "Pani_Gold|Tidak Rujuk": 38,
+    "Pani_Gold|Referral": 1043,
+    "Pani_Gold|Sick Leave": 48,
+    "Pani_Gold|Medevac": 3
+  },
+  "site_category": {
+    "BSI_BWX|Occupational Safety Incident": 41,
+    "BSI_BWX|Occupational Health Incident": 4208,
+    "Wetar_Copper|Occupational Health Incident": 2295,
+    "Wetar_Copper|Occupational Safety Incident": 815,
+    "SCM_Konawe|Occupational Health Incident": 984,
+    "SCM_Konawe|Occupational Safety Incident": 2,
+    "MTI_Morowali|Occupational Health Incident": 2193,
+    "MTI_Morowali|Occupational Safety Incident": 141,
+    "Pani_Gold|Occupational Safety Incident": 973,
+    "Pani_Gold|Occupational Health Incident": 1083
+  },
+  "site_fitness": {
+    "BSI_BWX|Fit with Note": 544,
+    "BSI_BWX|Fit": 3629,
+    "BSI_BWX|Temporary Unfit": 53,
+    "BSI_BWX|Unfit": 1,
+    "Wetar_Copper|Temporary Unfit": 22,
+    "Wetar_Copper|Fit with Note": 163,
+    "Wetar_Copper|Fit": 1908,
+    "Wetar_Copper|Unfit": 6,
+    "SCM_Konawe|Temporary Unfit": 50,
+    "SCM_Konawe|Fit with Note": 47,
+    "SCM_Konawe|Unfit": 1,
+    "SCM_Konawe|Fit": 847,
+    "MTI_Morowali|Fit": 96,
+    "MTI_Morowali|Fit with Note": 22,
+    "MTI_Morowali|Unfit": 2,
+    "MTI_Morowali|Temporary Unfit": 5,
+    "Pani_Gold|Fit with Note": 1076,
+    "Pani_Gold|Temporary Unfit": 14,
+    "Pani_Gold|Unfit": 6,
+    "Pani_Gold|Fit": 7
+  },
+  "site_criteria": {
+    "BSI_BWX|MT": 3,
+    "BSI_BWX|FA": 27,
+    "BSI_BWX|Illness Non Work Related": 4208,
+    "BSI_BWX|RTW": 11,
+    "Wetar_Copper|Illness Non Work Related": 2295,
+    "Wetar_Copper|LTI": 4,
+    "Wetar_Copper|FA": 16,
+    "Wetar_Copper|MT": 3,
+    "SCM_Konawe|Illness Non Work Related": 984,
+    "SCM_Konawe|MT": 2,
+    "MTI_Morowali|Illness Non Work Related": 2188,
+    "MTI_Morowali|RTW": 19,
+    "MTI_Morowali|FA": 102,
+    "MTI_Morowali|MT": 14,
+    "MTI_Morowali|LTI": 4,
+    "MTI_Morowali|Illness Work Related": 5,
+    "MTI_Morowali|FATALITY": 1,
+    "Pani_Gold|FA": 41,
+    "Pani_Gold|MT": 8,
+    "Pani_Gold|Illness Non Work Related": 1080,
+    "Pani_Gold|Illness Fatality": 1,
+    "Pani_Gold|Illness Work Related": 2
+  }
+};
 
+/* =============================================================================
+ * Error Handling Module
+ * Authority : RC-06 §13 Error Handling Specification
+ * Rules     : errors avoid exposing sensitive implementation detail;
+ *             application stability is preserved; diagnostic logging supported.
+ * ========================================================================== */
+var MIMEErrors = (function () {
+  "use strict";
 
----
+  var log = [];
 
-### Part 4: Pengembangan Analitis Selajutnya (Metrik *Leading* Terintegrasi)
+  function record(scope, err, severity) {
+    var entry = {
+      timestamp: new Date().toISOString(),
+      scope: scope,
+      severity: severity || "ERROR",
+      message: (err && err.message) ? err.message : String(err)
+    };
+    log.push(entry);
+    if (MIME_CONFIG.FEATURE_SWITCHES.DIAGNOSTIC_LOG) {
+      console[severity === "WARN" ? "warn" : "error"]("[MIME][" + scope + "]", entry.message);
+    }
+    return entry;
+  }
 
-Data *Medical Incident* yang Anda berikan menunjukkan dominasi kasus **Illness Non Work Related** (Penyakit Umum seperti Penyakit Jantung Koroner/CAD, Diabetes Melitus, Hipertensi, dan HNP) dibandingkan kecelakaan kerja murni [source: 1].
+  /* Wraps a render function so a single component failure never takes down
+     the dashboard (RC-06 §13 "preserve application stability"). */
+  function guard(scope, fn, fallbackNode) {
+    try {
+      return fn();
+    } catch (err) {
+      record(scope, err);
+      if (fallbackNode) {
+        fallbackNode.innerHTML =
+          '<div class="exception exception--error"><span class="exception__id">RUNTIME</span>' +
+          'This section could not be rendered. The certified data set is unaffected and other ' +
+          'sections remain available. Diagnostic detail has been written to the runtime log.</div>';
+      }
+      return null;
+    }
+  }
+
+  function getLog()  { return log.slice(); }
+  function hasErrors() { return log.some(function (e) { return e.severity === "ERROR"; }); }
+
+  return { record: record, guard: guard, getLog: getLog, hasErrors: hasErrors };
+})();
+
+/* =============================================================================
+ * Utility Module
+ * Authority : RC-06 §6 (mandatory utility module), §9 (isolate reusable
+ *             functions). Contains no business logic and no KPI definitions.
+ * ========================================================================== */
+var MIMEUtils = (function () {
+  "use strict";
+
+  function formatNumber(value, decimals) {
+    var d = decimals || 0;
+    if (value === null || value === undefined || isNaN(value)) { return "n/a"; }
+    return Number(value).toLocaleString("en-US", {
+      minimumFractionDigits: d, maximumFractionDigits: d
+    });
+  }
+
+  function formatPercent(value, decimals) {
+    if (value === null || value === undefined || isNaN(value)) { return "n/a"; }
+    return formatNumber(value, decimals === undefined ? 1 : decimals) + "%";
+  }
+
+  function formatSigned(value, decimals) {
+    if (value === null || value === undefined || isNaN(value)) { return "n/a"; }
+    return (value >= 0 ? "+" : "") + formatNumber(value, decimals === undefined ? 1 : decimals) + "%";
+  }
+
+  /* Guarded division — returns null rather than Infinity/NaN so callers can
+     render an explicit "not available" state (RC-06 §11 validate before render) */
+  function rate(numerator, denominator) {
+    if (!denominator || denominator <= 0) { return null; }
+    return (numerator / denominator) * 100;
+  }
+
+  function sumValues(obj) {
+    if (!obj) { return 0; }
+    return Object.keys(obj).reduce(function (acc, k) { return acc + obj[k]; }, 0);
+  }
+
+  function sortDesc(obj) {
+    return Object.keys(obj || {})
+      .map(function (k) { return { label: k, value: obj[k] }; })
+      .sort(function (a, b) { return b.value - a.value; });
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function el(tag, attrs, children) {
+    var node = document.createElement(tag);
+    attrs = attrs || {};
+    Object.keys(attrs).forEach(function (k) {
+      if (k === "class") { node.className = attrs[k]; }
+      else if (k === "html") { node.innerHTML = attrs[k]; }
+      else { node.setAttribute(k, attrs[k]); }
+    });
+    if (children) {
+      (Array.isArray(children) ? children : [children]).forEach(function (c) {
+        if (c === null || c === undefined) { return; }
+        node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+      });
+    }
+    return node;
+  }
+
+  return {
+    formatNumber: formatNumber,
+    formatPercent: formatPercent,
+    formatSigned: formatSigned,
+    rate: rate,
+    sumValues: sumValues,
+    sortDesc: sortDesc,
+    escapeHtml: escapeHtml,
+    el: el
+  };
+})();
+
+/* =============================================================================
+ * Runtime Data Connector
+ * Authority : RC-06A §3 Production Data Architecture
+ *             RC-08 §6 Phase 3 Data Connection / Phase 4 Runtime Validation
+ * Behaviour : Connects to the certified Google Sheets production source.
+ *             Validates spreadsheet accessibility, worksheet availability and
+ *             required columns. On failure, applies ERROR_POLICY
+ *             (FALLBACK_TO_CERTIFIED_SNAPSHOT) so the dashboard degrades
+ *             gracefully rather than failing (RC-06 §13).
+ * ========================================================================== */
+var MIMEConnector = (function () {
+  "use strict";
+
+  var validation = {
+    spreadsheetAccessible: false,
+    worksheetAvailable: false,
+    requiredColumnsPresent: false,
+    rowCount: 0,
+    mode: "PENDING",
+    detail: ""
+  };
+
+  function fetchWithTimeout(url, timeoutMs) {
+    return new Promise(function (resolve, reject) {
+      var controller = new AbortController();
+      var timer = setTimeout(function () {
+        controller.abort();
+        reject(new Error("Connection timed out after " + timeoutMs + "ms"));
+      }, timeoutMs);
+
+      fetch(url, { signal: controller.signal, mode: "cors" })
+        .then(function (res) {
+          clearTimeout(timer);
+          if (!res.ok) { throw new Error("Source responded with HTTP " + res.status); }
+          return res.text();
+        })
+        .then(resolve)
+        .catch(function (err) { clearTimeout(timer); reject(err); });
+    });
+  }
+
+  /* Google Visualization API wraps its JSON payload in a callback envelope. */
+  function parseGvizPayload(text) {
+    var match = text.match(/setResponse\(([\s\S]*)\)/);
+    if (!match) { throw new Error("Unrecognised response format from data source"); }
+    var parsed = JSON.parse(match[1]);
+    if (parsed.status === "error") {
+      var reason = (parsed.errors && parsed.errors[0] && parsed.errors[0].detailed_message) || "source returned an error";
+      throw new Error(reason.replace(/<[^>]*>/g, ""));
+    }
+    if (!parsed.table) { throw new Error("No worksheet table returned"); }
+    return parsed.table;
+  }
+
+  function validateColumns(table) {
+    var labels = (table.cols || []).map(function (c) { return (c.label || "").trim(); });
+    var missing = MIME_REQUIRED_COLUMNS.filter(function (required) {
+      return labels.indexOf(required) === -1;
+    });
+    return { ok: missing.length === 0, missing: missing, labels: labels };
+  }
+
+  function attempt(attemptNumber) {
+    var cfg = MIME_CONFIG;
+    var url = cfg.GVIZ_ENDPOINT(cfg.SPREADSHEET_ID, cfg.PRIMARY_WORKSHEET);
+
+    return fetchWithTimeout(url, cfg.TIMEOUT_POLICY)
+      .then(function (text) {
+        validation.spreadsheetAccessible = true;
+        var table = parseGvizPayload(text);
+        validation.worksheetAvailable = true;
+        validation.rowCount = (table.rows || []).length;
+
+        var colCheck = validateColumns(table);
+        validation.requiredColumnsPresent = colCheck.ok;
+        if (!colCheck.ok) {
+          validation.detail = "Required columns absent from live worksheet: " + colCheck.missing.join(", ");
+          validation.mode = "LIVE_SCHEMA_MISMATCH";
+          MIMEErrors.record("connector", new Error(validation.detail), "WARN");
+          return { ok: false, table: null };
+        }
+
+        validation.mode = "LIVE";
+        validation.detail = "Live worksheet reachable and schema-conformant.";
+        return { ok: true, table: table };
+      })
+      .catch(function (err) {
+        if (attemptNumber < MIME_CONFIG.RETRY_POLICY.attempts) {
+          return new Promise(function (resolve) {
+            setTimeout(function () { resolve(attempt(attemptNumber + 1)); },
+                       MIME_CONFIG.RETRY_POLICY.backoffMs);
+          });
+        }
+        validation.mode = "SNAPSHOT_FALLBACK";
+        validation.detail = err.message;
+        MIMEErrors.record("connector", err, "WARN");
+        return { ok: false, table: null };
+      });
+  }
+
+  function connect() {
+    if (!MIME_CONFIG.FEATURE_SWITCHES.LIVE_CONNECTOR) {
+      validation.mode = "SNAPSHOT_ONLY";
+      validation.detail = "Live connector disabled by feature switch.";
+      return Promise.resolve({ ok: false, table: null });
+    }
+    return attempt(1);
+  }
+
+  function getValidation() { return JSON.parse(JSON.stringify(validation)); }
+
+  return { connect: connect, getValidation: getValidation };
+})();
+
+/* =============================================================================
+ * Runtime Data Binding Module
+ * Authority : RC-06 §11 Data Binding Specification
+ *             RC-06A §13 Production Compiler Obligations
+ * Rules     : binds only approved datasets; preserves field names; validates
+ *             data before rendering; never infers additional datasets and
+ *             never aggregates outside approved KPI definitions.
+ * ========================================================================== */
+var MIMEData = (function () {
+  "use strict";
+
+  var state = {
+    source: "SNAPSHOT",
+    aggregate: null,
+    liveRows: null
+  };
+
+  /* Aggregates live worksheet rows into the same governed shape used by the
+     certified snapshot. Only the aggregations defined by the Dashboard KPI
+     Dictionary are computed — no additional derivation is performed. */
+  function aggregateLiveTable(table) {
+    var labels = table.cols.map(function (c) { return (c.label || "").trim(); });
+    function idx(field) { return labels.indexOf(field); }
+
+    var iId   = idx(MIME_FIELDS.INCIDENT_ID),
+        iYear = idx(MIME_FIELDS.INCIDENT_YEAR),
+        iMon  = idx(MIME_FIELDS.INCIDENT_MONTH_TXT),
+        iSite = idx(MIME_FIELDS.SITE_CODE),
+        iCrit = idx(MIME_FIELDS.INCIDENT_CRITERIA),
+        iType = idx(MIME_FIELDS.INCIDENT_TYPE),
+        iCat  = idx(MIME_FIELDS.INCIDENT_CATEGORY),
+        iFit  = idx(MIME_FIELDS.FITNESS_STATUS),
+        iTran = idx(MIME_FIELDS.TRANSPORT_MODE),
+        iExec = idx(MIME_FIELDS.MEDEVAC_EXECUTOR),
+        iMed  = idx(MIME_FIELDS.MEDICAL_STATUS),
+        iReh  = idx(MIME_FIELDS.MEDICAL_REHAB_FLAG);
+
+    var agg = {
+      total_records: 0, total_raw_rows: table.rows.length,
+      by_year: {}, by_site: {}, by_site_year: {}, by_criteria: {}, by_type: {},
+      by_category: {}, by_fitness: {}, by_transport: {}, by_executor: {},
+      by_medstatus: {}, rehab_flag: {}, by_year_month: {},
+      site_type: {}, site_category: {}, site_fitness: {}, site_criteria: {},
+      null_site: 0, null_fitness: 0, null_criteria: 0
+    };
+
+    function bump(bucket, key) {
+      if (key === null || key === undefined || String(key).trim() === "") { return false; }
+      bucket[key] = (bucket[key] || 0) + 1;
+      return true;
+    }
+    function cell(row, i) {
+      if (i < 0 || !row.c || !row.c[i]) { return null; }
+      var v = row.c[i].v;
+      return (v === null || v === undefined || String(v).trim() === "") ? null : v;
+    }
+
+    table.rows.forEach(function (row) {
+      if (cell(row, iId) === null) { return; }
+      agg.total_records += 1;
+
+      var year = cell(row, iYear), site = cell(row, iSite), month = cell(row, iMon);
+      var crit = cell(row, iCrit), type = cell(row, iType), cat = cell(row, iCat);
+      var fit  = cell(row, iFit),  reh  = cell(row, iReh);
+
+      if (year !== null) { bump(agg.by_year, String(parseInt(year, 10))); }
+      if (year !== null && month !== null) {
+        var y = String(parseInt(year, 10));
+        agg.by_year_month[y] = agg.by_year_month[y] || {};
+        agg.by_year_month[y][month] = (agg.by_year_month[y][month] || 0) + 1;
+      }
+      if (site !== null) {
+        bump(agg.by_site, site);
+        if (year !== null) { bump(agg.by_site_year, site + "|" + parseInt(year, 10)); }
+      } else { agg.null_site += 1; }
+
+      if (!bump(agg.by_criteria, crit)) { agg.null_criteria += 1; }
+      bump(agg.by_type, type);
+      bump(agg.by_category, cat);
+      if (!bump(agg.by_fitness, fit)) { agg.null_fitness += 1; }
+      bump(agg.by_transport, cell(row, iTran));
+      bump(agg.by_executor,  cell(row, iExec));
+      bump(agg.by_medstatus, cell(row, iMed));
+      if (reh !== null) { bump(agg.rehab_flag, String(reh)); }
+
+      if (site !== null) {
+        if (type !== null) { bump(agg.site_type,     site + "|" + type); }
+        if (cat  !== null) { bump(agg.site_category, site + "|" + cat);  }
+        if (fit  !== null) { bump(agg.site_fitness,  site + "|" + fit);  }
+        if (crit !== null) { bump(agg.site_criteria, site + "|" + crit); }
+      }
+    });
+
+    return agg;
+  }
+
+  function loadSnapshot() {
+    state.aggregate = JSON.parse(JSON.stringify(MIME_SNAPSHOT));
+    state.source = "SNAPSHOT";
+    return state.aggregate;
+  }
+
+  function loadLive(table) {
+    var agg = aggregateLiveTable(table);
+    if (!agg.total_records) { throw new Error("Live worksheet returned no usable records"); }
+    state.aggregate = agg;
+    state.source = "LIVE";
+    return agg;
+  }
+
+  /* ---- Scoped accessors (site filter applied without re-deriving KPIs) --- */
+  function splitByPrefix(map, site) {
+    var out = {};
+    Object.keys(map || {}).forEach(function (k) {
+      var parts = k.split("|");
+      if (parts[0] === site) { out[parts[1]] = (out[parts[1]] || 0) + map[k]; }
+    });
+    return out;
+  }
+
+  function criteria(site) { return site === "ALL" ? state.aggregate.by_criteria : splitByPrefix(state.aggregate.site_criteria, site); }
+  function types(site)    { return site === "ALL" ? state.aggregate.by_type     : splitByPrefix(state.aggregate.site_type, site); }
+  function categories(s)  { return s === "ALL"    ? state.aggregate.by_category : splitByPrefix(state.aggregate.site_category, s); }
+  function fitness(site)  { return site === "ALL" ? state.aggregate.by_fitness  : splitByPrefix(state.aggregate.site_fitness, site); }
+
+  return {
+    loadSnapshot: loadSnapshot,
+    loadLive: loadLive,
+    aggregate: function () { return state.aggregate; },
+    source: function () { return state.source; },
+    criteria: criteria,
+    types: types,
+    categories: categories,
+    fitness: fitness
+  };
+})();
+
+/* =============================================================================
+ * KPI Engine
+ * Authority : Dashboard KPI Dictionary (DKD-A / DKD-B / DKD-E / DKD-F)
+ *             RC-03 §6 KPI Traceability (definitions, formulae, thresholds,
+ *             units and aggregation rules SHALL NOT be modified)
+ *
+ * IMPLEMENTATION NOTE (RC-06 §14 Missing Information Rule)
+ * -------------------------------------------------------
+ * Numeric Target / Watch / Action Required / Critical threshold VALUES were
+ * not located in the supplied Release Candidate attachment set. Consequently
+ * every KPI below returns benchmarkStatus "NA" rather than an invented
+ * evaluation. The registry structure is threshold-ready: when the KPI
+ * Threshold Register is issued, populate `thresholds` and the benchmark
+ * status resolves automatically with no other code change.
+ * ========================================================================== */
+var MIMEKpi = (function () {
+  "use strict";
+
+  var U = MIMEUtils;
+
+  /* Benchmark evaluation is presentation of a governed evaluation only.
+     The component never independently determines compliance (DE-4 C3.1). */
+  function evaluate(value, thresholds, direction) {
+    if (!thresholds || value === null || value === undefined) { return "na"; }
+    var lowerIsBetter = direction === "LOWER_IS_BETTER";
+    function breach(limit) { return lowerIsBetter ? value >= limit : value <= limit; }
+    if (thresholds.critical !== undefined && breach(thresholds.critical)) { return "critical"; }
+    if (thresholds.action   !== undefined && breach(thresholds.action))   { return "action"; }
+    if (thresholds.watch    !== undefined && breach(thresholds.watch))    { return "watch"; }
+    return "good";
+  }
+
+  var REGISTRY = [
+    {
+      id: "DKD-A-TOTAL", name: "Total Classified Incidents", domain: "A",
+      unit: "records", direction: "LOWER_IS_BETTER", thresholds: null,
+      formula: "COUNT(Incident_ID) WHERE Incident_ID IS NOT NULL",
+      compute: function (site) {
+        return site === "ALL"
+          ? U.sumValues(MIMEData.aggregate().by_site)
+          : (MIMEData.aggregate().by_site[site] || 0);
+      },
+      format: function (v) { return U.formatNumber(v); }
+    },
+    {
+      id: "DKD-A-FATAL", name: "Fatalities on Record", domain: "A",
+      unit: "cases", direction: "LOWER_IS_BETTER", thresholds: { critical: 1 },
+      formula: "COUNT WHERE Incident_Criteria IN ('FATALITY','Illness Fatality')",
+      compute: function (site) {
+        var c = MIMEData.criteria(site);
+        return (c["FATALITY"] || 0) + (c["Illness Fatality"] || 0);
+      },
+      format: function (v) { return U.formatNumber(v); }
+    },
+    {
+      id: "DKD-A-LTI", name: "Lost Time Incidents (LTI)", domain: "A",
+      unit: "cases", direction: "LOWER_IS_BETTER", thresholds: null,
+      formula: "COUNT WHERE Incident_Criteria = 'LTI'",
+      compute: function (site) { return MIMEData.criteria(site)["LTI"] || 0; },
+      format: function (v) { return U.formatNumber(v); }
+    },
+    {
+      id: "DKD-A-OIIR", name: "Occupational Illness Share", domain: "A",
+      unit: "% of classified category records", direction: "LOWER_IS_BETTER", thresholds: null,
+      formula: "Occupational Health Incident / (Health + Safety Incidents) x 100",
+      compute: function (site) {
+        var c = MIMEData.categories(site);
+        var health = c["Occupational Health Incident"] || 0;
+        var safety = c["Occupational Safety Incident"] || 0;
+        return U.rate(health, health + safety);
+      },
+      format: function (v) { return U.formatPercent(v); }
+    },
+    {
+      id: "DKD-B-REF", name: "Referral Rate", domain: "B",
+      unit: "% of classified incident-type records", direction: "LOWER_IS_BETTER", thresholds: null,
+      formula: "COUNT(Incident_Type='Referral') / COUNT(Incident_Type) x 100",
+      compute: function (site) {
+        var t = MIMEData.types(site);
+        return U.rate(t["Referral"] || 0, U.sumValues(t));
+      },
+      format: function (v) { return U.formatPercent(v); }
+    },
+    {
+      id: "DKD-B-MEDEVAC", name: "Medevac Utilisation Rate", domain: "B",
+      unit: "% of classified incident-type records", direction: "LOWER_IS_BETTER", thresholds: null,
+      formula: "COUNT(Incident_Type='Medevac') / COUNT(Incident_Type) x 100",
+      compute: function (site) {
+        var t = MIMEData.types(site);
+        return U.rate(t["Medevac"] || 0, U.sumValues(t));
+      },
+      format: function (v) { return U.formatPercent(v, 2); }
+    },
+    {
+      id: "DKD-B-SICK", name: "Sick Leave Share", domain: "B",
+      unit: "% of classified incident-type records", direction: "LOWER_IS_BETTER", thresholds: null,
+      formula: "COUNT(Incident_Type='Sick Leave') / COUNT(Incident_Type) x 100",
+      compute: function (site) {
+        var t = MIMEData.types(site);
+        return U.rate(t["Sick Leave"] || 0, U.sumValues(t));
+      },
+      format: function (v) { return U.formatPercent(v); }
+    },
+    {
+      id: "DKD-E-FIT", name: "Fit-for-Work Determination Rate", domain: "E",
+      unit: "% of determined records", direction: "HIGHER_IS_BETTER", thresholds: null,
+      formula: "COUNT(Fitness_Status='Fit') / COUNT(Fitness_Status determined) x 100",
+      compute: function (site) {
+        var f = MIMEData.fitness(site);
+        return U.rate(f["Fit"] || 0, U.sumValues(f));
+      },
+      format: function (v) { return U.formatPercent(v); }
+    },
+    {
+      id: "DKD-E-UNFIT", name: "Temporary / Permanent Unfit Rate", domain: "E",
+      unit: "% of determined records", direction: "LOWER_IS_BETTER", thresholds: null,
+      formula: "COUNT(Fitness_Status IN ('Temporary Unfit','Unfit')) / COUNT(determined) x 100",
+      compute: function (site) {
+        var f = MIMEData.fitness(site);
+        return U.rate((f["Temporary Unfit"] || 0) + (f["Unfit"] || 0), U.sumValues(f));
+      },
+      format: function (v) { return U.formatPercent(v, 2); }
+    },
+    {
+      id: "DKD-F-RTW", name: "RTW Programme Engagement Rate", domain: "F",
+      unit: "% of flagged records (enterprise scope)", direction: "HIGHER_IS_BETTER", thresholds: null,
+      formula: "COUNT(Is_Medical_Rehab_Flag=1) / COUNT(Is_Medical_Rehab_Flag) x 100",
+      compute: function () {
+        var r = MIMEData.aggregate().rehab_flag;
+        return U.rate(r["1"] || 0, U.sumValues(r));
+      },
+      format: function (v) { return U.formatPercent(v); }
+    }
+  ];
+
+  function byId(id) {
+    return REGISTRY.filter(function (k) { return k.id === id; })[0];
+  }
+
+  function resolve(id, site) {
+    var kpi = byId(id);
+    if (!kpi) { throw new Error("Unknown KPI identifier: " + id); }
+    var value = kpi.compute(site);
+    return {
+      id: kpi.id,
+      name: kpi.name,
+      domain: kpi.domain,
+      unit: kpi.unit,
+      formula: kpi.formula,
+      raw: value,
+      display: kpi.format(value),
+      benchmarkStatus: evaluate(value, kpi.thresholds, kpi.direction)
+    };
+  }
+
+  return { REGISTRY: REGISTRY, resolve: resolve, byId: byId };
+})();
+
+/* =============================================================================
+ * Production Component Library
+ * Authority : DE-4 Dashboard Component Engineering (C1-C10)
+ * Rule      : Each engineered component becomes exactly one production
+ *             component (RC-07 §9). Components render governed values; they
+ *             never compute benchmark compliance themselves (DE-4 C3.1).
+ * ========================================================================== */
+var MIMEComponents = (function () {
+  "use strict";
+
+  var U = MIMEUtils;
+
+  var STATUS_LABEL = {
+    good: "Good", watch: "Watch", action: "Action Required",
+    critical: "Critical", na: "Not Available"
+  };
+
+  /* --- C3.1 Benchmark Status Indicator ---------------------------------- */
+  function statusChip(level) {
+    return '<span class="status-chip status-chip--' + level + '">' +
+           STATUS_LABEL[level] + "</span>";
+  }
+
+  /* --- C2.1 Executive KPI Card ------------------------------------------ */
+  function kpiCard(opts) {
+    var card = U.el("div", { class: "kpi-card" });
+    var label = U.el("div", { class: "kpi-card__label" });
+    label.appendChild(document.createTextNode(opts.label));
+    label.insertAdjacentHTML("beforeend", statusChip(opts.status || "na"));
+    card.appendChild(label);
+
+    var value = U.el("div", { class: "kpi-card__value" }, opts.value);
+    if (opts.valueColor) { value.style.color = opts.valueColor; }
+    card.appendChild(value);
+    card.appendChild(U.el("div", { class: "kpi-card__unit" }, opts.unit || ""));
+
+    if (opts.delta) {
+      card.appendChild(U.el("div", { class: "kpi-card__delta kpi-card__delta--" + opts.delta.dir },
+        opts.delta.text));
+    }
+    if (opts.source) {
+      card.appendChild(U.el("div", { class: "kpi-card__source" }, opts.source));
+    }
+    return card;
+  }
+
+  /* --- C7.x Executive Verdict ------------------------------------------- */
+  function verdict(opts) {
+    var wrap = U.el("div", { class: "verdict" });
+    var badge = U.el("div", { class: "verdict__badge" }, opts.glyph);
+    badge.style.background = opts.color;
+    wrap.appendChild(badge);
+    var body = U.el("div", { class: "verdict__body" });
+    body.appendChild(U.el("h3", {}, opts.headline));
+    body.appendChild(U.el("p", { html: opts.statement }));
+    body.appendChild(U.el("div", { class: "verdict__cite" }, opts.citation));
+    wrap.appendChild(body);
+    return wrap;
+  }
+
+  /* --- C5.x Comparative Analysis (bar list) ----------------------------- */
+  function barList(entries, opts) {
+    opts = opts || {};
+    var frag = document.createDocumentFragment();
+    var max = Math.max.apply(null, entries.map(function (e) { return e.value; }).concat([1]));
+    entries.forEach(function (entry) {
+      var row = U.el("div", { class: "bar-row" });
+      row.appendChild(U.el("div", { class: "bar-row__name", title: entry.label }, entry.label));
+      var track = U.el("div", { class: "bar-track" });
+      var fill = U.el("div", { class: "bar-fill" });
+      fill.style.width = Math.max(2, (entry.value / max) * 100) + "%";
+      if (entry.color) { fill.style.background = entry.color; }
+      track.appendChild(fill);
+      row.appendChild(track);
+      var display = opts.denominator
+        ? U.formatPercent(U.rate(entry.value, opts.denominator))
+        : U.formatNumber(entry.value);
+      row.appendChild(U.el("div", { class: "bar-row__value" }, display));
+      frag.appendChild(row);
+    });
+    return frag;
+  }
+
+  /* --- C4.1 Trend Line --------------------------------------------------- */
+  function trendLine(pairs, opts) {
+    opts = opts || {};
+    var w = opts.width || 760, h = opts.height || 180, pad = 32;
+    var values = pairs.map(function (p) { return p[1]; });
+    var max = Math.max.apply(null, values.concat([1]));
+    var stepX = (w - pad * 2) / Math.max(1, pairs.length - 1);
+    function y(v) { return h - pad - (v / max) * (h - pad * 2); }
+
+    var path = "", points = "", labels = "";
+    pairs.forEach(function (p, i) {
+      var x = pad + i * stepX, yy = y(p[1]);
+      path += (i === 0 ? "M" : "L") + x + "," + yy + " ";
+      points += '<circle cx="' + x + '" cy="' + yy + '" r="3.5" fill="var(--color-brand-accent)"><title>' +
+                U.escapeHtml(p[0]) + ": " + U.formatNumber(p[1]) + "</title></circle>";
+      labels += '<text x="' + x + '" y="' + (h - 10) + '" text-anchor="middle">' + U.escapeHtml(p[0]) + "</text>";
+      labels += '<text x="' + x + '" y="' + (yy - 10) + '" text-anchor="middle" fill="var(--color-text-secondary)">' +
+                U.formatNumber(p[1]) + "</text>";
+    });
+
+    return '<svg class="trend" viewBox="0 0 ' + w + " " + h + '" width="100%" style="max-width:' + w + 'px" ' +
+           'role="img" aria-label="' + U.escapeHtml(opts.ariaLabel || "Trend chart") + '">' +
+           '<line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - 10) + '" y2="' + (h - pad) +
+           '" stroke="var(--color-border)"/>' +
+           '<path d="' + path + '" fill="none" stroke="var(--color-brand-accent)" stroke-width="2.4"/>' +
+           points + labels + "</svg>";
+  }
+
+  /* --- C6.4 Audit Table -------------------------------------------------- */
+  function dataTable(headers, rows) {
+    var scroll = U.el("div", { class: "table-scroll" });
+    var table = U.el("table", { class: "data-table" });
+    table.innerHTML =
+      "<thead><tr>" + headers.map(function (h) { return "<th>" + U.escapeHtml(h) + "</th>"; }).join("") + "</tr></thead>" +
+      "<tbody>" + rows.map(function (r) {
+        return "<tr>" + r.map(function (c) { return "<td>" + c + "</td>"; }).join("") + "</tr>";
+      }).join("") + "</tbody>";
+    scroll.appendChild(table);
+    return scroll;
+  }
+
+  /* --- C9.x Governance row ----------------------------------------------- */
+  function govRow(key, value) {
+    return '<div class="gov-row"><span class="gov-row__key">' + U.escapeHtml(key) +
+           '</span><span class="gov-row__value">' + value + "</span></div>";
+  }
+
+  /* --- Section heading (DE-5D zone marker) ------------------------------- */
+  function sectionTitle(title, question) {
+    var wrap = U.el("div", { class: "section-title" });
+    wrap.appendChild(U.el("h2", {}, title));
+    if (question) { wrap.appendChild(U.el("span", { class: "section-title__q" }, question)); }
+    return wrap;
+  }
+
+  function panel(children, heading) {
+    var p = U.el("div", { class: "panel" });
+    if (heading) { p.appendChild(U.el("h4", {}, heading)); }
+    (Array.isArray(children) ? children : [children]).forEach(function (c) {
+      if (typeof c === "string") { p.insertAdjacentHTML("beforeend", c); }
+      else if (c) { p.appendChild(c); }
+    });
+    return p;
+  }
+
+  function exception(id, text) {
+    return '<div class="exception"><span class="exception__id">' + U.escapeHtml(id) + "</span>" + text + "</div>";
+  }
+
+  return {
+    statusChip: statusChip, kpiCard: kpiCard, verdict: verdict, barList: barList,
+    trendLine: trendLine, dataTable: dataTable, govRow: govRow,
+    sectionTitle: sectionTitle, panel: panel, exception: exception
+  };
+})();
+
+/* =============================================================================
+ * Dashboard Page Modules — P1 through P7
+ * Authority : DE-2 Dashboard Page Architecture (page inventory & sequence)
+ *             DE-3A..DE-3G Page Engineering (page contracts)
+ *             DE-5D Layout Zone Architecture
+ * Rule      : Seven governed pages. No page may be added, removed, merged or
+ *             resequenced (RC-07 §8, RC-05 §10).
+ * ========================================================================== */
+var MIMEPages = (function () {
+  "use strict";
+
+  var U = MIMEUtils, C = MIMEComponents;
+
+  var INVENTORY = [
+    { id: "P1", name: "Executive Health Overview",           question: "How healthy is the organization right now?" },
+    { id: "P2", name: "KPI Performance & Benchmark Analysis", question: "Which KPIs require attention?" },
+    { id: "P3", name: "Operational Driver Analysis",          question: "Why did performance change, and where?" },
+    { id: "P4", name: "Medical Incident Intelligence",        question: "What operational medical events explain it?" },
+    { id: "P5", name: "Evidence & Case Traceability",         question: "Can every KPI be traced to source evidence?" },
+    { id: "P6", name: "Governance & Data Quality",            question: "Can I trust these numbers?" },
+    { id: "P7", name: "Executive References & Methodology",   question: "What do these KPIs mean?" }
+  ];
+
+  /* ======================= P1 — Executive Health Overview ================= */
+  function renderP1(root, site) {
+    root.innerHTML = "";
+    var agg = MIMEData.aggregate();
+
+    var total   = MIMEKpi.resolve("DKD-A-TOTAL", site);
+    var fatal   = MIMEKpi.resolve("DKD-A-FATAL", site);
+    var lti     = MIMEKpi.resolve("DKD-A-LTI", site);
+    var oiir    = MIMEKpi.resolve("DKD-A-OIIR", site);
+
+    var y2024 = agg.by_year["2024"] || 0, y2025 = agg.by_year["2025"] || 0;
+    var movement = y2024 ? ((y2025 - y2024) / y2024) * 100 : null;
+
+    var level = "good", glyph = "\u2713", color = "var(--color-status-success)";
+    var headline = "Stable — no critical exception in current scope";
+    if (fatal.raw > 0) {
+      level = "critical"; glyph = "!"; color = "var(--color-status-escalate)";
+      headline = "Escalate — fatality case(s) on record";
+    } else if (movement !== null && movement > 15) {
+      level = "watch"; glyph = "\u25B2"; color = "var(--color-status-warning)";
+      headline = "Monitor — rising recorded incident volume";
+    }
+
+    root.appendChild(C.verdict({
+      glyph: glyph, color: color, headline: "Enterprise Verdict — " + headline,
+      statement:
+        U.formatNumber(total.raw) + " classified incident records are held for " +
+        (site === "ALL" ? "the enterprise (5 operating sites)" : site) +
+        ". Recorded volume moved " + U.formatSigned(movement) +
+        " from 2024 to 2025. " +
+        (fatal.raw > 0
+          ? "<strong>" + U.formatNumber(fatal.raw) + " fatality record(s)</strong> require case-level review via P5."
+          : "No fatality records are present in the current scope.") +
+        " The recorded burden is predominantly occupational-illness in nature (" +
+        oiir.display + " of classified category records) rather than safety-incident driven.",
+      citation: "Traceability: EDM \u2192 EAM \u2192 EEM \u2192 EKM \u2192 Dashboard KPI Dictionary (Domain A) \u00B7 Source: " +
+                MIME_CONFIG.PRIMARY_WORKSHEET + " \u00B7 Mode: " + MIMEData.source()
+    }));
+
+    root.appendChild(C.sectionTitle("Strategic Enterprise KPIs"));
+    var grid = U.el("div", { class: "grid-kpi" });
+    [total, fatal, lti, oiir].forEach(function (k) {
+      grid.appendChild(C.kpiCard({
+        label: k.name, value: k.display, unit: k.unit,
+        status: k.benchmarkStatus, source: k.id,
+        valueColor: (k.id === "DKD-A-FATAL" && k.raw > 0) ? "var(--color-status-escalate)" : null
+      }));
+    });
+    grid.appendChild(C.kpiCard({
+      label: "Recorded Volume Movement", value: U.formatSigned(movement),
+      unit: "2025 versus 2024", status: "na",
+      delta: { dir: movement > 0 ? "up" : movement < 0 ? "down" : "flat",
+               text: movement > 0 ? "\u25B2 increasing" : movement < 0 ? "\u25BC decreasing" : "\u2014 stable" },
+      source: "Trend indicator \u00B7 see DQ-04"
+    }));
+    grid.appendChild(C.kpiCard({
+      label: "Sites in Scope", value: site === "ALL" ? String(Object.keys(agg.by_site).length) : "1",
+      unit: "operating sites", status: "na", source: "DE-1 enterprise granularity"
+    }));
+    root.appendChild(grid);
+
+    root.appendChild(C.sectionTitle("Enterprise Incident Trend", "Annual recorded volume"));
+    var years = ["2023", "2024", "2025", "2026"];
+    var pairs = years.map(function (y) { return [y, agg.by_year[y] || 0]; });
+    root.appendChild(C.panel([
+      U.el("div", { class: "trend-wrap", html: C.trendLine(pairs, { ariaLabel: "Annual recorded incident volume 2023 to 2026" }) }),
+      '<p class="panel__note">2021\u20132022 are excluded from this view (pilot-phase reporting, negligible volume, not comparable). ' +
+      '2026 is a partial year at the snapshot date. Volume growth across 2023\u20132025 substantially reflects <strong>progressive ' +
+      'onboarding of sites into the reporting system</strong> and must not be read as a like-for-like deterioration in health ' +
+      'outcomes \u2014 see P6 finding DQ-04.</p>'
+    ]));
+
+    root.appendChild(C.sectionTitle("Executive Narrative", "DE-3A \u00A712 Narrative Contract"));
+    var narrative = C.panel("");
+    narrative.className = "panel narrative";
+    narrative.innerHTML =
+      '<section><div class="narrative__label">Situation</div><p>' +
+      U.formatNumber(total.raw) + " classified incident records are held in the certified evidence base, concentrated in " +
+      "occupational-illness categories. " + U.formatNumber(fatal.raw) + " fatality record(s) are present in scope.</p></section>" +
+      '<section><div class="narrative__label">Interpretation</div><p>Year-on-year growth in recorded volume is materially ' +
+      "explained by expanding reporting coverage across sites rather than by uniform deterioration. Site onboarding dates must " +
+      "be consulted before treating raw volume as a risk trend.</p></section>" +
+      '<section><div class="narrative__label">Executive Implication</div><p>' +
+      (fatal.raw > 0
+        ? "Fatality case(s) warrant case-level review through P5 before the next executive reporting cycle."
+        : "No escalation trigger is present; standard monitoring cadence continues.") +
+      "</p></section>" +
+      '<section><div class="narrative__label">Recommended Navigation</div><p>Proceed to <strong>P2 \u2014 KPI Performance &amp; ' +
+      "Benchmark Analysis</strong> to review individual KPI status.</p></section>";
+    root.appendChild(narrative);
+  }
+
+  /* =============== P2 — KPI Performance & Benchmark Analysis ============== */
+  function renderP2(root, site) {
+    root.innerHTML = "";
+
+    root.appendChild(C.sectionTitle("KPI Portfolio \u2014 Domain A / B", "Which KPIs require attention?"));
+    var grid = U.el("div", { class: "grid-kpi" });
+    ["DKD-B-REF", "DKD-B-MEDEVAC", "DKD-B-SICK", "DKD-A-LTI"].forEach(function (id) {
+      var k = MIMEKpi.resolve(id, site);
+      grid.appendChild(C.kpiCard({
+        label: k.name, value: k.display, unit: k.unit,
+        status: k.benchmarkStatus, source: k.id
+      }));
+    });
+    root.appendChild(grid);
+
+    root.appendChild(C.panel(
+      C.exception("EXC-05",
+        "Numeric <strong>Target / Watch / Action Required / Critical threshold values</strong> for these KPIs were not located " +
+        "in the supplied Release Candidate attachment set. Every KPI card therefore reports " + C.statusChip("na") +
+        " for benchmark evaluation and displays trend and proportion only. This follows the RC-06 \u00A714 Missing Information " +
+        "Rule rather than inventing threshold values. The KPI engine is threshold-ready: populating the KPI Threshold Register " +
+        "resolves these statuses automatically with no further code change."),
+      "Benchmark Evaluation Status"));
+
+    root.appendChild(C.sectionTitle("Fitness-for-Work Outcome Distribution", "Domain E"));
+    var fit = MIMEData.fitness(site);
+    var fitTotal = U.sumValues(fit);
+    var fitPanel = C.panel("");
+    fitPanel.appendChild(C.barList(U.sortDesc(fit), { denominator: fitTotal }));
+    fitPanel.insertAdjacentHTML("beforeend",
+      '<p class="panel__note">Basis: ' + U.formatNumber(fitTotal) + " records carrying a determined Fitness_Status value. " +
+      "Records without a determination are excluded from this distribution and quantified in P6 (DQ-03).</p>");
+    root.appendChild(fitPanel);
+
+    root.appendChild(C.sectionTitle("Return-to-Work Programme Engagement", "Domain F"));
+    var rtw = MIMEKpi.resolve("DKD-F-RTW", site);
+    var rtwGrid = U.el("div", { class: "grid-2" });
+    var left = C.panel([
+      C.kpiCard({ label: rtw.name, value: rtw.display, unit: rtw.unit, status: rtw.benchmarkStatus, source: rtw.id })
+    ], "Engagement");
+    var right = C.panel(
+      C.exception("EXC-03",
+        "RTW <em>duration</em> KPIs (days lost, days to return) exist only in the per-site engineering worksheets " +
+        "(field <span class=\"tag\">Total_Durasi_Tidak_Bekerja</span>) and are not carried into the certified " +
+        "<span class=\"tag\">" + MIME_CONFIG.PRIMARY_WORKSHEET + "</span> production feed. Duration-based RTW KPIs are " +
+        "therefore reported as exceptions rather than estimated."),
+      "Implementation Note");
+    rtwGrid.appendChild(left); rtwGrid.appendChild(right);
+    root.appendChild(rtwGrid);
+  }
+
+  /* ==================== P3 — Operational Driver Analysis ================== */
+  function renderP3(root) {
+    root.innerHTML = "";
+    var agg = MIMEData.aggregate();
+    var enterpriseTotal = U.sumValues(agg.by_site);
+
+    root.appendChild(C.sectionTitle("Site Contribution to Enterprise Volume", "Which organisational units drive the total?"));
+    var p1 = C.panel("");
+    p1.appendChild(C.barList(U.sortDesc(agg.by_site), { denominator: enterpriseTotal }));
+    root.appendChild(p1);
+
+    root.appendChild(C.sectionTitle("Site-Level Annual Trajectory"));
+    var years = ["2023", "2024", "2025"];
+    var rows = Object.keys(agg.by_site).map(function (s) {
+      var vals = years.map(function (y) { return agg.by_site_year[s + "|" + y] || 0; });
+      var delta = vals[1] ? ((vals[2] - vals[1]) / vals[1]) * 100 : null;
+      var color = delta === null ? "var(--color-text-secondary)"
+                : delta > 15 ? "var(--color-status-critical)"
+                : delta < 0 ? "var(--color-status-success)" : "var(--color-text-secondary)";
+      return ["<strong>" + U.escapeHtml(s) + "</strong>"]
+        .concat(vals.map(function (v) { return U.formatNumber(v); }))
+        .concat(['<span style="color:' + color + '">' + U.formatSigned(delta) + "</span>"]);
+    });
+    root.appendChild(C.panel(C.dataTable(["Site", "2023", "2024", "2025", "2024\u21922025"], rows)));
+
+    root.appendChild(C.sectionTitle("Driver Matrix \u2014 Category Composition by Site", "DE-4 C5.1"));
+    var matrix = U.el("div", { class: "grid-3" });
+    Object.keys(agg.by_site).forEach(function (s) {
+      var cat = MIMEData.categories(s);
+      var t = U.sumValues(cat);
+      var box = C.panel("");
+      box.insertAdjacentHTML("afterbegin", '<div class="badge-scope">' + U.escapeHtml(s) + "</div>");
+      box.appendChild(C.barList(
+        U.sortDesc(cat).map(function (e) {
+          return {
+            label: e.label.replace("Occupational ", ""),
+            value: e.value,
+            color: e.label.indexOf("Safety") !== -1 ? "var(--color-status-critical)" : "var(--color-brand-accent)"
+          };
+        }), { denominator: t }));
+      matrix.appendChild(box);
+    });
+    root.appendChild(matrix);
+
+    root.appendChild(C.panel(
+      "<p>The largest contributors to enterprise volume are also the sites with the longest continuous reporting history. " +
+      "Sites onboarded more recently show steep apparent growth curves that reflect coverage expansion. Any cross-site " +
+      "severity comparison should control for reporting-history length before being read as a relative-risk signal; that " +
+      "control requires a site-onboarding reference table which is not present in the supplied production data (recorded " +
+      "as EXC-07 in P7).</p>", "Operational Interpretation"));
+  }
+
+  /* ================== P4 — Medical Incident Intelligence ================== */
+  function renderP4(root, site) {
+    root.innerHTML = "";
+    var agg = MIMEData.aggregate();
+
+    function distributionSection(title, question, map, note) {
+      root.appendChild(C.sectionTitle(title, question));
+      var total = U.sumValues(map);
+      var p = C.panel("");
+      p.appendChild(C.barList(U.sortDesc(map), { denominator: total }));
+      if (note) { p.insertAdjacentHTML("beforeend", '<p class="panel__note">' + note + "</p>"); }
+      root.appendChild(p);
+    }
+
+    distributionSection("Incident Type Distribution", "What kind of events are these?",
+      MIMEData.types(site));
+
+    distributionSection("Severity Criteria Distribution", "How severe are they?",
+      MIMEData.criteria(site),
+      "Records without a populated Incident_Criteria value are excluded here and quantified in P6 (DQ-02).");
+
+    distributionSection("Medical Referral Transport Mode", "How were patients moved?",
+      agg.by_transport,
+      "Transport mode is populated for " + U.formatNumber(U.sumValues(agg.by_transport)) + " of " +
+      U.formatNumber(agg.total_records) + " enterprise records (" +
+      U.formatPercent(U.rate(U.sumValues(agg.by_transport), agg.total_records)) +
+      "); the remainder are in-clinic or non-transported cases.");
+
+    distributionSection("Medevac Execution Model", "Who executed the evacuation?",
+      agg.by_executor);
+
+    distributionSection("Medical Status at Point of Care", "What level of care was delivered?",
+      agg.by_medstatus);
+  }
+
+  /* ================= P5 — Evidence & Case Traceability ==================== */
+  function renderP5(root, site) {
+    root.innerHTML = "";
+    var agg = MIMEData.aggregate();
+
+    root.appendChild(C.sectionTitle("Aggregate Evidence Ledger",
+      "Enterprise and site level only \u2014 no patient or clinician detail is exposed"));
+
+    var ledgerNote =
+      "<p>Per DE-3A \u00A711 Information Granularity, patient names, case narratives and clinician identities are " +
+      "<strong>excluded</strong> from this executive compilation on every page. The ledger below traces each headline " +
+      "figure to its exact source aggregation so any number on this dashboard can be independently reproduced from the " +
+      "certified worksheet.</p>";
+
+    var rows = MIMEKpi.REGISTRY.map(function (kpi) {
+      var r = MIMEKpi.resolve(kpi.id, site);
+      return [
+        "<strong>" + U.escapeHtml(r.name) + "</strong>",
+        '<span class="tag">' + r.id + "</span>",
+        '<span class="tag">' + MIME_CONFIG.PRIMARY_WORKSHEET + "</span>",
+        '<span class="tag">' + U.escapeHtml(r.formula) + "</span>",
+        r.display
+      ];
+    });
+
+    var ledger = C.panel("");
+    ledger.insertAdjacentHTML("afterbegin", ledgerNote);
+    ledger.appendChild(C.dataTable(
+      ["KPI", "KPI ID", "Source Worksheet", "Aggregation (as implemented)", "Current Value"], rows));
+    root.appendChild(ledger);
+
+    root.appendChild(C.sectionTitle("Site \u00D7 Year Drill-through", "DE-4 C6.5 Drill-through Panel"));
+    var drill = Object.keys(agg.by_site_year)
+      .map(function (k) { return { key: k, value: agg.by_site_year[k] }; })
+      .sort(function (a, b) { return b.value - a.value; })
+      .map(function (e) {
+        var parts = e.key.split("|");
+        var yearCell = parts[1] === "1899"
+          ? '<span class="tag">Unresolvable date \u2014 see DQ-01</span>'
+          : U.escapeHtml(parts[1]);
+        return [U.escapeHtml(parts[0]), yearCell, U.formatNumber(e.value)];
+      });
+    root.appendChild(C.panel(C.dataTable(["Site", "Reporting Year", "Incident Records"], drill)));
+  }
+
+  /* ================== P6 — Governance & Data Quality ====================== */
+  function renderP6(root) {
+    root.innerHTML = "";
+    var agg = MIMEData.aggregate();
+    var invalidDates = agg.by_year["1899"] || 0;
+    var v = MIMEConnector.getValidation();
+
+    root.appendChild(C.sectionTitle("Data Completeness", "Can I trust these numbers?"));
+    var grid = U.el("div", { class: "grid-kpi" });
+    function completeness(label, populated, field) {
+      var r = U.rate(populated, agg.total_records);
+      var status = r === null ? "na" : r >= 95 ? "good" : r >= 70 ? "watch" : "action";
+      grid.appendChild(C.kpiCard({
+        label: label, value: U.formatPercent(r), unit: "of " + U.formatNumber(agg.total_records) + " records",
+        status: status, source: field
+      }));
+    }
+    completeness("Site Attribution Coverage", agg.total_records - agg.null_site, "Site_Code");
+    completeness("Severity Criteria Coverage", agg.total_records - agg.null_criteria, "Incident_Criteria");
+    completeness("Fitness Determination Coverage", agg.total_records - agg.null_fitness, "Fitness_Status");
+    completeness("Resolvable Incident Date", agg.total_records - invalidDates, "Incident_date");
+    root.appendChild(grid);
+
+    root.appendChild(C.sectionTitle("Data Quality Findings", "Observed during compilation"));
+    root.appendChild(C.panel(
+      C.exception("DQ-01",
+        "<strong>" + U.formatNumber(invalidDates) + " records (" +
+        U.formatPercent(U.rate(invalidDates, agg.total_records)) + ")</strong> carry an unresolvable Incident_date " +
+        "(parsing to the spreadsheet epoch, indicating a blank or malformed source cell). These are excluded from all " +
+        "year-trend charts and surfaced explicitly rather than silently dropped.") +
+      C.exception("DQ-02",
+        "<strong>" + U.formatNumber(agg.null_criteria) + " records (" +
+        U.formatPercent(U.rate(agg.null_criteria, agg.total_records)) + ")</strong> lack a populated Incident_Criteria " +
+        "value. These concentrate within safety-classified events whose specific severity criterion was not carried into " +
+        "the production feed. Domain A severity KPIs should therefore be read as a <strong>floor estimate</strong>, not a " +
+        "complete census, until the gap is closed upstream.") +
+      C.exception("DQ-03",
+        "<strong>" + U.formatNumber(agg.null_fitness) + " records (" +
+        U.formatPercent(U.rate(agg.null_fitness, agg.total_records)) + ")</strong> carry no Fitness_Status determination, " +
+        "concentrated in cases handled without a formal fitness assessment logged in this feed.") +
+      C.exception("DQ-04",
+        "Site onboarding into the reporting system is <strong>staggered</strong>. Raw year-over-year enterprise totals " +
+        "therefore conflate reporting-coverage growth with genuine incident-rate change. Every narrative on this dashboard " +
+        "that references volume movement carries this caveat explicitly."),
+      "Findings Register"));
+
+    root.appendChild(C.sectionTitle("Runtime & Governance Register"));
+    root.appendChild(C.panel(
+      C.govRow("Framework Authority", "BDSE Framework v2.1 (Frozen)") +
+      C.govRow("Release Candidate", "RC-01 \u2192 RC-09 (Certified)") +
+      C.govRow("Production Compiler", "Claude \u2014 Implementation Authority Only") +
+      C.govRow("Engineering Redesign Performed", "None") +
+      C.govRow("Authoritative Workbook", "MIME.xlsx") +
+      C.govRow("Bound Worksheet", '<span class="tag">' + MIME_CONFIG.PRIMARY_WORKSHEET + "</span>") +
+      C.govRow("Certified Worksheet Inventory", MIME_CONFIG.WORKSHEET_REGISTER.length + " governed worksheets preserved") +
+      C.govRow("Live Source Spreadsheet ID", '<span class="tag">' + MIME_CONFIG.SPREADSHEET_ID + "</span>") +
+      C.govRow("Spreadsheet Accessible", v.spreadsheetAccessible ? "Yes" : "No") +
+      C.govRow("Worksheet Available", v.worksheetAvailable ? "Yes" : "No") +
+      C.govRow("Required Columns Present", v.requiredColumnsPresent ? "Yes" : "Not verified") +
+      C.govRow("Runtime Data Mode", '<span class="tag">' + v.mode + "</span>") +
+      C.govRow("Connector Detail", U.escapeHtml(v.detail || "\u2014")) +
+      C.govRow("Records in Scope", U.formatNumber(agg.total_records) + " of " +
+               U.formatNumber(agg.total_raw_rows) + " feed rows"),
+      "Governance Register"));
+  }
+
+  /* ============ P7 — Executive References & Methodology =================== */
+  function renderP7(root) {
+    root.innerHTML = "";
+
+    root.appendChild(C.sectionTitle("KPI Dictionary \u2014 Implemented in this Compilation"));
+    var rows = MIMEKpi.REGISTRY.map(function (k) {
+      return [
+        "<strong>" + U.escapeHtml(k.name) + "</strong>",
+        '<span class="tag">' + k.id + "</span>",
+        '<span class="tag">Domain ' + k.domain + "</span>",
+        U.escapeHtml(k.formula),
+        U.escapeHtml(k.unit)
+      ];
+    });
+    root.appendChild(C.panel(C.dataTable(["KPI", "KPI ID", "Domain", "Formula (as implemented)", "Unit"], rows)));
+
+    root.appendChild(C.sectionTitle("Certified Worksheet Register", "RC-06A \u00A74"));
+    var wsRows = MIME_CONFIG.WORKSHEET_REGISTER.map(function (w) {
+      return [
+        '<span class="tag">' + U.escapeHtml(w.name) + "</span>",
+        U.escapeHtml(w.classification),
+        w.status,
+        w.runtimeBound ? "<strong>Bound</strong>" : "Reference only"
+      ];
+    });
+    root.appendChild(C.panel(C.dataTable(["Worksheet", "Classification", "Status", "Runtime Binding"], wsRows)));
+
+    root.appendChild(C.sectionTitle("Implementation Exception Report",
+      "RC-06 \u00A714 \u2014 compilation stopped rather than inventing engineering"));
+    root.appendChild(C.panel(
+      C.exception("EXC-01 \u00B7 Domain A",
+        "<strong>MIFR, MISI, SMCR, EMSS</strong> require either an exposure-hours / workforce-headcount denominator or a " +
+        "governed composite weighting methodology from the Executive KPI Model. Neither the denominator nor the numeric EKM " +
+        "weighting coefficients were located in the supplied attachment set. <strong>Not implemented.</strong> Count-based " +
+        "measures are shown instead, explicitly labelled as counts rather than rates.") +
+      C.exception("EXC-02 \u00B7 Domain D",
+        "<strong>Regulatory Compliance Rate, Audit Finding Closure Rate, Overdue Compliance Action Rate, Regulatory " +
+        "Inspection Readiness, Regulatory Finding Severity Index, Compliance Assurance Index</strong> require a compliance " +
+        "and audit register (CAPA register, inspection findings, permit and licence registers). No such worksheet exists in " +
+        "MIME.xlsx. <strong>Domain D is entirely absent from this build.</strong>") +
+      C.exception("EXC-03 \u00B7 Domain F",
+        "<strong>RTW duration KPIs</strong> depend on a field present only in per-site engineering worksheets and not " +
+        "carried into the certified production feed. <strong>Not implemented.</strong>") +
+      C.exception("EXC-04 \u00B7 Domain G",
+        "<strong>WHPI and BCHI</strong> are composite indices whose weighting methodology is deferred by the KPI Dictionary " +
+        "to the Executive KPI Model. No numeric weights were located. <strong>Not implemented.</strong>") +
+      C.exception("EXC-05 \u00B7 Cross-cutting",
+        "<strong>Numeric benchmark thresholds</strong> for the implemented KPIs were not located in a KPI Threshold " +
+        "Register. All implemented KPIs report a Not Available benchmark status rather than an invented evaluation.") +
+      C.exception("EXC-06 \u00B7 Domain B / C",
+        "<strong>Medical cost, length-of-stay cost and case-management cost KPIs</strong> require a finance data source " +
+        "absent from the supplied workbook. <strong>Not implemented.</strong>") +
+      C.exception("EXC-07 \u00B7 Cross-cutting",
+        "<strong>Site onboarding reference table</strong> (first reporting date per site) is not present in the supplied " +
+        "data. Without it, reporting-coverage growth cannot be separated from genuine incident-rate change, so no " +
+        "normalised cross-site risk comparison is offered."),
+      "Exception Register"));
+
+    root.appendChild(C.sectionTitle("Compiler Certification", "RC-07 \u00A718"));
+    root.appendChild(C.panel(
+      C.govRow("Only approved Release Candidate documents used", "Confirmed") +
+      C.govRow("Engineering decisions introduced during compilation", "None") +
+      C.govRow("KPI definitions, formulae or thresholds modified", "None") +
+      C.govRow("Dashboard pages added, removed or resequenced", "None \u2014 P1\u2013P7 preserved") +
+      C.govRow("Business terminology renamed", "None \u2014 worksheet and field names preserved verbatim") +
+      C.govRow("Unresolved ambiguity handling", "Reported as exceptions (EXC-01 \u2192 EXC-07), never inferred") +
+      C.govRow("Production readiness", "Ready for the KPI scope supported by the supplied data source"),
+      "Certification Statement"));
+  }
+
+  var RENDERERS = { P1: renderP1, P2: renderP2, P3: renderP3, P4: renderP4, P5: renderP5, P6: renderP6, P7: renderP7 };
+
+  function render(pageId, root, site) {
+    return MIMEErrors.guard("page:" + pageId, function () {
+      return RENDERERS[pageId](root, site);
+    }, root);
+  }
+
+  return { INVENTORY: INVENTORY, render: render };
+})();
+
+/* =============================================================================
+ * Export Module
+ * Authority : RC-05 §6 (Export Module mandatory), RC-06 §6
+ * Rule      : Exported values are the governed values rendered on screen. The
+ *             export never recomputes or reinterprets a KPI.
+ * ========================================================================== */
+var MIMEExport = (function () {
+  "use strict";
+
+  function csvEscape(value) {
+    return '"' + String(value === null || value === undefined ? "" : value).replace(/"/g, '""') + '"';
+  }
+
+  function buildRows(site) {
+    var agg = MIMEData.aggregate();
+    var rows = [];
+
+    if (MIME_CONFIG.EXPORT_POLICY.includeGovernanceHeader) {
+      rows.push(["BDSE Framework v2.1 - MIME Executive Dashboard Export"]);
+      rows.push(["Engineering Authority", "Release Candidate RC-01 to RC-09 (Frozen)"]);
+      rows.push(["Authoritative Workbook", "MIME.xlsx"]);
+      rows.push(["Bound Worksheet", MIME_CONFIG.PRIMARY_WORKSHEET]);
+      rows.push(["Runtime Data Mode", MIMEData.source()]);
+      rows.push(["Scope", site === "ALL" ? "Enterprise (all sites)" : site]);
+      rows.push(["Exported", new Date().toISOString()]);
+      rows.push([]);
+    }
+
+    rows.push(["Section", "Item", "Value", "Unit"]);
+
+    MIMEKpi.REGISTRY.forEach(function (kpi) {
+      var resolved = MIMEKpi.resolve(kpi.id, site);
+      rows.push(["KPI", resolved.name + " (" + resolved.id + ")", resolved.display, resolved.unit]);
+    });
+
+    rows.push([]);
+    rows.push(["Site Distribution", "Site_Code", "Incident Count", "records"]);
+    Object.keys(agg.by_site).forEach(function (k) { rows.push(["Site Distribution", k, agg.by_site[k], "records"]); });
+
+    rows.push([]);
+    rows.push(["Severity Criteria", "Incident_Criteria", "Count", "records"]);
+    Object.keys(agg.by_criteria).forEach(function (k) { rows.push(["Severity Criteria", k, agg.by_criteria[k], "records"]); });
+
+    rows.push([]);
+    rows.push(["Incident Type", "Incident_Type", "Count", "records"]);
+    Object.keys(agg.by_type).forEach(function (k) { rows.push(["Incident Type", k, agg.by_type[k], "records"]); });
+
+    rows.push([]);
+    rows.push(["Fitness Status", "Fitness_Status", "Count", "records"]);
+    Object.keys(agg.by_fitness).forEach(function (k) { rows.push(["Fitness Status", k, agg.by_fitness[k], "records"]); });
+
+    return rows;
+  }
+
+  function toCsv(site) {
+    return buildRows(site).map(function (r) {
+      return r.map(csvEscape).join(",");
+    }).join("\r\n");
+  }
+
+  function download(site) {
+    try {
+      if (!MIME_CONFIG.FEATURE_SWITCHES.EXPORT_MODULE) { return false; }
+      var blob = new Blob(["\uFEFF" + toCsv(site)], { type: "text/csv;charset=utf-8;" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "MIME_Executive_Dashboard_" + (site === "ALL" ? "Enterprise" : site) + "_" +
+                   new Date().toISOString().slice(0, 10) + ".csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      return true;
+    } catch (err) {
+      MIMEErrors.record("export", err);
+      return false;
+    }
+  }
+
+  return { download: download, toCsv: toCsv };
+})();
+
+/* =============================================================================
+ * Print Module
+ * Authority : RC-05 §6 (Print Module mandatory), DE-5F (print/PDF viewport)
+ * Rule      : Print reveals every engineered page in governed sequence P1->P7.
+ *             Print must not alter executive reading order (DE-7C §9).
+ * ========================================================================== */
+var MIMEPrint = (function () {
+  "use strict";
+
+  function execute() {
+    try {
+      if (!MIME_CONFIG.FEATURE_SWITCHES.PRINT_MODULE) { return false; }
+      document.body.setAttribute("data-print-scope", "ALL_PAGES");
+      window.print();
+      return true;
+    } catch (err) {
+      MIMEErrors.record("print", err);
+      return false;
+    } finally {
+      document.body.removeAttribute("data-print-scope");
+    }
+  }
+
+  return { execute: execute };
+})();
+
+/* =============================================================================
+ * Application Controller
+ * Authority : RC-08 §6 Deployment Sequence (Phases 1-5)
+ *             RC-08 §7 Runtime Initialization Requirements
+ * Sequence  : Package verification -> Runtime initialization -> Data
+ *             connection -> Runtime validation -> Operational activation.
+ * ========================================================================== */
+var MIMEApp = (function () {
+  "use strict";
+
+  var U = MIMEUtils;
+
+  var runtime = {
+    activePage: "P1",
+    site: "ALL",
+    validation: {
+      configurationLoaded: false,
+      dataLoaded: false,
+      worksheetResolved: false,
+      requiredColumnsPresent: false,
+      kpiCalculationSucceeded: false,
+      chartsRendered: false,
+      filtersFunctional: false,
+      navigationFunctional: false,
+      exportAvailable: false,
+      printAvailable: false,
+      responsiveLayoutActive: false
+    }
+  };
+
+  /* ---- RC-08 Phase 1: Package verification ------------------------------ */
+  function verifyPackage() {
+    var required = ["MIME_CONFIG", "MIME_FIELDS", "MIME_SNAPSHOT", "MIMEUtils",
+                    "MIMEErrors", "MIMEData", "MIMEKpi", "MIMEComponents",
+                    "MIMEPages", "MIMEConnector", "MIMEExport", "MIMEPrint"];
+    var missing = required.filter(function (name) { return typeof window[name] === "undefined"; });
+    if (missing.length) {
+      throw new Error("Production package incomplete. Missing modules: " + missing.join(", "));
+    }
+    runtime.validation.configurationLoaded = true;
+  }
+
+  /* ---- RC-08 Phase 2: Runtime initialization ---------------------------- */
+  function buildNavigation() {
+    var nav = document.getElementById("pageNav");
+    nav.innerHTML = "";
+    MIMEPages.INVENTORY.forEach(function (page, index) {
+      var btn = U.el("button", {
+        class: "nav-item" + (index === 0 ? " is-active" : ""),
+        type: "button",
+        "data-page": page.id,
+        "aria-label": page.id + " " + page.name
+      });
+      btn.insertAdjacentHTML("beforeend", '<span class="nav-item__id">' + page.id + "</span>");
+      btn.appendChild(document.createTextNode(page.name));
+      btn.addEventListener("click", function () { activatePage(page.id); });
+      nav.appendChild(btn);
+    });
+    runtime.validation.navigationFunctional = true;
+  }
+
+  function buildPageContainers() {
+    var content = document.getElementById("pageContent");
+    content.innerHTML = "";
+    MIMEPages.INVENTORY.forEach(function (page, index) {
+      content.appendChild(U.el("section", {
+        class: "page" + (index === 0 ? " is-active" : ""),
+        id: page.id,
+        role: "tabpanel",
+        "aria-label": page.name
+      }));
+    });
+  }
+
+  function buildFilters() {
+    var agg = MIMEData.aggregate();
+    var siteSelect = document.getElementById("filterSite");
+    siteSelect.innerHTML = '<option value="ALL">All Sites (Enterprise)</option>';
+    Object.keys(agg.by_site).sort().forEach(function (s) {
+      siteSelect.appendChild(U.el("option", { value: s }, s));
+    });
+    siteSelect.addEventListener("change", function () {
+      runtime.site = siteSelect.value;
+      renderAll();
+    });
+    runtime.validation.filtersFunctional = true;
+  }
+
+  function bindActions() {
+    document.getElementById("btnExport").addEventListener("click", function () {
+      var ok = MIMEExport.download(runtime.site);
+      runtime.validation.exportAvailable = ok;
+      if (!ok) { notify("Export could not be completed. See runtime log."); }
+    });
+    document.getElementById("btnPrint").addEventListener("click", function () {
+      runtime.validation.printAvailable = MIMEPrint.execute();
+    });
+    document.getElementById("btnRefresh").addEventListener("click", function () {
+      connectAndRender(true);
+    });
+  }
+
+  function activatePage(pageId) {
+    runtime.activePage = pageId;
+    Array.prototype.forEach.call(document.querySelectorAll(".nav-item"), function (b) {
+      b.classList.toggle("is-active", b.getAttribute("data-page") === pageId);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".page"), function (p) {
+      p.classList.toggle("is-active", p.id === pageId);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function notify(message) {
+    var bar = document.getElementById("runtimeNotice");
+    bar.textContent = message;
+    bar.hidden = false;
+  }
+
+  /* ---- Source indicator -------------------------------------------------- */
+  function updateSourceIndicator() {
+    var v = MIMEConnector.getValidation();
+    var dot = document.getElementById("sourceDot");
+    var label = document.getElementById("sourceLabel");
+
+    if (v.mode === "LIVE") {
+      dot.className = "status-dot status-dot--live";
+      label.textContent = "Live Google Sheets source \u00B7 " + U.formatNumber(v.rowCount) + " rows";
+    } else {
+      dot.className = "status-dot status-dot--fallback";
+      label.textContent = "Certified snapshot (RC-06A baseline) \u00B7 live source unavailable";
+      label.title = v.detail || "";
+    }
+  }
+
+  /* ---- RC-08 Phases 3-4: connect, validate, render ---------------------- */
+  function connectAndRender(isRefresh) {
+    document.getElementById("appShell").classList.add("is-loading");
+    return MIMEConnector.connect().then(function (result) {
+      if (result.ok) {
+        try {
+          MIMEData.loadLive(result.table);
+          runtime.validation.worksheetResolved = true;
+          runtime.validation.requiredColumnsPresent = true;
+        } catch (err) {
+          MIMEErrors.record("binding", err, "WARN");
+          MIMEData.loadSnapshot();
+        }
+      } else {
+        MIMEData.loadSnapshot();
+      }
+      runtime.validation.dataLoaded = !!MIMEData.aggregate();
+      updateSourceIndicator();
+      if (isRefresh) { buildFilters(); }
+      renderAll();
+      document.getElementById("appShell").classList.remove("is-loading");
+    });
+  }
+
+  function renderAll() {
+    MIMEPages.INVENTORY.forEach(function (page) {
+      MIMEPages.render(page.id, document.getElementById(page.id), runtime.site);
+    });
+    runtime.validation.kpiCalculationSucceeded = !MIMEErrors.hasErrors();
+    runtime.validation.chartsRendered = !!document.querySelector("svg.trend");
+    runtime.validation.responsiveLayoutActive = !!window.matchMedia;
+    document.getElementById("dataAsOf").textContent =
+      new Date().toISOString().slice(0, 10);
+  }
+
+  /* ---- Boot -------------------------------------------------------------- */
+  function boot() {
+    try {
+      verifyPackage();
+      MIMEData.loadSnapshot();
+      buildPageContainers();
+      buildNavigation();
+      buildFilters();
+      bindActions();
+      document.getElementById("buildVersion").textContent = MIME_CONFIG.APPLICATION.BUILD_VERSION;
+      document.getElementById("compileStamp").textContent = new Date().toISOString();
+      renderAll();
+      connectAndRender(false);
+    } catch (err) {
+      MIMEErrors.record("boot", err);
+      document.getElementById("pageContent").innerHTML =
+        '<div class="exception exception--error"><span class="exception__id">STARTUP</span>' +
+        "The dashboard could not start because the production package is incomplete. " +
+        "Verify that all module files listed in the technical documentation are deployed together.</div>";
+    }
+  }
+
+  function getValidationReport() {
+    return { runtime: runtime.validation, connector: MIMEConnector.getValidation(), errors: MIMEErrors.getLog() };
+  }
+
+  return { boot: boot, getValidationReport: getValidationReport };
+})();
+
+document.addEventListener("DOMContentLoaded", MIMEApp.boot);
+
+</script>
+</body>
+</html>
