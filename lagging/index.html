@@ -1233,12 +1233,16 @@ function coerceNum(v, field, ctx, errors){
   if(isNaN(n)){ errors.push("Non-numeric value in required field '"+field+"' at "+ctx); return 0; }
   return n;
 }
-/* OWNER-FROZEN FIELD SEMANTICS (BDSE CORE CORRECTION — highest KPI authority):
-   visits  = Kunjungan Pasien = Treatment = Patient Visit = Kunjungan Sakit (treatment)
-           = "jumlah pekerja yang sakit karena penyakit, tidak termasuk kecelakaan"
-           → governed numerator for CMR and MFR (NOT generic clinic traffic).
-   sickleave = governed Sick Leave / sickness-absence field → numerator for SSR and ASR.
-   lostdays is retained as a raw evidence measure only — it is NOT a KPI numerator. */
+/* OWNER-FROZEN FIELD SEMANTICS (FCR-001, per Owner Formula Authority Sheet 10 Aug 2026 —
+   highest KPI authority, SSOT position 0):
+   visits   = Kunjungan Sakit (treatment) / Kunjungan Klinik
+            = "jumlah pekerja yang sakit karena penyakit, tidak termasuk kecelakaan"
+            → governed numerator for CMR and MFR (count of sick workers, NOT clinic traffic).
+   lostdays = Hari hilang karena sakit / Absensi karena sakit
+            = "jumlah absensi karena sakit, tidak termasuk kecelakaan (hari kerja hilang karena sakit)"
+            → governed numerator for SSR and ASR (lost workdays).
+   sickleave = Sick Leave case count — raw evidence measure only; NOT a KPI numerator.
+   [FCR-001] Prior build inverted lostdays/sickleave roles; corrected + restated per FCR-001 §7. */
 const SITE_FIELDS = { manpower:["manpower"], manhours:["manhours"],
   visits:["kunjungansakittreatment","kunjungansakit","kunjunganpasien","patientvisit","treatment","visits","kunjunganklinik"],
   fit:["pekerjalayakkerja"],
@@ -1455,11 +1459,11 @@ function aggregate(rows){
            spell:sum(rows,"spell"),pak:sum(rows,"pak")};
   return a;
 }
-/* KPI definitions — single formula authority (owner-frozen field semantics):
+/* KPI definitions — single formula authority (Owner Formula Authority Sheet, FCR-001):
    FTWR=fit/manpower*100 · CMR=visits/manpower*100 · MFR=visits/manhours*1e6
-   SSR=sickleave/spell*100 · ASR=sickleave/manhours*1e6 · OIR=pak/manpower*1e6
-   visits = Kunjungan Pasien / Treatment / Patient Visit (jumlah pekerja yang sakit
-   karena penyakit, tidak termasuk kecelakaan). sickleave = governed Sick Leave. */
+   SSR=lostdays/spell*100 · ASR=lostdays/manhours*1e6 · OIR=pak/manpower*1e6
+   visits = jumlah pekerja yang sakit karena penyakit, tidak termasuk kecelakaan.
+   lostdays = hari kerja hilang karena sakit (shared SSR/ASR numerator). */
 const KPI = {
   FTWR:{ name:"Fit-to-Work Rate", unit:"%", dir:"higher", level:"Executive",
     calc:a=> a.manpower? a.fit/a.manpower*100 : null, dp:2 },
@@ -1467,10 +1471,10 @@ const KPI = {
     calc:a=> a.manpower? a.visits/a.manpower*100 : null, dp:2 },
   MFR:{ name:"Morbidity Frequency Rate", unit:"per 1M MH", dir:"lower", level:"Executive", bench:BENCH.MFR,
     calc:a=> a.manhours? a.visits/a.manhours*1e6 : null, dp:2 },
-  SSR:{ name:"Sickness Severity Rate", unit:"per 100 spells", dir:"lower", level:"Operational",
-    calc:a=> a.spell? a.sickleave/a.spell*100 : null, dp:2 },
-  ASR:{ name:"Absence Severity Rate", unit:"per 1M MH", dir:"lower", level:"Executive", bench:BENCH.ASR,
-    calc:a=> a.manhours? a.sickleave/a.manhours*1e6 : null, dp:2 },
+  SSR:{ name:"Spell Severity Rate", unit:"per 100 spells", dir:"lower", level:"Operational",
+    calc:a=> a.spell? a.lostdays/a.spell*100 : null, dp:2 },
+  ASR:{ name:"Absenteeism Severity Rate", unit:"per 1M MH", dir:"lower", level:"Executive", bench:BENCH.ASR,
+    calc:a=> a.manhours? a.lostdays/a.manhours*1e6 : null, dp:2 },
   OIR:{ name:"Occupational Illness Rate", unit:"per 1M workers", dir:"lower", level:"Executive", bench:BENCH.OIR,
     calc:a=> a.manpower? a.pak/a.manpower*1e6 : null, dp:2 }
 };
@@ -2025,7 +2029,7 @@ function pagePerf(host){
   const refs={FTWR:90,MFR:BENCH.MFR,ASR:BENCH.ASR,OIR:0};
   const panels=[["FTWR","Fit-to-Work Rate (FTWR %)","Benchmark: ≥ 90%",2],
                 ["MFR","Morbidity Frequency Rate (MFR)","Benchmark: "+fmt(BENCH.MFR,2),0],
-                ["ASR","Absence Severity Rate (ASR)","Benchmark: "+fmt(BENCH.ASR,2),0],
+                ["ASR","Absenteeism Severity Rate (ASR)","Benchmark: "+fmt(BENCH.ASR,2),0],
                 ["OIR","Occupational Illness Rate (OIR)","Target: 0 (zero cases)",2]];
   panels.forEach(([id,h,f,dp])=>{
     const dom=domains[id];
@@ -3020,8 +3024,8 @@ const DICT=[
   ["Fit-to-Work Rate","FTWR","(Fit Workers Based on Examination ÷ Cumulative Workforce) × 100","%","Fit Workers Based on Examination","Cumulative Workforce","Higher","Stretch 100% · Normal 95% · Min 90%","Medical Fitness / MCU","Monthly","SMKP Mining OHIH","ILO / ICOH Fitness-for-Work"],
   ["Crude Morbidity Rate","CMR","(Kunjungan Pasien / Treatment ÷ Cumulative Workforce) × 100","%","Kunjungan Pasien / Treatment — jumlah pekerja yang sakit karena penyakit, tidak termasuk kecelakaan","Cumulative Workforce","Lower","Stretch 10% · Normal 13% · Max 15%","Kunjungan Pasien / Treatment Records","Monthly","SMKP Mining OHIH","Occupational epidemiology"],
   ["Morbidity Frequency Rate","MFR","(Kunjungan Pasien / Treatment ÷ Cumulative Man-hours) × 1,000,000","per 1M MH","Kunjungan Pasien / Treatment — jumlah pekerja yang sakit karena penyakit, tidak termasuk kecelakaan","Cumulative Man-hours","Lower","Stretch 417 · Normal 466 · Max 482.71","Kunjungan Pasien / Treatment + HR Man-hours","Monthly","SMKP Internal Audit 2025","Exposure-adjusted reporting"],
-  ["Sickness Severity Rate","SSR","(Sick Leave ÷ Number of Spells) × 100","per 100 spells","Sick Leave (governed sickness-absence field)","Number of Spells","Lower","Stretch 133 · Normal 147 · Max 155","Sick Leave Records","Monthly","SMKP Mining OHIH","Sickness-absence severity"],
-  ["Absence Severity Rate","ASR","(Sick Leave ÷ Cumulative Man-hours) × 1,000,000","per 1M MH","Sick Leave (governed sickness-absence field)","Cumulative Man-hours","Lower","Stretch 100 · Normal 201 · Max 452.19","Sick Leave + HR Man-hours","Monthly","SMKP Internal Audit 2025","Exposure-adjusted reporting"],
+  ["Spell Severity Rate","SSR","(Lost Workdays Due to Sickness ÷ Number of Spells) × 100","per 100 spells","Hari kerja hilang karena sakit — jumlah absensi karena sakit, tidak termasuk kecelakaan (lost workdays)","Number of Spells","Lower","Stretch 133 · Normal 147 · Max 155","Sickness-absence / lost-workday records","Monthly","SMKP Mining OHIH","Sickness-absence severity"],
+  ["Absenteeism Severity Rate","ASR","(Lost Workdays Due to Sickness ÷ Cumulative Man-hours) × 1,000,000","per 1M MH","Hari kerja hilang karena sakit — jumlah absensi karena sakit, tidak termasuk kecelakaan (lost workdays)","Cumulative Man-hours","Lower","Stretch 100 · Normal 201 · Max 452.19","Lost-workday records + HR Man-hours","Monthly","SMKP Internal Audit 2025","Exposure-adjusted reporting"],
   ["PAK Frequency Rate","FR PAK","(Occupational Disease Cases ÷ Total Workforce) × 1,000,000","cases / 1M workers","Occupational Disease Cases (Kasus PAK)","Total Workforce","Lower","Stretch 0 · Normal 2 · Max 5","Occ. Physician Determination","Monthly","SMKP Mining OHIH","ILO / ICOH / ICMM"]
 ];
 
@@ -3052,20 +3056,20 @@ const P5KPI=[
    def:"Exposure-adjusted illness frequency per one million man-hours, using the governed Kunjungan Pasien / Treatment source field. Lower values indicate lower exposure-adjusted illness frequency.",
    src:"Kunjungan Pasien / Treatment records + HR man-hours",freq:"Monthly",idn:"SMKP Internal Audit 2025",intl:"Exposure-adjusted reporting",
    interp:"MFR uses the same governed Kunjungan Pasien / Treatment numerator as CMR — jumlah pekerja yang sakit karena penyakit, tidak termasuk kecelakaan. Lower values are favourable."},
-  {id:"SSR",abbr:"SSR",name:"Sickness Severity Rate",icon:I.clock,
-   formula:"(Sick Leave ÷ Number of Spells) × 100",
-   numer:"Sick Leave (governed sickness-absence field)",denom:"Number of Spells",
+  {id:"SSR",abbr:"SSR",name:"Spell Severity Rate",icon:I.clock,
+   formula:"(Lost Workdays Due to Sickness ÷ Number of Spells) × 100",
+   numer:"Hari kerja hilang karena sakit — jumlah absensi karena sakit, tidak termasuk kecelakaan (lost workdays)",denom:"Number of Spells",
    unit:"per 100 spells",dir:"Lower is Better",basis:"Governed target band",
-   def:"Average sickness-absence severity expressed as governed Sick Leave per one hundred sickness spells. Lower values indicate less severe absence per spell.",
-   src:"Sick Leave records",freq:"Monthly",idn:"SMKP Mining OHIH",intl:"Sickness-absence severity",
-   interp:"SSR = (Sick Leave ÷ Number of Spells) × 100, using the governed Sick Leave / sickness-absence field. Lower values are favourable."},
-  {id:"ASR",abbr:"ASR",name:"Absence Severity Rate",icon:I.clock,
-   formula:"(Sick Leave ÷ Cumulative Man-hours) × 1,000,000",
-   numer:"Sick Leave (governed sickness-absence field)",denom:"Cumulative Man-hours",
+   def:"Sickness-absence severity per episode: lost workdays due to sickness per one hundred spells of absence. Lower values indicate fewer workdays lost per spell.",
+   src:"Sickness-absence / lost-workday records",freq:"Monthly",idn:"SMKP Mining OHIH",intl:"Sickness-absence severity",
+   interp:"SSR = (Lost Workdays ÷ Number of Spells) × 100 — average severity of each absence episode, sharing its lost-workday numerator with ASR. Corrected per FCR-001 (10 Aug 2026); values before this date used the Sick Leave case count and understated severity. Lower values are favourable."},
+  {id:"ASR",abbr:"ASR",name:"Absenteeism Severity Rate",icon:I.clock,
+   formula:"(Lost Workdays Due to Sickness ÷ Cumulative Man-hours) × 1,000,000",
+   numer:"Hari kerja hilang karena sakit — jumlah absensi karena sakit, tidak termasuk kecelakaan (lost workdays)",denom:"Cumulative Man-hours",
    unit:"per 1M MH",dir:"Lower is Better",basis:"National benchmark",
-   def:"Exposure-adjusted sickness absence (governed Sick Leave) per one million man-hours. Lower values indicate lower exposure-adjusted absence severity.",
-   src:"Sick Leave records + HR man-hours",freq:"Monthly",idn:"SMKP Internal Audit 2025",intl:"Exposure-adjusted reporting",
-   interp:"ASR is exposure-adjusted governed Sick Leave per one million man-hours. Lower values are favourable."},
+   def:"Exposure-adjusted absenteeism severity: lost workdays due to sickness per one million man-hours worked. Lower values indicate lower exposure-adjusted absence severity.",
+   src:"Lost-workday records + HR man-hours",freq:"Monthly",idn:"SMKP Internal Audit 2025",intl:"Exposure-adjusted reporting",
+   interp:"ASR shares its lost-workday numerator with SSR but normalises by exposure (per 1M man-hours) rather than per spell. Corrected per FCR-001 (10 Aug 2026); values before this date used the Sick Leave case count and understated severity. Lower values are favourable."},
   {id:"OIR",abbr:"FR PAK",name:"PAK Frequency Rate",icon:I.alert,
    formula:"(Occupational Disease Cases ÷ Total Workforce) × 1,000,000",
    numer:"Occupational Disease Cases (Kasus PAK)",denom:"Total Workforce",
@@ -3373,12 +3377,12 @@ window.OHIH_CORE_QA = async function(){
   T("2 FEED_ALL rows non-zero", STORE.enterprise.length>0, "rows="+STORE.enterprise.length);
   { const errs=[]; if(STORE.rows.length&&STORE.enterprise.length) reconcile(STORE.enterprise,STORE.rows,errs);
     T("3 FEED_ALL↔FEED_SITE reconciliation zero mismatches", STORE.rows.length>0&&errs.length===0, errs[0]||"0 mismatches"); }
-  /* 4–5 owner-frozen numerators: visits drives CMR/MFR; sickleave drives SSR/ASR (not lostdays) */
+  /* 4–5 owner-frozen numerators (FCR-001): visits drives CMR/MFR; lostdays drives SSR/ASR (sickleave is evidence only) */
   { const base={manpower:1000,manhours:1e6,fit:990,sickleave:25,lostdays:40,spell:20,pak:1,visits:50};
     T("4 owner semantics: CMR=visits/manpower·100 and MFR=visits/manhours·1e6",
       KPI.CMR.calc(base)===5 && KPI.MFR.calc(base)===50, "CMR="+KPI.CMR.calc(base)+" MFR="+KPI.MFR.calc(base));
-    T("5 owner semantics: SSR=sickleave/spell·100 and ASR=sickleave/manhours·1e6 (lostdays is not a numerator)",
-      KPI.SSR.calc(base)===125 && KPI.ASR.calc(base)===25, "SSR="+KPI.SSR.calc(base)+" ASR="+KPI.ASR.calc(base)); }
+    T("5 owner semantics (FCR-001): SSR=lostdays/spell·100 and ASR=lostdays/manhours·1e6 (sickleave is not a KPI numerator)",
+      KPI.SSR.calc(base)===200 && KPI.ASR.calc(base)===40, "SSR="+KPI.SSR.calc(base)+" ASR="+KPI.ASR.calc(base)); }
   /* 6–13 benchmark boundary behaviour */
   T("6 MFR 466 → GOOD", statusFor("MFR",466).text==="GOOD");
   T("7 MFR 466.01 → WATCH", statusFor("MFR",466.01).text==="WATCH");
@@ -3429,23 +3433,23 @@ window.OHIH_CORE_QA = async function(){
     if(!STORE.rows.length){
       T("C0 correction tests require committed STORE rows", false, "no data — run after successful ingestion");
     }else{
-      /* exact monthly formula tests (owner-frozen: MFR=visits/manhours·1e6, ASR=sickleave/manhours·1e6) */
+      /* exact monthly formula tests (FCR-001: MFR=visits/manhours·1e6, ASR=lostdays/manhours·1e6) */
       T("C1 MTI Jun 2023 MFR exact", approx(V("MFR",one("MTI",2023,6)).value, 894.2735549, 0.01));
       T("C2 SCM Jun 2024 MFR exact", approx(V("MFR",one("SCM",2024,6)).value, 375.5534472, 0.01));
       T("C3 PGM Jun 2025 MFR exact", approx(V("MFR",one("PGM",2025,6)).value, 766.8080884, 0.01));
       const b26=one("BTR",2026,6), s26=one("SCM",2026,6), m26=one("MTI",2026,6), p26=one("PGM",2026,6);
       T("C4 BTR Jun 2026 row exists · MFR exact", b26.length===1 && approx(V("MFR",b26).value, 384.5380736, 0.01));
-      T("C4b BTR Jun 2026 ASR = sickleave/manhours·1e6 (formula-derived)",
-        b26.length===1 && approx(V("ASR",b26).value, b26[0].sickleave/b26[0].manhours*1e6, 1e-9),
+      T("C4b BTR Jun 2026 ASR = lostdays/manhours·1e6 (formula-derived, FCR-001)",
+        b26.length===1 && approx(V("ASR",b26).value, b26[0].lostdays/b26[0].manhours*1e6, 1e-9),
         "value="+(b26.length?V("ASR",b26).value:null));
-      T("C5 SCM Jun 2026 row exists · MFR & ASR exact", s26.length===1
-        && approx(V("MFR",s26).value, 515.7639532, 0.01) && approx(V("ASR",s26).value, 6.748628763, 0.01));
+      T("C5 SCM Jun 2026 row exists · MFR exact & ASR formula-derived (FCR-001)", s26.length===1
+        && approx(V("MFR",s26).value, 515.7639532, 0.01) && approx(V("ASR",s26).value, s26[0].lostdays/s26[0].manhours*1e6, 1e-9));
       T("C6 MTI Jun 2026 row exists · MFR exact", m26.length===1 && approx(V("MFR",m26).value, 1043.514276, 0.01));
-      T("C6b MTI Jun 2026 ASR = sickleave/manhours·1e6 (formula-derived)",
-        m26.length===1 && approx(V("ASR",m26).value, m26[0].sickleave/m26[0].manhours*1e6, 1e-9),
+      T("C6b MTI Jun 2026 ASR = lostdays/manhours·1e6 (formula-derived, FCR-001)",
+        m26.length===1 && approx(V("ASR",m26).value, m26[0].lostdays/m26[0].manhours*1e6, 1e-9),
         "value="+(m26.length?V("ASR",m26).value:null));
-      T("C7 PGM Jun 2026 row exists · MFR & ASR exact", p26.length===1
-        && approx(V("MFR",p26).value, 141.0884703, 0.01) && approx(V("ASR",p26).value, 1.558988622, 0.01));
+      T("C7 PGM Jun 2026 row exists · MFR exact & ASR formula-derived (FCR-001)", p26.length===1
+        && approx(V("MFR",p26).value, 141.0884703, 0.01) && approx(V("ASR",p26).value, p26[0].lostdays/p26[0].manhours*1e6, 1e-9));
       const pApr=one("PGM",2026,4);
       T("C8 PGM Apr 2026 fit=3991 and FTWR derived from 3991", pApr.length===1 && pApr[0].fit===3991
         && approx(V("FTWR",pApr).value, 3991/pApr[0].manpower*100, 1e-9), "fit="+(pApr.length?pApr[0].fit:null));
@@ -3453,15 +3457,25 @@ window.OHIH_CORE_QA = async function(){
       const D=(st,y,id,n,mean,med)=>{const su=V(id,sy(st,y));
         T("C9+ "+st+" "+y+" "+id+" n/mean/median", su.n===n && approx(su.mean,mean,0.02) && approx(su.median,med,0.02),
           "n="+su.n+" mean="+(su.mean==null?null:su.mean.toFixed(2))+" med="+(su.median==null?null:su.median.toFixed(2)));};
-      D("BTR",2023,"MFR",12,555.59,614.48); D("BTR",2023,"ASR",12,110.87,106.63);
-      D("BTR",2026,"MFR",6,442.71,408.61);  D("BTR",2026,"ASR",6,77.80,76.96);
-      D("SCM",2023,"MFR",12,1506.50,566.68);D("SCM",2023,"ASR",12,119.03,51.68);
-      D("SCM",2024,"MFR",12,369.33,233.84); D("SCM",2024,"ASR",12,26.23,26.42);
-      D("SCM",2025,"MFR",12,26.94,22.78);   D("SCM",2025,"ASR",12,12.87,12.58);
-      D("SCM",2026,"MFR",6,434.08,425.35);  D("SCM",2026,"ASR",6,5.50,5.62);
-      D("MTI",2023,"MFR",12,873.63,854.19); D("MTI",2023,"ASR",12,47.10,37.74);
-      D("PGM",2025,"MFR",12,699.22,721.89); D("PGM",2025,"ASR",12,9.97,7.09);
-      D("PGM",2026,"MFR",6,190.66,198.88);  D("PGM",2026,"ASR",6,2.14,1.77);
+      /* FCR-001: ASR distribution expectations are formula-derived from raw rows (lostdays/manhours·1e6)
+         rather than hardcoded, so the assertion tracks the corrected numerator on live data. */
+      const DA=(st,y,n)=>{const rows=sy(st,y), su=V("ASR",rows);
+        const exp=rows.filter(r=>r.manhours>0).map(r=>r.lostdays/r.manhours*1e6);
+        const em=exp.reduce((a,b)=>a+b,0)/exp.length;
+        const so=exp.slice().sort((a,b)=>a-b), mid=Math.floor(so.length/2);
+        const ed=so.length%2? so[mid] : (so[mid-1]+so[mid])/2;
+        T("C9+ "+st+" "+y+" ASR n/mean/median (formula-derived, FCR-001)",
+          su.n===n && approx(su.mean,em,1e-9) && approx(su.median,ed,1e-9),
+          "n="+su.n+" mean="+(su.mean==null?null:su.mean.toFixed(2))+" med="+(su.median==null?null:su.median.toFixed(2)));};
+      D("BTR",2023,"MFR",12,555.59,614.48); DA("BTR",2023,12);
+      D("BTR",2026,"MFR",6,442.71,408.61);  DA("BTR",2026,6);
+      D("SCM",2023,"MFR",12,1506.50,566.68);DA("SCM",2023,12);
+      D("SCM",2024,"MFR",12,369.33,233.84); DA("SCM",2024,12);
+      D("SCM",2025,"MFR",12,26.94,22.78);   DA("SCM",2025,12);
+      D("SCM",2026,"MFR",6,434.08,425.35);  DA("SCM",2026,6);
+      D("MTI",2023,"MFR",12,873.63,854.19); DA("MTI",2023,12);
+      D("PGM",2025,"MFR",12,699.22,721.89); DA("PGM",2025,12);
+      D("PGM",2026,"MFR",6,190.66,198.88);  DA("PGM",2026,6);
       /* mean is NOT a pooled rate: SCM 2023 pooled would differ materially from 1506.50 */
       { const rows=sy("SCM",2023), ag=aggregate(rows), pooled=ag.visits/ag.manhours*1e6, su=V("MFR",rows);
         T("C10 distribution mean is observation mean (not pooled rate)",
