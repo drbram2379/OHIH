@@ -39,6 +39,34 @@
     MIM roll-up rule, KPI classifier thresholds, completeness gate, Business Group
     mapping/cascade, C-5 authority, Decision Required tint, footer, GReAtnESs,
     shield, trend and KPI-card design.
+
+  R3.2 patch       : V52-FROZEN-R3.2 DATA TRANSPORT CORRECTION — TRANSPORT ONLY.
+    The live-source verification established that anonymous access to the governed
+    Google Spreadsheet PASSES and that the sharing configuration is NOT the blocker.
+    The residual live-sync failure is therefore a BROWSER TRANSPORT / DATA-ACCESS
+    LAYER defect, and is corrected here at that layer and nowhere else.
+    §1 The gviz transport is migrated from direct fetch() to Google GViz JSONP,
+       adopting the proven OHIH LAGGING INDICATORS pattern verbatim at the
+       transport layer: dynamic script-element injection -> unique response
+       callback -> 30s timeout -> onerror -> callback + element cleanup ->
+       reject non-ok -> resolve only response.table. No Lagging UI or KPI logic
+       is imported.
+       Rationale: the deployed environment (GitHub Pages / file://) is not a
+       permitted cross-origin reader of docs.google.com, so fetch() fails at the
+       browser transport layer irrespective of spreadsheet sharing. JSONP is
+       browser-safe there. gvizFetch(sheet, tq, headers) keeps its signature, so
+       every reader downstream of it is byte-identical.
+    §2 GS.timeoutMs 25000 -> 30000 (single governed timeout authority).
+    Frozen and unchanged: the whole of Page-1's markup, CSS, tokens, geometry and
+    branding (byte-identical); the governed source contract 03_FEED_MEDREF_FACT ->
+    05_KPI_Site_Month -> 06_KPI_ENTERPRISE; the non-PII field projection; KPI
+    definitions, denominator logic, baselines, classifier thresholds, Tier-1 and
+    Tier-2 governance, C-5 authority; normalize -> validate -> reconcile -> atomic
+    commit; the failure model (DATA UNAVAILABLE on never-loaded, LIVE - SYNC FAILED
+    with last-good retention after a successful load); the refresh policy; and
+    FEED_FIXTURE's status as a regression fixture that is never a production
+    fallback. READ-ONLY: no write API, POST, PUT, PATCH, Apps Script, backend
+    or proxy exists anywhere in this adapter.
 -->
 <style>
 /* ============================================================
@@ -611,7 +639,7 @@ const GS = {
      therefore discovered, never assumed. */
   headerRows:[4,1,0,2,3,5,6],
   domainFrom:'2023-01',            /* enterprise MIME reporting domain (unchanged) */
-  timeoutMs:25000
+  timeoutMs:30000                  /* governed GViz JSONP timeout (transport authority) */
 };
 const AUTO_REFRESH_MS = 24*60*60*1000;              /* 24-hour refresh policy */
 const RECON_ABS_FLOOR = 0.5;                        /* integer counts must agree */
@@ -621,43 +649,71 @@ const RECON_REL_TOL   = 1e-6;                       /* man-hour rounding only   
 const LIVE = {everLoaded:false, lastFetch:null, lastError:null, dataAsOf:null,
               dataAsOfSource:null, notes:[], enterprise:null, headerRow:{}, busy:false};
 
-/* ---------- gviz transport ---------- */
-function gvizURL(sheet, tq, headers){
+/* ---------- gviz transport — JSONP (OHIH Lagging Indicators pattern) --------
+   TRANSPORT CORRECTION ONLY. The OHIH Lagging Indicators dashboard is the
+   transport authority for this pattern; it is adopted here verbatim at the
+   transport layer and nowhere else. No Lagging UI, KPI or business logic is
+   imported.
+
+     dynamic <script> injection -> unique response callback -> timeout ->
+     cleanup -> normalize -> validate -> reconcile -> atomic commit -> render
+
+   Direct fetch() is NOT used: the deployed dashboard environment
+   (GitHub Pages / file://) is not a permitted cross-origin reader of
+   docs.google.com, so fetch() fails at the browser transport layer regardless
+   of how the spreadsheet is shared. JSONP is browser-safe there.
+
+   READ-ONLY: no write API, no POST/PUT/PATCH, no Apps Script, no backend,
+   no proxy. The adapter can only read.                                       */
+let gvizCbSeq = 0;
+
+function gvizURL(sheet, tq, headers, cb){
   const p = [];
-  p.push('tqx=out:json');
+  p.push('tqx=out:json;responseHandler:'+cb);   /* JSONP response contract */
   p.push('sheet='+encodeURIComponent(sheet));
   if(headers!==undefined && headers!==null) p.push('headers='+encodeURIComponent(String(headers)));
   if(tq) p.push('tq='+encodeURIComponent(tq));
-  p.push('_ts='+Date.now());          /* the refresh policy is ours, not the browser cache's */
+  p.push('_cb='+Date.now()+'_'+gvizCbSeq);      /* cache-bust EVERY request:
+                                                   the refresh policy is ours,
+                                                   not the browser cache's */
   return 'https://docs.google.com/spreadsheets/d/'+GS.id+'/gviz/tq?'+p.join('&');
 }
-function parseGviz(txt, sheet){
-  const a = txt.indexOf('{'), b = txt.lastIndexOf('}');
-  if(a<0 || b<a) throw new Error(sheet+': the source did not return a Google Visualization response '
-      + '(check that the spreadsheet is shared as "Anyone with the link - Viewer")');
-  let o;
-  try{ o = JSON.parse(txt.slice(a,b+1)); }
-  catch(e){ throw new Error(sheet+': the source response could not be read'); }
+
+/* the response object is the same contract the fetch path parsed out of text,
+   so every downstream reader is unchanged. Non-ok is rejected; only a valid
+   response.table resolves. */
+function parseGviz(o, sheet){
+  if(!o || typeof o!=='object')
+    throw new Error(sheet+': the source did not return a Google Visualization response '
+      + '(check that the spreadsheet is still shared to "Anyone with the link")');
   if(o.status==='error'){
     const m=(o.errors&&o.errors[0])||{};
     throw new Error(sheet+': '+(m.detailed_message||m.message||m.reason||'source error').replace(/<[^>]*>/g,''));
   }
+  if(o.status!=='ok') throw new Error(sheet+': the source returned a non-ok status ("'+String(o.status)+'")');
   if(!o.table) throw new Error(sheet+': the source returned no table');
   return o.table;
 }
-async function gvizFetch(sheet, tq, headers){
-  const url = gvizURL(sheet, tq, headers);
-  let ctl=null, timer=null;
-  if(typeof AbortController!=='undefined'){ ctl=new AbortController(); timer=setTimeout(()=>ctl.abort(), GS.timeoutMs); }
-  let res;
-  try{
-    res = await fetch(url, {method:'GET', cache:'no-store', credentials:'omit', redirect:'follow',
-                            signal: ctl?ctl.signal:undefined});
-  }catch(e){
-    throw new Error(sheet+': live connection failed ('+((e&&e.name==='AbortError')?'timed out':'network/CORS')+')');
-  }finally{ if(timer) clearTimeout(timer); }
-  if(!res.ok) throw new Error(sheet+': live connection failed (HTTP '+res.status+')');
-  return parseGviz(await res.text(), sheet);
+
+function gvizFetch(sheet, tq, headers){
+  return new Promise((resolve, reject)=>{
+    const cb  = '__mimeGviz'+(++gvizCbSeq)+'_'+Date.now();   /* unique per request */
+    const url = gvizURL(sheet, tq, headers, cb);
+    const sc  = document.createElement('script');
+    let done  = false;
+    const cleanup = ()=>{ clearTimeout(tm);
+      try{ delete window[cb]; }catch(e){ window[cb]=undefined; }   /* callback cleanup */
+      if(sc.parentNode) sc.parentNode.removeChild(sc); };          /* script cleanup   */
+    const tm = setTimeout(()=>{ if(done) return; done=true; cleanup();
+      reject(new Error(sheet+': live connection failed (timed out)')); }, GS.timeoutMs);
+    window[cb] = resp=>{ if(done) return; done=true; cleanup();
+      let t; try{ t=parseGviz(resp, sheet); }catch(e){ return reject(e); }
+      resolve(t); };
+    sc.onerror = ()=>{ if(done) return; done=true; cleanup();
+      reject(new Error(sheet+': live connection failed (source did not load)')); };
+    sc.src = url;
+    document.head.appendChild(sc);
+  });
 }
 
 /* ---------- cell readers (gviz cells are {v:typed, f:formatted}) ---------- */
