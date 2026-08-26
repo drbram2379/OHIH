@@ -141,6 +141,10 @@ body{display:block;overflow-x:hidden}
 #conn span{font-size:8.2px;font-weight:700;letter-spacing:.2px;color:#136B36;white-space:nowrap}
 #conn.busy{background:#FFF5E1;border-color:#F2DDAC}
 #conn.busy i{background:var(--watch)} #conn.busy span{color:#8A6608}
+/* live-source failure state for the EXISTING connection chip. Approved status
+   colours only (--action). No new panel, no geometry change. */
+#conn.err{background:var(--action-bg);border-color:var(--action-bd)}
+#conn.err i{background:var(--action)} #conn.err span{color:#8E2020}
 #refresh{position:absolute;left:1249px;top:10px;width:74px;height:25px;border-radius:6px;background:var(--panel);
   border:1px solid #DEDFE2;font-family:var(--font);font-size:9.5px;font-weight:600;color:var(--body);
   display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer}
@@ -575,8 +579,443 @@ const SHIELD={GOOD:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAACWCAYAAA
               ACTION:'data:image/png;base64,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',
               NODATA:'data:image/png;base64,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'};
 
-/* ---------- 1. FEED (embedded, governed) ---------- */
-const FEED = {"cols":["site","month","mh","esc","mev","imev","cev","cdth"],"rows":[["BSI","2023-01",761725,42,0,0,0,0],["BSI","2023-02",718551,65,0,0,0,0],["BSI","2023-03",705171,54,1,1,1,0],["BSI","2023-04",717022,53,0,0,0,0],["BSI","2023-05",699438,65,0,0,0,0],["BSI","2023-06",731164,53,0,0,0,0],["BSI","2023-07",748421,77,0,0,0,0],["BSI","2023-08",787137,110,0,0,0,0],["BSI","2023-09",779372,87,0,0,0,0],["BSI","2023-10",781849,78,0,0,0,0],["BSI","2023-11",805025,138,0,0,0,0],["BSI","2023-12",819301,83,0,0,0,0],["BSI","2024-01",861686,136,0,0,0,0],["BSI","2024-02",791500,82,0,0,0,0],["BSI","2024-03",748246,96,0,0,0,0],["BSI","2024-04",733655,88,0,0,0,0],["BSI","2024-05",745426,63,0,0,0,0],["BSI","2024-06",760403,74,0,0,0,0],["BSI","2024-07",785608,65,0,0,0,0],["BSI","2024-08",815995,67,1,1,1,0],["BSI","2024-09",797703,119,2,2,2,0],["BSI","2024-10",822861,81,1,1,1,0],["BSI","2024-11",731964,167,0,0,0,0],["BSI","2024-12",848242,117,0,0,0,0],["BSI","2025-01",851158,170,0,0,0,0],["BSI","2025-02",806914,238,1,0,0,0],["BSI","2025-03",787874,144,0,0,0,0],["BSI","2025-04",786081,249,0,0,0,0],["BSI","2025-05",862458,121,0,0,0,0],["BSI","2025-06",790788,142,2,2,2,0],["BSI","2025-07",821580,93,1,1,1,0],["BSI","2025-08",775794,70,0,0,0,0],["BSI","2025-09",795624,62,0,0,0,0],["BSI","2025-10",805374,71,2,0,0,0],["BSI","2025-11",759928,111,2,1,1,1],["BSI","2025-12",791490,170,0,0,0,0],["BSI","2026-01",747430,107,2,1,1,0],["BSI","2026-02",686843,69,2,2,2,1],["BSI","2026-03",720451,63,4,3,3,0],["BSI","2026-04",996838,67,0,0,0,0],["BSI","2026-05",776067,128,0,0,0,0],["BSI","2026-06",820882,117,0,0,0,0],["BSI","2026-07",0,0,0,0,3,1],["BTR","2021-01",0,0,0,0,1,0],["BTR","2021-02",0,0,0,0,1,0],["BTR","2021-04",0,0,0,0,1,0],["BTR","2021-05",0,0,0,0,1,0],["BTR","2023-01",630466,12,2,1,1,1],["BTR","2023-02",501280,1,1,1,1,0],["BTR","2023-03",597237,4,0,0,0,0],["BTR","2023-04",605713,4,3,3,3,0],["BTR","2023-05",544476,4,2,1,1,0],["BTR","2023-06",576704,1,1,1,1,0],["BTR","2023-07",527446,5,5,4,4,0],["BTR","2023-08",583115,0,0,0,0,0],["BTR","2023-09",548334,0,0,0,0,0],["BTR","2023-10",567547,0,0,0,0,0],["BTR","2023-11",560533,0,0,0,0,0],["BTR","2023-12",524733,0,0,0,0,0],["BTR","2024-01",473838,9,8,8,8,2],["BTR","2024-02",437065,12,12,12,12,0],["BTR","2024-03",455088,10,10,10,10,0],["BTR","2024-04",418545,7,7,7,7,0],["BTR","2024-05",459974,6,6,6,6,0],["BTR","2024-06",452409,3,3,3,3,0],["BTR","2024-07",432241,6,6,5,5,0],["BTR","2024-08",439285,3,3,3,3,1],["BTR","2024-09",436997,10,10,10,10,0],["BTR","2024-10",452932,0,0,0,0,0],["BTR","2024-11",382371,1,0,0,0,0],["BTR","2024-12",432715,3,0,0,0,0],["BTR","2025-01",405548,11,8,8,8,0],["BTR","2025-02",359169,8,6,6,6,0],["BTR","2025-03",399814,11,0,0,0,0],["BTR","2025-04",379747,11,2,2,2,0],["BTR","2025-05",416949,4,1,1,1,0],["BTR","2025-06",406900,34,1,1,1,0],["BTR","2025-07",428465,3,3,3,3,1],["BTR","2025-08",374048,7,3,3,3,0],["BTR","2025-09",233963,6,1,1,1,0],["BTR","2025-10",361813,14,2,2,2,0],["BTR","2025-11",265197,7,0,0,0,0],["BTR","2025-12",114874,3,2,2,2,0],["BTR","2026-01",206810,2,0,0,0,0],["BTR","2026-02",206508,2,2,2,2,0],["BTR","2026-03",213232,0,0,0,0,0],["BTR","2026-04",212587,0,0,0,0,0],["BTR","2026-05",238053,1,1,1,1,0],["BTR","2026-06",228846,0,0,0,0,0],["BTR","2026-07",208802,0,0,0,0,0],["MTI","2023-01",801333,10,8,5,5,0],["MTI","2023-02",809619,0,0,0,0,0],["MTI","2023-03",912450,7,7,3,3,0],["MTI","2023-04",843087,3,3,1,1,0],["MTI","2023-05",890006,9,4,4,4,0],["MTI","2023-06",969502,6,3,1,1,0],["MTI","2023-07",1028211,7,6,4,4,0],["MTI","2023-08",1020801,3,2,0,0,0],["MTI","2023-09",1042246,2,0,0,0,0],["MTI","2023-10",1007353,3,1,1,1,0],["MTI","2023-11",909057,5,0,0,0,0],["MTI","2023-12",828396,1,1,0,0,0],["MTI","2024-01",716362,7,1,1,1,0],["MTI","2024-02",687965,2,0,0,0,0],["MTI","2024-03",592186,1,1,1,1,0],["MTI","2024-04",486083,0,0,0,0,0],["MTI","2024-05",536657,1,1,0,0,0],["MTI","2024-06",515435,1,1,1,1,0],["MTI","2024-07",491060,0,0,0,0,0],["MTI","2024-08",413984,0,0,0,0,0],["MTI","2024-09",405102,0,0,0,0,0],["MTI","2024-10",332890,7,1,1,1,0],["MTI","2024-11",308131,33,0,0,0,0],["MTI","2024-12",349468,22,1,1,1,0],["MTI","2025-01",437767,15,2,1,1,0],["MTI","2025-02",446234,19,0,0,0,0],["MTI","2025-03",448563,5,0,0,0,0],["MTI","2025-04",466697,20,1,1,1,0],["MTI","2025-05",521213,27,0,0,0,0],["MTI","2025-06",516922,29,0,0,0,0],["MTI","2025-07",517632,36,6,6,6,0],["MTI","2025-08",525865,27,5,5,5,0],["MTI","2025-09",551495,27,1,1,1,0],["MTI","2025-10",549294,11,2,0,0,0],["MTI","2025-11",541475,18,0,0,0,0],["MTI","2025-12",620059,30,0,0,0,0],["MTI","2026-01",644828,18,2,2,2,0],["MTI","2026-02",613466,27,5,5,5,0],["MTI","2026-03",568952,35,1,0,0,0],["MTI","2026-04",604247,38,1,1,1,0],["MTI","2026-05",632005,38,3,3,3,0],["MTI","2026-06",743641,62,7,6,6,0],["MTI","2026-07",0,0,0,0,1,0],["PGM","2023-01",278772,0,0,0,0,0],["PGM","2023-02",262351,1,1,0,0,0],["PGM","2023-03",249831,1,1,0,0,0],["PGM","2023-04",251192,1,0,0,0,0],["PGM","2023-05",270807,1,0,0,0,0],["PGM","2023-06",247444,0,0,0,0,0],["PGM","2023-07",278811,0,0,0,0,0],["PGM","2023-08",233076,1,0,0,0,0],["PGM","2023-09",225770,0,0,0,0,0],["PGM","2023-10",302181,6,3,0,0,0],["PGM","2023-11",249881,0,0,0,0,0],["PGM","2023-12",258902,0,0,0,0,0],["PGM","2024-01",274101,5,0,0,0,0],["PGM","2024-02",301803,4,0,0,0,0],["PGM","2024-03",235880,9,0,0,0,0],["PGM","2024-04",189112,12,0,0,0,0],["PGM","2024-05",183342,20,2,0,0,0],["PGM","2024-06",172506,38,0,0,0,0],["PGM","2024-07",165248,87,0,0,0,0],["PGM","2024-08",164898,44,0,0,0,0],["PGM","2024-09",210492,22,1,0,0,0],["PGM","2024-10",308360,67,0,0,0,0],["PGM","2024-11",310628,87,1,0,0,0],["PGM","2024-12",359013,18,0,0,0,0],["PGM","2025-01",346516,103,0,0,0,0],["PGM","2025-02",335395,70,1,0,0,0],["PGM","2025-03",341010,89,0,0,0,0],["PGM","2025-04",321742,48,0,0,0,0],["PGM","2025-05",372081,67,0,0,0,0],["PGM","2025-06",376887,124,0,0,0,0],["PGM","2025-07",402694,25,0,0,0,0],["PGM","2025-08",409941,19,0,0,0,0],["PGM","2025-09",447796,19,0,0,0,0],["PGM","2025-10",491903,11,0,0,0,0],["PGM","2025-11",477677,9,0,0,0,0],["PGM","2025-12",522605,11,0,0,0,0],["PGM","2026-01",908675,4,0,0,0,0],["PGM","2026-02",812514,4,0,0,0,0],["PGM","2026-03",859198,5,0,0,0,0],["PGM","2026-04",1011011,3,0,0,0,0],["PGM","2026-05",1058666,1,0,0,0,0],["PGM","2026-06",1282883,9,0,0,0,0],["PGM","2026-07",1291570,6,0,0,0,0],["SCM","2023-01",824457,18,18,16,16,0],["SCM","2023-02",820965,12,12,12,12,0],["SCM","2023-03",940416,12,12,12,12,0],["SCM","2023-04",876125,16,16,16,16,0],["SCM","2023-05",95185,23,23,23,23,0],["SCM","2023-06",82584,1,1,1,1,1],["SCM","2023-07",845432,0,0,0,0,0],["SCM","2023-08",857584,0,0,0,0,0],["SCM","2023-09",890072,0,0,0,0,0],["SCM","2023-10",869488,0,0,0,0,0],["SCM","2023-11",822616,0,0,0,0,0],["SCM","2023-12",1051768,0,0,0,0,0],["SCM","2024-01",1296842,10,0,0,0,0],["SCM","2024-02",1215872,21,0,0,0,0],["SCM","2024-03",1429224,19,0,0,0,0],["SCM","2024-04",1500846,20,0,0,0,0],["SCM","2024-05",1409811,23,0,0,0,0],["SCM","2024-06",1669536,27,0,0,0,0],["SCM","2024-07",1818981,21,0,0,0,0],["SCM","2024-08",1730758,47,0,0,0,0],["SCM","2024-09",1882122,36,0,0,0,0],["SCM","2024-10",1978445,36,1,1,1,0],["SCM","2024-11",1862381,51,3,3,3,0],["SCM","2024-12",2018968,41,3,3,3,0],["SCM","2025-01",2218310,56,1,1,1,0],["SCM","2025-02",2149683,48,3,3,3,0],["SCM","2025-03",2463533,41,0,0,0,0],["SCM","2025-04",2565984,61,0,0,0,0],["SCM","2025-05",2918662,34,0,0,0,0],["SCM","2025-06",2811648,44,2,2,2,0],["SCM","2025-07",2802648,66,1,1,1,0],["SCM","2025-08",3090477,73,2,2,2,0],["SCM","2025-09",3172080,76,2,2,2,0],["SCM","2025-10",3081859,59,0,0,0,0],["SCM","2025-11",3211624,37,0,0,0,0],["SCM","2025-12",2946115,7,0,0,0,0],["SCM","2026-01",6270184,55,1,1,1,0],["SCM","2026-02",5021744,51,2,2,2,0],["SCM","2026-03",5687229,67,0,0,0,0],["SCM","2026-04",5782368,46,2,2,2,0],["SCM","2026-05",6060252,54,0,0,0,0],["SCM","2026-06",5331210,65,0,0,0,0],["SCM","2026-07",5307169,47,0,0,0,0]],"control":{"mh":197169569,"esc":7561,"mev":324,"imev":280,"cev":288,"cdth":9,"rows":219,"exposure_months":43},"prov":{"version":"FEED v0.5","file":"Medevac_Medical_Referral_Analytical_FEED_v0.5.xlsx","sheets":"04_FEED_MEDREF_FACT + 02_LAGGING_SNAPSHOT","grain":"Site x Month","popE":"Exposure KPIs (MRR/MER/IMR): In_Denominator = Y","popC":"Tier-1 IM-CFR (adjudicated P2): Illness_Medevac = Y AND Date_Quality = VALID; In_Denominator not applied","cfr_excluded":"7 undated illness-medevac events excluded (K-03), 0 deaths among them","c5":"final Page-1 Tier-1 IM-CFR authority = 9 / 288 = 3.13% (all history; Illness_Medevac=Y, Date_Quality=VALID, not future-quarantined; In_Denominator not applied). Filtered scopes recalculate from the same population rule.","cfr_source_declared":"FEED 06 Section B declares 9/295 = 3.05% (raw/source-declared, retained for reconciliation history; NOT rendered as final Page-1 IM-CFR)","tier2":"Tier-2 episode-level IM-CFR (9/257 = 3.50%) remains PROVISIONAL pending clinical sign-off of the 30-day episode window. Not rendered as an executive KPI."},"sha1":"88beb4d50556"};
+/* ---------- 1. FEED (contract) ----------
+   PRODUCTION SOURCE = LIVE GOVERNED GOOGLE SPREADSHEET.
+   FEED stays null until a live fetch has passed the validation and
+   reconciliation gate. No code path falls back to the retired snapshot. */
+let FEED = null;
+
+/* RETIRED EXCEL SNAPSHOT (FEED v0.5) — REGRESSION FIXTURE ONLY.
+   Nothing in the runtime reads it: it is referenced exactly once, on
+   window.__MIME__.fixture, for developer regression comparison. It is NOT a
+   production fallback and must never be rendered. */
+const FEED_FIXTURE = {"cols":["site","month","mh","esc","mev","imev","cev","cdth"],"rows":[["BSI","2023-01",761725,42,0,0,0,0],["BSI","2023-02",718551,65,0,0,0,0],["BSI","2023-03",705171,54,1,1,1,0],["BSI","2023-04",717022,53,0,0,0,0],["BSI","2023-05",699438,65,0,0,0,0],["BSI","2023-06",731164,53,0,0,0,0],["BSI","2023-07",748421,77,0,0,0,0],["BSI","2023-08",787137,110,0,0,0,0],["BSI","2023-09",779372,87,0,0,0,0],["BSI","2023-10",781849,78,0,0,0,0],["BSI","2023-11",805025,138,0,0,0,0],["BSI","2023-12",819301,83,0,0,0,0],["BSI","2024-01",861686,136,0,0,0,0],["BSI","2024-02",791500,82,0,0,0,0],["BSI","2024-03",748246,96,0,0,0,0],["BSI","2024-04",733655,88,0,0,0,0],["BSI","2024-05",745426,63,0,0,0,0],["BSI","2024-06",760403,74,0,0,0,0],["BSI","2024-07",785608,65,0,0,0,0],["BSI","2024-08",815995,67,1,1,1,0],["BSI","2024-09",797703,119,2,2,2,0],["BSI","2024-10",822861,81,1,1,1,0],["BSI","2024-11",731964,167,0,0,0,0],["BSI","2024-12",848242,117,0,0,0,0],["BSI","2025-01",851158,170,0,0,0,0],["BSI","2025-02",806914,238,1,0,0,0],["BSI","2025-03",787874,144,0,0,0,0],["BSI","2025-04",786081,249,0,0,0,0],["BSI","2025-05",862458,121,0,0,0,0],["BSI","2025-06",790788,142,2,2,2,0],["BSI","2025-07",821580,93,1,1,1,0],["BSI","2025-08",775794,70,0,0,0,0],["BSI","2025-09",795624,62,0,0,0,0],["BSI","2025-10",805374,71,2,0,0,0],["BSI","2025-11",759928,111,2,1,1,1],["BSI","2025-12",791490,170,0,0,0,0],["BSI","2026-01",747430,107,2,1,1,0],["BSI","2026-02",686843,69,2,2,2,1],["BSI","2026-03",720451,63,4,3,3,0],["BSI","2026-04",996838,67,0,0,0,0],["BSI","2026-05",776067,128,0,0,0,0],["BSI","2026-06",820882,117,0,0,0,0],["BSI","2026-07",0,0,0,0,3,1],["BTR","2021-01",0,0,0,0,1,0],["BTR","2021-02",0,0,0,0,1,0],["BTR","2021-04",0,0,0,0,1,0],["BTR","2021-05",0,0,0,0,1,0],["BTR","2023-01",630466,12,2,1,1,1],["BTR","2023-02",501280,1,1,1,1,0],["BTR","2023-03",597237,4,0,0,0,0],["BTR","2023-04",605713,4,3,3,3,0],["BTR","2023-05",544476,4,2,1,1,0],["BTR","2023-06",576704,1,1,1,1,0],["BTR","2023-07",527446,5,5,4,4,0],["BTR","2023-08",583115,0,0,0,0,0],["BTR","2023-09",548334,0,0,0,0,0],["BTR","2023-10",567547,0,0,0,0,0],["BTR","2023-11",560533,0,0,0,0,0],["BTR","2023-12",524733,0,0,0,0,0],["BTR","2024-01",473838,9,8,8,8,2],["BTR","2024-02",437065,12,12,12,12,0],["BTR","2024-03",455088,10,10,10,10,0],["BTR","2024-04",418545,7,7,7,7,0],["BTR","2024-05",459974,6,6,6,6,0],["BTR","2024-06",452409,3,3,3,3,0],["BTR","2024-07",432241,6,6,5,5,0],["BTR","2024-08",439285,3,3,3,3,1],["BTR","2024-09",436997,10,10,10,10,0],["BTR","2024-10",452932,0,0,0,0,0],["BTR","2024-11",382371,1,0,0,0,0],["BTR","2024-12",432715,3,0,0,0,0],["BTR","2025-01",405548,11,8,8,8,0],["BTR","2025-02",359169,8,6,6,6,0],["BTR","2025-03",399814,11,0,0,0,0],["BTR","2025-04",379747,11,2,2,2,0],["BTR","2025-05",416949,4,1,1,1,0],["BTR","2025-06",406900,34,1,1,1,0],["BTR","2025-07",428465,3,3,3,3,1],["BTR","2025-08",374048,7,3,3,3,0],["BTR","2025-09",233963,6,1,1,1,0],["BTR","2025-10",361813,14,2,2,2,0],["BTR","2025-11",265197,7,0,0,0,0],["BTR","2025-12",114874,3,2,2,2,0],["BTR","2026-01",206810,2,0,0,0,0],["BTR","2026-02",206508,2,2,2,2,0],["BTR","2026-03",213232,0,0,0,0,0],["BTR","2026-04",212587,0,0,0,0,0],["BTR","2026-05",238053,1,1,1,1,0],["BTR","2026-06",228846,0,0,0,0,0],["BTR","2026-07",208802,0,0,0,0,0],["MTI","2023-01",801333,10,8,5,5,0],["MTI","2023-02",809619,0,0,0,0,0],["MTI","2023-03",912450,7,7,3,3,0],["MTI","2023-04",843087,3,3,1,1,0],["MTI","2023-05",890006,9,4,4,4,0],["MTI","2023-06",969502,6,3,1,1,0],["MTI","2023-07",1028211,7,6,4,4,0],["MTI","2023-08",1020801,3,2,0,0,0],["MTI","2023-09",1042246,2,0,0,0,0],["MTI","2023-10",1007353,3,1,1,1,0],["MTI","2023-11",909057,5,0,0,0,0],["MTI","2023-12",828396,1,1,0,0,0],["MTI","2024-01",716362,7,1,1,1,0],["MTI","2024-02",687965,2,0,0,0,0],["MTI","2024-03",592186,1,1,1,1,0],["MTI","2024-04",486083,0,0,0,0,0],["MTI","2024-05",536657,1,1,0,0,0],["MTI","2024-06",515435,1,1,1,1,0],["MTI","2024-07",491060,0,0,0,0,0],["MTI","2024-08",413984,0,0,0,0,0],["MTI","2024-09",405102,0,0,0,0,0],["MTI","2024-10",332890,7,1,1,1,0],["MTI","2024-11",308131,33,0,0,0,0],["MTI","2024-12",349468,22,1,1,1,0],["MTI","2025-01",437767,15,2,1,1,0],["MTI","2025-02",446234,19,0,0,0,0],["MTI","2025-03",448563,5,0,0,0,0],["MTI","2025-04",466697,20,1,1,1,0],["MTI","2025-05",521213,27,0,0,0,0],["MTI","2025-06",516922,29,0,0,0,0],["MTI","2025-07",517632,36,6,6,6,0],["MTI","2025-08",525865,27,5,5,5,0],["MTI","2025-09",551495,27,1,1,1,0],["MTI","2025-10",549294,11,2,0,0,0],["MTI","2025-11",541475,18,0,0,0,0],["MTI","2025-12",620059,30,0,0,0,0],["MTI","2026-01",644828,18,2,2,2,0],["MTI","2026-02",613466,27,5,5,5,0],["MTI","2026-03",568952,35,1,0,0,0],["MTI","2026-04",604247,38,1,1,1,0],["MTI","2026-05",632005,38,3,3,3,0],["MTI","2026-06",743641,62,7,6,6,0],["MTI","2026-07",0,0,0,0,1,0],["PGM","2023-01",278772,0,0,0,0,0],["PGM","2023-02",262351,1,1,0,0,0],["PGM","2023-03",249831,1,1,0,0,0],["PGM","2023-04",251192,1,0,0,0,0],["PGM","2023-05",270807,1,0,0,0,0],["PGM","2023-06",247444,0,0,0,0,0],["PGM","2023-07",278811,0,0,0,0,0],["PGM","2023-08",233076,1,0,0,0,0],["PGM","2023-09",225770,0,0,0,0,0],["PGM","2023-10",302181,6,3,0,0,0],["PGM","2023-11",249881,0,0,0,0,0],["PGM","2023-12",258902,0,0,0,0,0],["PGM","2024-01",274101,5,0,0,0,0],["PGM","2024-02",301803,4,0,0,0,0],["PGM","2024-03",235880,9,0,0,0,0],["PGM","2024-04",189112,12,0,0,0,0],["PGM","2024-05",183342,20,2,0,0,0],["PGM","2024-06",172506,38,0,0,0,0],["PGM","2024-07",165248,87,0,0,0,0],["PGM","2024-08",164898,44,0,0,0,0],["PGM","2024-09",210492,22,1,0,0,0],["PGM","2024-10",308360,67,0,0,0,0],["PGM","2024-11",310628,87,1,0,0,0],["PGM","2024-12",359013,18,0,0,0,0],["PGM","2025-01",346516,103,0,0,0,0],["PGM","2025-02",335395,70,1,0,0,0],["PGM","2025-03",341010,89,0,0,0,0],["PGM","2025-04",321742,48,0,0,0,0],["PGM","2025-05",372081,67,0,0,0,0],["PGM","2025-06",376887,124,0,0,0,0],["PGM","2025-07",402694,25,0,0,0,0],["PGM","2025-08",409941,19,0,0,0,0],["PGM","2025-09",447796,19,0,0,0,0],["PGM","2025-10",491903,11,0,0,0,0],["PGM","2025-11",477677,9,0,0,0,0],["PGM","2025-12",522605,11,0,0,0,0],["PGM","2026-01",908675,4,0,0,0,0],["PGM","2026-02",812514,4,0,0,0,0],["PGM","2026-03",859198,5,0,0,0,0],["PGM","2026-04",1011011,3,0,0,0,0],["PGM","2026-05",1058666,1,0,0,0,0],["PGM","2026-06",1282883,9,0,0,0,0],["PGM","2026-07",1291570,6,0,0,0,0],["SCM","2023-01",824457,18,18,16,16,0],["SCM","2023-02",820965,12,12,12,12,0],["SCM","2023-03",940416,12,12,12,12,0],["SCM","2023-04",876125,16,16,16,16,0],["SCM","2023-05",95185,23,23,23,23,0],["SCM","2023-06",82584,1,1,1,1,1],["SCM","2023-07",845432,0,0,0,0,0],["SCM","2023-08",857584,0,0,0,0,0],["SCM","2023-09",890072,0,0,0,0,0],["SCM","2023-10",869488,0,0,0,0,0],["SCM","2023-11",822616,0,0,0,0,0],["SCM","2023-12",1051768,0,0,0,0,0],["SCM","2024-01",1296842,10,0,0,0,0],["SCM","2024-02",1215872,21,0,0,0,0],["SCM","2024-03",1429224,19,0,0,0,0],["SCM","2024-04",1500846,20,0,0,0,0],["SCM","2024-05",1409811,23,0,0,0,0],["SCM","2024-06",1669536,27,0,0,0,0],["SCM","2024-07",1818981,21,0,0,0,0],["SCM","2024-08",1730758,47,0,0,0,0],["SCM","2024-09",1882122,36,0,0,0,0],["SCM","2024-10",1978445,36,1,1,1,0],["SCM","2024-11",1862381,51,3,3,3,0],["SCM","2024-12",2018968,41,3,3,3,0],["SCM","2025-01",2218310,56,1,1,1,0],["SCM","2025-02",2149683,48,3,3,3,0],["SCM","2025-03",2463533,41,0,0,0,0],["SCM","2025-04",2565984,61,0,0,0,0],["SCM","2025-05",2918662,34,0,0,0,0],["SCM","2025-06",2811648,44,2,2,2,0],["SCM","2025-07",2802648,66,1,1,1,0],["SCM","2025-08",3090477,73,2,2,2,0],["SCM","2025-09",3172080,76,2,2,2,0],["SCM","2025-10",3081859,59,0,0,0,0],["SCM","2025-11",3211624,37,0,0,0,0],["SCM","2025-12",2946115,7,0,0,0,0],["SCM","2026-01",6270184,55,1,1,1,0],["SCM","2026-02",5021744,51,2,2,2,0],["SCM","2026-03",5687229,67,0,0,0,0],["SCM","2026-04",5782368,46,2,2,2,0],["SCM","2026-05",6060252,54,0,0,0,0],["SCM","2026-06",5331210,65,0,0,0,0],["SCM","2026-07",5307169,47,0,0,0,0]],"control":{"mh":197169569,"esc":7561,"mev":324,"imev":280,"cev":288,"cdth":9,"rows":219,"exposure_months":43},"prov":{"version":"FEED v0.5","file":"Medevac_Medical_Referral_Analytical_FEED_v0.5.xlsx","sheets":"04_FEED_MEDREF_FACT + 02_LAGGING_SNAPSHOT","grain":"Site x Month","popE":"Exposure KPIs (MRR/MER/IMR): In_Denominator = Y","popC":"Tier-1 IM-CFR (adjudicated P2): Illness_Medevac = Y AND Date_Quality = VALID; In_Denominator not applied","cfr_excluded":"7 undated illness-medevac events excluded (K-03), 0 deaths among them","c5":"final Page-1 Tier-1 IM-CFR authority = 9 / 288 = 3.13% (all history; Illness_Medevac=Y, Date_Quality=VALID, not future-quarantined; In_Denominator not applied). Filtered scopes recalculate from the same population rule.","cfr_source_declared":"FEED 06 Section B declares 9/295 = 3.05% (raw/source-declared, retained for reconciliation history; NOT rendered as final Page-1 IM-CFR)","tier2":"Tier-2 episode-level IM-CFR (9/257 = 3.50%) remains PROVISIONAL pending clinical sign-off of the 30-day episode window. Not rendered as an executive KPI."},"sha1":"88beb4d50556"};
+
+/* ============================================================================
+   1b. LIVE SOURCE ADAPTER — GOVERNED GOOGLE SPREADSHEET (K-07)
+   The ONLY change of substance in this build: the FEED contract is now filled
+   from the governed Google Spreadsheet instead of an embedded Excel snapshot.
+   Everything downstream of FEED (normalize -> validate -> KPI -> status ->
+   roll-up -> render) is the existing approved engine, untouched.
+
+        Google Spreadsheet -> gviz -> ADAPTER -> FEED -> existing engine
+
+   No backend. No database. No Apps Script. No framework. Static HTML/JS only.
+   ========================================================================== */
+const GS = {
+  id:  '17bWj59dgvHLpx-8o4HHcGDy0e2dPiawqUkfsvmrFvk4',
+  href:'https://docs.google.com/spreadsheets/d/17bWj59dgvHLpx-8o4HHcGDy0e2dPiawqUkfsvmrFvk4/edit',
+  sheet:{ fact:'03_FEED_MEDREF_FACT', siteMonth:'05_KPI_Site_Month', enterprise:'06_KPI_ENTERPRISE' },
+  /* the governed sheets carry a title/notes preamble above the header row, and
+     that preamble is not guaranteed to stay the same height. The header row is
+     therefore discovered, never assumed. */
+  headerRows:[4,1,0,2,3,5,6],
+  domainFrom:'2023-01',            /* enterprise MIME reporting domain (unchanged) */
+  timeoutMs:25000
+};
+const AUTO_REFRESH_MS = 24*60*60*1000;              /* 24-hour refresh policy */
+const RECON_ABS_FLOOR = 0.5;                        /* integer counts must agree */
+const RECON_REL_TOL   = 1e-6;                       /* man-hour rounding only    */
+
+/* live-source provenance, kept separate from INGEST (pipeline state) */
+const LIVE = {everLoaded:false, lastFetch:null, lastError:null, dataAsOf:null,
+              dataAsOfSource:null, notes:[], enterprise:null, headerRow:{}, busy:false};
+
+/* ---------- gviz transport ---------- */
+function gvizURL(sheet, tq, headers){
+  const p = [];
+  p.push('tqx=out:json');
+  p.push('sheet='+encodeURIComponent(sheet));
+  if(headers!==undefined && headers!==null) p.push('headers='+encodeURIComponent(String(headers)));
+  if(tq) p.push('tq='+encodeURIComponent(tq));
+  p.push('_ts='+Date.now());          /* the refresh policy is ours, not the browser cache's */
+  return 'https://docs.google.com/spreadsheets/d/'+GS.id+'/gviz/tq?'+p.join('&');
+}
+function parseGviz(txt, sheet){
+  const a = txt.indexOf('{'), b = txt.lastIndexOf('}');
+  if(a<0 || b<a) throw new Error(sheet+': the source did not return a Google Visualization response '
+      + '(check that the spreadsheet is shared as "Anyone with the link - Viewer")');
+  let o;
+  try{ o = JSON.parse(txt.slice(a,b+1)); }
+  catch(e){ throw new Error(sheet+': the source response could not be read'); }
+  if(o.status==='error'){
+    const m=(o.errors&&o.errors[0])||{};
+    throw new Error(sheet+': '+(m.detailed_message||m.message||m.reason||'source error').replace(/<[^>]*>/g,''));
+  }
+  if(!o.table) throw new Error(sheet+': the source returned no table');
+  return o.table;
+}
+async function gvizFetch(sheet, tq, headers){
+  const url = gvizURL(sheet, tq, headers);
+  let ctl=null, timer=null;
+  if(typeof AbortController!=='undefined'){ ctl=new AbortController(); timer=setTimeout(()=>ctl.abort(), GS.timeoutMs); }
+  let res;
+  try{
+    res = await fetch(url, {method:'GET', cache:'no-store', credentials:'omit', redirect:'follow',
+                            signal: ctl?ctl.signal:undefined});
+  }catch(e){
+    throw new Error(sheet+': live connection failed ('+((e&&e.name==='AbortError')?'timed out':'network/CORS')+')');
+  }finally{ if(timer) clearTimeout(timer); }
+  if(!res.ok) throw new Error(sheet+': live connection failed (HTTP '+res.status+')');
+  return parseGviz(await res.text(), sheet);
+}
+
+/* ---------- cell readers (gviz cells are {v:typed, f:formatted}) ---------- */
+function gCell(row,i){ return (row && row.c && i>=0 && i<row.c.length) ? row.c[i] : null; }
+function gText(row,i){
+  const c=gCell(row,i); if(!c) return '';
+  const v=(c.f!==undefined&&c.f!==null&&c.f!=='')?c.f:c.v;
+  return (v===null||v===undefined)?'':String(v).trim();
+}
+function gNumRaw(v){
+  if(v===null||v===undefined||v==='') return null;
+  if(typeof v==='number') return Number.isFinite(v)?v:null;
+  const s=String(v).replace(/[\s\u00A0]/g,'').replace(/,/g,'').replace(/%$/,'');
+  if(s==='') return null;
+  const n=Number(s); return Number.isFinite(n)?n:null;
+}
+function gNum(row,i){
+  const c=gCell(row,i); if(!c) return null;
+  const a=gNumRaw(c.v); if(a!==null) return a;
+  return gNumRaw(c.f);
+}
+/* A count/measure cell. An absent cell is a governed zero. A cell the source
+   returned but could not type is counted: Google cannot distinguish "empty" from
+   "text in a numeric column", so it is treated as zero HERE and caught by the
+   enterprise reconciliation gate BELOW, never silently absorbed. */
+const NULLCELL = {n:0};
+function gMeasure(row,i,where,errs){
+  const c=gCell(row,i);
+  if(!c) return 0;                                   /* cell absent = 0 */
+  if(c.v===null||c.v===undefined||c.v===''){
+    const f=(c.f===null||c.f===undefined)?'':String(c.f).trim();
+    if(f===''){ NULLCELL.n++; return 0; }
+  }
+  const n=gNum(row,i);
+  if(n===null){ errs.push(where+': non-numeric value "'+gText(row,i)+'"'); return null; }
+  return n;
+}
+const GVIZ_DATE = /^Date\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/;
+function pad2(n){ return String(n).padStart(2,'0'); }
+function gDateKey(row,i){                       /* -> 'YYYY-MM-DD' or '' */
+  const c=gCell(row,i); if(!c) return '';
+  const v=c.v;
+  if(v instanceof Date) return v.getFullYear()+'-'+pad2(v.getMonth()+1)+'-'+pad2(v.getDate());
+  if(typeof v==='string'){ const m=GVIZ_DATE.exec(v); if(m) return m[1]+'-'+pad2(+m[2]+1)+'-'+pad2(+m[3]); }
+  const s=String((v===null||v===undefined)?(c.f||''):v).trim();
+  let m=/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/.exec(s);
+  if(m) return m[1]+'-'+pad2(+m[2])+'-'+pad2(+m[3]);
+  m=/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/.exec(s);           /* dd/mm/yyyy */
+  if(m) return m[3]+'-'+pad2(+m[2])+'-'+pad2(+m[1]);
+  return '';
+}
+function gMonthKey(row,i){                      /* -> 'YYYY-MM' or '' */
+  const c=gCell(row,i); if(!c) return '';
+  const d=gDateKey(row,i); if(d) return d.slice(0,7);
+  const s=gText(row,i);
+  let m=/^(\d{4})[-/](\d{1,2})$/.exec(s);  if(m) return m[1]+'-'+pad2(+m[2]);
+  m=/^(\d{4})(\d{2})$/.exec(s);            if(m) return m[1]+'-'+m[2];
+  m=/^([A-Za-z]{3})[a-z]*[ -](\d{4})$/.exec(s);
+  if(m){ const k=MN.indexOf(m[1][0].toUpperCase()+m[1].slice(1,3).toLowerCase()); if(k>=0) return m[2]+'-'+pad2(k+1); }
+  return '';
+}
+
+/* ---------- header/label mapping (label first, contract position only as fallback) ---------- */
+function gNorm(s){
+  return String(s===null||s===undefined?'':s).replace(/\([^)]*\)/g,' ').replace(/[^a-z0-9]+/gi,'').toLowerCase();
+}
+function gFindCol(table, patterns, strict, fallbackIdx){
+  const labs=(table.cols||[]).map(c=>gNorm(c.label));
+  for(const p of patterns){ const t=gNorm(p), i=labs.indexOf(t); if(t && i>=0) return i; }
+  if(strict) return -1;
+  for(const p of patterns){ const t=gNorm(p); if(!t) continue;
+    for(let i=0;i<labs.length;i++){ if(labs[i] && (labs[i].endsWith(t)||labs[i].startsWith(t))) return i; } }
+  for(const p of patterns){ const t=gNorm(p); if(!t) continue;
+    for(let i=0;i<labs.length;i++){ if(labs[i] && labs[i].indexOf(t)>=0) return i; } }
+  return (fallbackIdx===undefined?-1:fallbackIdx);
+}
+const AGG_LABEL = ['ALL','TOTAL','TOTALS','SUBTOTAL','GRAND TOTAL','GRANDTOTAL','ENTERPRISE','MDKA','SUM','N/A'];
+
+/* governed field contracts ------------------------------------------------- */
+const SM_FIELDS = [                      /* 05_KPI_Site_Month, governed range A:K */
+  {k:'site',  pat:['Site'],                                     pos:1},
+  {k:'month', pat:['Month_Key','Month Key','Month'],            pos:2},
+  {k:'mh',    pat:['Man Hours','Man_Hours','Manhours'],         pos:3},
+  {k:'esc',   pat:['Escalation events','Escalation_Events','Escalation'], pos:4},
+  {k:'mev',   pat:['Medevac','Medevac_Derived'],                pos:5},
+  {k:'imev',  pat:['Illness medevac','Illness_Medevac'],        pos:6},
+  {k:'ifat',  pat:['Illness fatalities','Illness_Fatalities','Illness Fatality'], pos:7}
+];
+const FACT_FIELDS = [                    /* 03_FEED_MEDREF_FACT, non-PII projection only */
+  {k:'site',  pat:['Site']},
+  {k:'edate', pat:['Event_Date','Event Date']},
+  {k:'dq',    pat:['Date_Quality','Date Quality']},
+  {k:'month', pat:['Month_Key','Month Key']},
+  {k:'imev',  pat:['Illness_Medevac','Illness medevac']},
+  {k:'ifat',  pat:['Illness_Fatality','Illness fatality']}
+];
+
+function mapSiteMonth(table, strict){
+  const c={};
+  for(const f of SM_FIELDS){ c[f.k]=gFindCol(table, f.pat, strict, strict?-1:f.pos); }
+  return c;
+}
+/* A candidate header row is accepted only if REAL governed rows come back under
+   it. A LEAKED header row (the wrong header height) is fatal to the candidate;
+   an unrecognised SITE is not — that is a data-governance matter and must be
+   reported as such by the validation gate, not silently retried away.        */
+const LEAKED_HEADER = /^(site|key|month|month_key|man\s*hours|escalation.*|medevac.*|illness.*)$/i;
+function verifySiteMonth(table, c){
+  if(c.site<0||c.month<0||c.mh<0||c.esc<0||c.mev<0||c.imev<0) return 'COLS';
+  let ok=0, leak=0, seen=0;
+  for(const r of (table.rows||[])){
+    const s=gText(r,c.site), m=gMonthKey(r,c.month);
+    if(!s && !m) continue;
+    if(++seen>12) break;
+    if(LEAKED_HEADER.test(s)){ leak++; continue; }
+    if(SITE_CODES.indexOf(s.toUpperCase())>=0 && /^\d{4}-\d{2}$/.test(m)) ok++;
+  }
+  if(leak) return 'LEAK';
+  if(!seen) return 'EMPTY';
+  return ok>=3 ? 'OK' : 'ROWS';
+}
+
+/* ---------- sheet loaders (header row discovered, never assumed) ---------- */
+async function loadSiteMonth(){
+  let last=null;
+  for(const strict of [true,false]){
+    for(const h of GS.headerRows){
+      let t; try{ t=await gvizFetch(GS.sheet.siteMonth,'select A,B,C,D,E,F,G,H',h); }
+      catch(e){ last=e; continue; }
+      const c=mapSiteMonth(t,strict);
+      const v=verifySiteMonth(t,c);
+      if(v==='OK'){ LIVE.headerRow.siteMonth=h; return {table:t, col:c}; }
+      last=new Error(GS.sheet.siteMonth+': '+({
+        COLS:'the governed columns (Site, Month_Key, Man Hours, Escalation events, Medevac, Illness medevac) were not found',
+        LEAK:'the header row could not be located',
+        EMPTY:'the governed sheet contains no data rows',
+        ROWS:'no governed site-month records were recognised'
+      })[v]);
+    }
+  }
+  throw last||new Error(GS.sheet.siteMonth+': unreadable');
+}
+async function loadFact(){
+  let last=null;
+  for(const strict of [true,false]){
+    for(const h of GS.headerRows){
+      let probe;
+      try{ probe=await gvizFetch(GS.sheet.fact,'select * limit 0',h); }
+      catch(e){ try{ probe=await gvizFetch(GS.sheet.fact,'select * limit 1',h); }catch(e2){ last=e2; continue; } }
+      const ids=[], miss=[];
+      for(const f of FACT_FIELDS){
+        const i=gFindCol(probe,f.pat,strict,-1);
+        const col=(i>=0)?(probe.cols[i]||{}):null;
+        if(!col||!col.id){ miss.push(f.k); } else ids.push(col.id);
+      }
+      if(miss.length){ last=new Error(GS.sheet.fact+': governed field(s) not found — '+miss.join(', ')); continue; }
+      /* PII DISCIPLINE: only the six governed non-PII fields ever leave the source */
+      let t; try{ t=await gvizFetch(GS.sheet.fact,'select '+ids.join(','),h); }
+      catch(e){ last=e; continue; }
+      const c={}; FACT_FIELDS.forEach((f,i)=>c[f.k]=i);
+      let dated=0;
+      for(const r of (t.rows||[])){ if(gDateKey(r,c.edate)) { if(++dated>=3) break; } }
+      if(dated>=3){ LIVE.headerRow.fact=h; return {table:t, col:c, ids:ids}; }
+      last=new Error(GS.sheet.fact+': no governed dated records recognised');
+    }
+  }
+  throw last||new Error(GS.sheet.fact+': unreadable');
+}
+async function loadEnterprise(){
+  /* 06 is a governed KPI SHEET, not a table: read it as a grid and address it
+     by its own labels, with the documented cell contract as the fallback.     */
+  const t=await gvizFetch(GS.sheet.enterprise,'select A,B,C,D,E',0);
+  return t;
+}
+
+/* ---------- 06_KPI_ENTERPRISE reader ---------- */
+function readEnterprise(t, errs){
+  const rows=t.rows||[];
+  const A=i=>gText(rows[i],0);
+  const find=(re,from,to)=>{ for(let i=(from||0);i<Math.min(rows.length,(to===undefined?rows.length:to));i++){ if(re.test(A(i))) return i; } return -1; };
+  const bStart = find(/^\s*b\.|case\s+fatality/i);
+  const aEnd   = bStart>0?bStart:rows.length;
+  const pick=(idx, col, fallbackRow)=>{
+    let n = idx>=0 ? gNum(rows[idx],col) : null;
+    if(n===null && fallbackRow!==undefined) n = gNum(rows[fallbackRow],col);
+    return n;
+  };
+  const rA={ MRR:find(/\bMRR\b/i,0,aEnd), MER:find(/\bMER\b/i,0,aEnd), IMR:find(/\bIMR\b/i,0,aEnd) };
+  const A_ = {
+    /* Section A: C = numerator, D = denominator, E = published KPI value */
+    esc: pick(rA.MRR,2,5), mhMRR: pick(rA.MRR,3,5), MRR: pick(rA.MRR,4,5),
+    mev: pick(rA.MER,2,6), mhMER: pick(rA.MER,3,6), MER: pick(rA.MER,4,6),
+    imev:pick(rA.IMR,2,7), mhIMR: pick(rA.IMR,3,7), IMR: pick(rA.IMR,4,7)
+  };
+  A_.mh = (A_.mhMRR!==null)?A_.mhMRR:((A_.mhMER!==null)?A_.mhMER:A_.mhIMR);
+  const rB={
+    b12:find(/deaths?\s+among\s+illness/i,bStart<0?0:bStart),
+    b13:find(/medevac\s+events/i,bStart<0?0:bStart),
+    b14:find(/medevac\s+episodes/i,bStart<0?0:bStart),
+    b15:find(/episodes\s*\(\s*all\s*\)|all\s+illness\s+episodes/i,bStart<0?0:bStart),
+    b16:find(/tier\s*-?\s*1/i,bStart<0?0:bStart),
+    b17:find(/tier\s*-?\s*2\s+im\s*-?\s*cfr/i,bStart<0?0:bStart),
+    b18:find(/tier\s*-?\s*2\s+icfr/i,bStart<0?0:bStart)
+  };
+  const B_ = { b12:pick(rB.b12,1,11), b13:pick(rB.b13,1,12), b14:pick(rB.b14,1,13), b15:pick(rB.b15,1,14),
+               b16:pick(rB.b16,1,15), b17:pick(rB.b17,1,16), b18:pick(rB.b18,1,17) };
+  /* Section B may publish a ratio (0.0nn) or a percent (n.nn). This is decided
+     against the source's OWN numerator/denominator, never guessed from magnitude. */
+  const scale=(k,n,d)=>{
+    if(B_[k]===null||n===null||d===null||!(d>0)) return;
+    const target=n/d*100;
+    if(Math.abs(B_[k]*100-target) < Math.abs(B_[k]-target)) B_[k]=B_[k]*100;
+  };
+  scale('b16',B_.b12,B_.b13); scale('b17',B_.b12,B_.b14); scale('b18',B_.b12,B_.b15);
+
+  ['esc','mev','imev','mh'].forEach(k=>{ if(A_[k]===null) errs.push('06_KPI_ENTERPRISE: Section A '+k+' not published'); });
+  ['b12','b13'].forEach(k=>{ if(B_[k]===null) errs.push('06_KPI_ENTERPRISE: Section B '+k.toUpperCase()+' not published'); });
+
+  /* Data_As_Of, if and only if the governed source publishes one */
+  let asOf=null, asOfSrc=null;
+  for(let i=0;i<rows.length;i++){
+    if(/data[\s_-]*as[\s_-]*of|as[\s_-]of\b|snapshot\s*(date)?|last\s*(refresh|updated|update)/i.test(A(i))){
+      for(let cix=1;cix<=4;cix++){
+        const d=gDateKey(rows[i],cix), s=gText(rows[i],cix);
+        if(d){ asOf=d; asOfSrc=GS.sheet.enterprise; break; }
+        if(s){ asOf=s; asOfSrc=GS.sheet.enterprise; break; }
+      }
+      if(asOf) break;
+    }
+  }
+  return {A:A_, B:B_, rowsA:rA, rowsB:rB, asOf:asOf, asOfSource:asOfSrc};
+}
+
+/* ---------- NORMALISE into the existing FEED contract ---------- */
+function buildFeed(sm, fact, ent){
+  const errs=[], notes=[];
+  const c=sm.col, f=fact.col;
+  const rows=[], byKey=new Map();
+  let domainOut=0, aggSkipped=0, blank=0;
+  NULLCELL.n=0;
+
+  for(const r of (sm.table.rows||[])){
+    const site=gText(r,c.site).toUpperCase(), month=gMonthKey(r,c.month);
+    if(!site && !month){ blank++; continue; }                       /* sheet padding */
+    if(AGG_LABEL.indexOf(site)>=0){ aggSkipped++; continue; }       /* roll-up row, never double-counted */
+    if(!site){ errs.push('05_KPI_Site_Month: a row carries a period but no Site'); continue; }
+    if(SITE_CODES.indexOf(site)<0){
+      errs.push('05_KPI_Site_Month: site "'+site+'" is not in the governed site registry'); continue; }
+    if(!/^\d{4}-\d{2}$/.test(month)){
+      errs.push('05_KPI_Site_Month: unreadable Month_Key for '+site+' ("'+gText(r,c.month)+'")'); continue; }
+    if(month < GS.domainFrom){ domainOut++; continue; }              /* reporting domain: 2023-01 onward */
+    const key=site+'|'+month;
+    if(byKey.has(key)){ errs.push('05_KPI_Site_Month: duplicate site-month '+key); continue; }
+    const where='05_KPI_Site_Month '+key;
+    const rec=[site, month,
+      gMeasure(r,c.mh,  where+' Man Hours',        errs),
+      gMeasure(r,c.esc, where+' Escalation events',errs),
+      gMeasure(r,c.mev, where+' Medevac',          errs),
+      gMeasure(r,c.imev,where+' Illness medevac',  errs), 0, 0];
+    const ifat = (c.ifat>=0) ? gMeasure(r,c.ifat, where+' Illness fatalities', errs) : 0;
+    if(rec.some(x=>x===null)) continue;
+    rows.push(rec); byKey.set(key,rec);
+    rec.__ifat = (ifat===null?0:ifat);
+  }
+  if(!rows.length) errs.push('05_KPI_Site_Month: no governed site-month records inside the reporting domain');
+
+  /* ---- Tier-1 IM-CFR population, from 03_FEED_MEDREF_FACT ------------------
+     Event_Date >= 2023-01-01 AND Date_Quality = VALID AND Illness_Medevac = Y
+     numerator additionally Illness_Fatality = Y.
+     In_Denominator is NOT used. No case-level exception exists or is applied. */
+  let imTotal=0, exQuality=0, exDomain=0, exSite=0, exDeaths=0, cev=0, cdth=0, created=0;
+  for(const r of (fact.table.rows||[])){
+    if(gText(r,f.imev).toUpperCase()!=='Y') continue;
+    imTotal++;
+    const dq=gText(r,f.dq).toUpperCase();
+    const fat=gText(r,f.ifat).toUpperCase()==='Y';
+    const d=gDateKey(r,f.edate);
+    const site=gText(r,f.site).toUpperCase();
+    if(dq!=='VALID' || !d){ exQuality++; if(fat) exDeaths++; continue; }
+    if(d < GS.domainFrom+'-01'){ exDomain++; if(fat) exDeaths++; continue; }
+    if(SITE_CODES.indexOf(site)<0){ exSite++; if(fat) exDeaths++; continue; }
+    let mk=gMonthKey(r,f.month); if(!/^\d{4}-\d{2}$/.test(mk)) mk=d.slice(0,7);
+    const key=site+'|'+mk;
+    let rec=byKey.get(key);
+    if(!rec){ rec=[site,mk,0,0,0,0,0,0]; rec.__ifat=0; rows.push(rec); byKey.set(key,rec); created++;
+              notes.push('Tier-1 event in '+key+' has no 05_KPI_Site_Month exposure record'); }
+    rec[6]+=1; cev++;
+    if(fat){ rec[7]+=1; cdth++; }
+  }
+  rows.sort((a,b)=> a[0]===b[0] ? (a[1]<b[1]?-1:1) : (a[0]<b[0]?-1:1));
+
+  /* ---- reconciliation controls, taken from the governed enterprise sheet ---
+     HARD: the four exposure measures, which 05 and 06 both derive from the same
+     governed fact table and must therefore agree.
+     ADVISORY: Section B, whose published Tier-1 counts are a source-declared
+     population and are retained for reconciliation history, not as the Page-1
+     authority (this is the long-standing C-5 / K-03 governance position).      */
+  const ifatSum = rows.reduce((s,r)=>s+(r.__ifat||0),0);
+  const control = { mh:ent.A.mh, esc:ent.A.esc, mev:ent.A.mev, imev:ent.A.imev,
+                    cev:null, cdth:null, rows:null, advisory:[] };
+  const pct=(n,d)=> (d>0? n/d*100 : null);
+  const adv=(label,computed,published,unit)=>control.advisory.push({label:label,computed:computed,published:published,unit:unit||''});
+  adv('Illness_Medevac = Y in 03 vs 06 B13 (raw population)', imTotal, ent.B.b13);
+  adv('Tier-1 IM-CFR events (cev) vs 06 B13', cev, ent.B.b13);
+  adv('Tier-1 IM-CFR deaths (cdth) vs 06 B12', cdth, ent.B.b12);
+  adv('Illness fatalities (05 col H) vs Tier-1 deaths (03)', ifatSum, cdth);
+  const sMH=rows.reduce((s,r)=>s+r[2],0);
+  const rate=n=> (sMH>0? rows.reduce((s,r)=>s+r[n],0)/sMH*1e6 : null);
+  const cMRR=rate(3), cMER=rate(4), cIMR=rate(5);
+  adv('MRR vs 06 E6', cMRR, ent.A.MRR, ' /1M MH');
+  adv('MER vs 06 E7', cMER, ent.A.MER, ' /1M MH');
+  adv('IMR vs 06 E8', cIMR, ent.A.IMR, ' /1M MH');
+
+  const t1 = pct(cdth,cev);
+  const n2 = x=> (x===null||x===undefined)?'\u2013':(Math.round(x*10000)/10000);
+  const prov = {
+    version:'LIVE \u00b7 Google Sheets',
+    file:'Google Spreadsheet '+GS.id,
+    sheets:GS.sheet.siteMonth+' + '+GS.sheet.fact+' + '+GS.sheet.enterprise,
+    grain:'Site x Month',
+    popE:'Exposure KPIs (MRR/MER/IMR): governed '+GS.sheet.siteMonth+' population, enterprise reporting domain '
+        +GS.domainFrom+' onward.',
+    popC:'Tier-1 IM-CFR: Event_Date >= '+GS.domainFrom+'-01 AND Date_Quality = VALID AND Illness_Medevac = Y; '
+        +'numerator additionally Illness_Fatality = Y. In_Denominator is not applied and no case-level exception exists.',
+    cfr_excluded:exQuality+' illness-medevac event(s) excluded on date quality, '+exDomain+' outside the reporting domain, '
+        +exSite+' outside the governed site registry; '+exDeaths+' death(s) among all excluded events.',
+    c5:'Page-1 Tier-1 IM-CFR = '+cdth+' / '+cev+' = '+(t1===null?'\u2013':t1.toFixed(4)+'%')
+        +' (governed Tier-1 population, computed live from '+GS.sheet.fact+').',
+    cfr_source_declared:GS.sheet.enterprise+' Section B declares B12/B13 = '+n2(ent.B.b12)+' / '+n2(ent.B.b13)
+        +' = '+n2(ent.B.b16)+'% (source-declared Tier-1, retained for reconciliation; not rendered as the Page-1 IM-CFR).',
+    tier2:GS.sheet.enterprise+' Section B declares Tier-2 IM-CFR (episode-level) B12/B14 = '+n2(ent.B.b12)+' / '
+        +n2(ent.B.b14)+' = '+n2(ent.B.b17)+'% and Tier-2 ICFR (all illness episodes) B12/B15 = '+n2(ent.B.b12)+' / '
+        +n2(ent.B.b15)+' = '+n2(ent.B.b18)+'%. Tier-2 remains governed by Episode_ID / Episode_Start / K-05 closed logic '
+        +'and is not rendered as an executive KPI.'
+  };
+  notes.push(blank+' empty sheet row(s) ignored, '+aggSkipped+' roll-up row(s) skipped, '
+            +domainOut+' site-month record(s) outside the '+GS.domainFrom+' reporting domain excluded'
+            +(created?(', '+created+' exposure record(s) created for Tier-1 events'):'')
+            +(NULLCELL.n?(', '+NULLCELL.n+' measure cell(s) returned untyped by the source and read as 0'):''));
+  return {
+    feed:{cols:['site','month','mh','esc','mev','imev','cev','cdth'], rows:rows, control:control, prov:prov,
+          source:'GOOGLE_SHEETS_LIVE'},
+    errors:errs, notes:notes,
+    stats:{imTotal:imTotal, cev:cev, cdth:cdth, exQuality:exQuality, exDomain:exDomain, exSite:exSite,
+           domainOut:domainOut, rows:rows.length, ifatSum:ifatSum, MRR:cMRR, MER:cMER, IMR:cIMR}
+  };
+}
+
+/* ---------- FETCH + PARSE + NORMALIZE (no dashboard state is touched here) ---------- */
+async function fetchLive(){
+  const [entTable, sm, fact] = await Promise.all([ loadEnterprise(), loadSiteMonth(), loadFact() ]);
+  const errs=[];
+  const ent=readEnterprise(entTable, errs);
+  const built=buildFeed(sm, fact, ent);
+  built.errors = errs.concat(built.errors);
+  built.enterprise = ent;
+  return built;
+}
 
 /* ---------- 2. NORMALIZE ---------- */
 const SITE_REG = [
@@ -603,7 +1042,7 @@ function siteInGroup(code){ return groupSites().indexOf(code)>=0; }
 const MEASURES = ['mh','esc','mev','imev','cev','cdth'];
 
 let ROWS = [], IDX = new Map(), MH = new Map(), MONTHS = [], EXP_MONTHS = [], YEARS = [];
-let INGEST = {state:'IDLE', ts:null, recon:null, errors:[]};
+let INGEST = {state:'IDLE', ts:null, recon:null, errors:[], busy:false};
 
 function normalize(){
   ROWS = FEED.rows.map(r=>({site:r[0],month:r[1],mh:+r[2],esc:+r[3],mev:+r[4],imev:+r[5],cev:+r[6],cdth:+r[7]}));
@@ -630,16 +1069,29 @@ function validate(){
   return errs;
 }
 function reconcile(){
+  /* Same gate, new control source. The control totals are no longer a hand-built
+     block inside the file: they are the governed enterprise numerator/denominator
+     published by 06_KPI_ENTERPRISE. A measure the source does not publish is
+     reported as NOT PUBLISHED and never silently treated as a pass. */
   const sum={}; MEASURES.forEach(k=>sum[k]=0);
   for(const r of ROWS) MEASURES.forEach(k=>sum[k]+=r[k]);
-  const out={pass:true, lines:[], tol:1e-6};
+  const out={pass:true, lines:[], tol:RECON_ABS_FLOOR, advisory:[]};
   for(const k of MEASURES){
-    const ctl=FEED.control[k], d=Math.abs(sum[k]-ctl);
-    if(d>out.tol) out.pass=false;
-    out.lines.push({measure:k, computed:sum[k], control:ctl, delta:d});
+    const ctl=(FEED.control||{})[k];
+    if(ctl===null||ctl===undefined){
+      out.lines.push({measure:k, computed:sum[k], control:null, delta:null, tol:null, published:false});
+      continue;
+    }
+    const tol=Math.max(RECON_ABS_FLOOR, Math.abs(ctl)*RECON_REL_TOL), d=Math.abs(sum[k]-ctl);
+    if(d>tol) out.pass=false;
+    out.lines.push({measure:k, computed:sum[k], control:ctl, delta:d, tol:tol, published:true});
   }
-  out.rows = {computed:ROWS.length, control:FEED.control.rows, pass:ROWS.length===FEED.control.rows};
+  const ctlRows=(FEED.control||{}).rows;
+  out.rows = (ctlRows===null||ctlRows===undefined)
+    ? {computed:ROWS.length, control:null, pass:ROWS.length>0}
+    : {computed:ROWS.length, control:ctlRows, pass:ROWS.length===ctlRows};
   if(!out.rows.pass) out.pass=false;
+  out.advisory=((FEED.control||{}).advisory||[]).slice();   /* reported, never gating */
   return out;
 }
 
@@ -1124,16 +1576,43 @@ function renderExec(){
     + 'MIM STATUS '+MIM[v.mim.state].label+' \u00b7 '+v.mim.band+'.';
 }
 
+function fmtWIB(d){
+  return new Intl.DateTimeFormat('en-GB',{day:'2-digit',month:'short',year:'numeric',
+    hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Jakarta'}).format(d).replace(',','');
+}
+function dataThrough(){ return EXP_MONTHS.length ? EXP_MONTHS[EXP_MONTHS.length-1] : null; }
 function renderProvenance(){
-  const v=VIEW||{anchor:null};
-  const ts = INGEST.ts ? new Intl.DateTimeFormat('en-GB',{day:'2-digit',month:'short',year:'numeric',
-      hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Jakarta'}).format(INGEST.ts).replace(',','') : DASH;
-  document.getElementById('updated').textContent =
-    'Data to '+(v.anchor?mLong(v.anchor):DASH)+' \u00b7 ingested '+ts+' WIB';
+  /* DATA_AS_OF and LAST SUCCESSFUL FETCH are two different facts and are shown
+     as two different facts. A source Data_As_Of is used only where the governed
+     source actually publishes one; otherwise the latest governed reporting
+     period is shown, labelled as a reporting period. Nothing is invented. */
+  const u=document.getElementById('updated');
+  const sync = LIVE.lastFetch ? fmtWIB(LIVE.lastFetch)+' WIB' : DASH;
+  const per  = dataThrough();
+  const asOf = LIVE.dataAsOf ? ('Data as of '+LIVE.dataAsOf)
+             : (per ? ('Data through '+mLong(per)) : 'Data unavailable');
+  u.textContent = asOf+' \u00b7 Last sync '+sync;
+  u.title = (LIVE.dataAsOf
+      ? ('Data_As_Of published by '+LIVE.dataAsOfSource)
+      : 'The governed source publishes no Data_As_Of field. The latest governed reporting period is shown instead.')
+    + '\nLast successful live fetch: '+(LIVE.lastFetch?fmtWIB(LIVE.lastFetch)+' WIB':'never')
+    + '\nSource: '+GS.href;
+
   const c=document.getElementById('conn'), t=document.getElementById('conn-t');
-  if(INGEST.state==='COMMITTED'){ c.classList.remove('busy'); t.textContent='FEED v0.5 \u00b7 RECONCILED'; }
-  else if(INGEST.state==='FAILED'){ c.classList.add('busy'); t.textContent='FEED v0.5 \u00b7 REJECTED'; }
-  else { c.classList.add('busy'); t.textContent='FEED v0.5 \u00b7 '+INGEST.state; }
+  c.classList.remove('busy','err');
+  let label;
+  if(INGEST.state==='COMMITTED'){ label='LIVE \u00b7 RECONCILED'; }
+  else if(INGEST.state==='STALE'){ label='LIVE \u00b7 SYNC FAILED'; c.classList.add('err'); }
+  else if(INGEST.state==='UNAVAILABLE'){ label='DATA UNAVAILABLE'; c.classList.add('err'); }
+  else if(INGEST.state==='FETCHING'){ label='LIVE \u00b7 SYNCING'; c.classList.add('busy'); }
+  else { label='LIVE \u00b7 '+INGEST.state; c.classList.add('busy'); }
+  t.textContent=label;
+  c.title = (INGEST.state==='COMMITTED')
+    ? ('Live Google Sheets source, reconciled against '+GS.sheet.enterprise+'.\nLast successful sync '+sync+'.')
+    : ((INGEST.errors&&INGEST.errors.length)
+        ? ('Live source: '+INGEST.state+'\n'+INGEST.errors.slice(0,4).join('\n')
+           +(LIVE.lastFetch?('\nShowing the last successful live data ('+fmtWIB(LIVE.lastFetch)+' WIB).'):''))
+        : ('Live source pipeline: '+INGEST.state));
 }
 
 function render(){
@@ -1293,26 +1772,111 @@ function buildSiteOptions(){
   s.value=S.site;
 }
 
-/* ---------- ingestion (Refresh is a real pipeline run) ---------- */
-function paint(){ return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))); }
-async function ingest(){
-  INGEST.state='LOADING'; renderProvenance(); await paint();
+/* ---------- ingestion — LIVE pipeline ----------
+   FETCH -> PARSE -> NORMALIZE -> VALIDATE -> COMMIT -> RENDER
+   Nothing reaches the page until the gate passes. On failure the last
+   SUCCESSFUL LIVE state is kept; the retired snapshot is never substituted. */
+function paint(){
+  /* a hidden tab never fires rAF: the 24-hour auto refresh must not stall on it */
+  return new Promise(r=>{ let done=false; const fin=()=>{ if(!done){done=true; r();} };
+    setTimeout(fin,120); requestAnimationFrame(()=>requestAnimationFrame(fin)); });
+}
+function snapshotState(){ return {FEED:FEED, ROWS:ROWS, IDX:IDX, MH:MH, MONTHS:MONTHS,
+                                  EXP_MONTHS:EXP_MONTHS, YEARS:YEARS}; }
+function restoreState(s){ FEED=s.FEED; ROWS=s.ROWS; IDX=s.IDX; MH=s.MH; MONTHS=s.MONTHS;
+                          EXP_MONTHS=s.EXP_MONTHS; YEARS=s.YEARS; }
+function clearState(){ FEED=null; ROWS=[]; IDX=new Map(); MH=new Map(); MONTHS=[]; EXP_MONTHS=[]; YEARS=[]; }
+
+/* the governed validation gate, on top of the existing row-level validate() */
+function gateChecks(){
+  const e=[];
+  if(!FEED || !FEED.rows || !FEED.rows.length) e.push('gate: the governed site-month dataset is empty');
+  const ctl=(FEED&&FEED.control)||{};
+  if(ctl.mh===null||ctl.mh===undefined||ctl.esc===null||ctl.esc===undefined)
+    e.push('gate: the enterprise KPI payload (06_KPI_ENTERPRISE Section A) is missing');
+  if(!EXP_MONTHS.length) e.push('gate: no governed reporting period carries man-hours');
+  const bad=MONTHS.filter(m=>m<GS.domainFrom);
+  if(bad.length) e.push('gate: '+bad.length+' period(s) outside the governed reporting domain ('+bad[0]+')');
+  const uns=ROWS.filter(r=>SITE_CODES.indexOf(r.site)<0).map(r=>r.site);
+  if(uns.length) e.push('gate: site "'+uns[0]+'" is not in the governed site registry');
+  return e;
+}
+function reconLines(rec){
+  const out=[];
+  rec.lines.forEach(l=>{ if(l.published && l.delta>l.tol)
+    out.push('reconciliation: '+l.measure+' computed '+l.computed+' vs governed source '+l.control); });
+  if(!rec.rows.pass) out.push('reconciliation: governed row count '+rec.rows.computed+' vs '+rec.rows.control);
+  return out.length?out:['reconciliation failed'];
+}
+function logIngest(reason){
+  if(!window.console) return;
+  const grp=console.groupCollapsed?console.groupCollapsed.bind(console):console.log.bind(console);
+  grp('MIME live source \u2014 '+INGEST.state+' ('+reason+')');
+  console.log('source', GS.href);
+  console.log('header row discovered', LIVE.headerRow);
+  if(LIVE.notes&&LIVE.notes.length) LIVE.notes.forEach(n=>console.log('note:', n));
+  if(INGEST.recon && console.table){
+    console.log('RECONCILIATION vs '+GS.sheet.enterprise+' (gating)'); console.table(INGEST.recon.lines);
+    if(INGEST.recon.advisory.length){ console.log('ADVISORY (reported, not gating)'); console.table(INGEST.recon.advisory); }
+  }
+  if(INGEST.errors&&INGEST.errors.length) INGEST.errors.forEach(e=>console.warn('reject:', e));
+  if(console.groupEnd) console.groupEnd();
+}
+
+async function ingest(reason){
+  if(INGEST.busy) return false;
+  INGEST.busy=true;
+  const prev=snapshotState();                 /* staged: current state is held for rollback */
   try{
-    normalize();
+    INGEST.state='FETCHING'; renderProvenance(); await paint();
+    const live=await fetchLive();              /* FETCH -> PARSE -> NORMALIZE (adapter) */
+    LIVE.notes=live.notes; LIVE.stats=live.stats; LIVE.enterprise=live.enterprise;
+    FEED=live.feed; normalize();               /* fill the existing FEED contract */
     INGEST.state='VALIDATING'; renderProvenance(); await paint();
-    const errs=validate();
-    if(errs.length){ INGEST.state='FAILED'; INGEST.errors=errs; renderProvenance(); return false; }
+    const errs=live.errors.concat(validate()).concat(gateChecks());
+    if(errs.length){ const e=new Error(errs[0]); e.lines=errs; throw e; }
     INGEST.state='RECONCILING'; renderProvenance(); await paint();
     const rec=reconcile();
-    INGEST.recon=rec;
-    if(!rec.pass){ INGEST.state='FAILED'; renderProvenance(); return false; }
-    INGEST.state='COMMITTED'; INGEST.ts=new Date();       /* provenance from a passed gate only */
-    buildFilters();                                       /* option domains derive from the FEED */
+    if(!rec.pass){ const e=new Error('reconciliation failed'); e.lines=reconLines(rec); throw e; }
+    /* ---------------- COMMIT (nothing above has reached the page) ---------------- */
+    INGEST.recon=rec; INGEST.errors=[]; INGEST.state='COMMITTED'; INGEST.ts=new Date();
+    LIVE.everLoaded=true; LIVE.lastFetch=INGEST.ts; LIVE.lastError=null;
+    LIVE.dataAsOf=(live.enterprise&&live.enterprise.asOf)||null;
+    LIVE.dataAsOfSource=(live.enterprise&&live.enterprise.asOfSource)||null;
+    buildFilters();                            /* option domains derive from the live FEED */
     render();
+    logIngest(reason||'manual');
     return true;
-  }catch(err){ INGEST.state='FAILED'; INGEST.errors=[String(err)]; renderProvenance(); return false; }
+  }catch(err){
+    restoreState(prev);                        /* a failed fetch never half-applies */
+    INGEST.errors=(err&&err.lines)?err.lines:[String((err&&err.message)||err)];
+    LIVE.lastError=INGEST.errors[0];
+    if(LIVE.everLoaded){
+      INGEST.state='STALE';                    /* keep the last SUCCESSFUL LIVE state */
+      renderProvenance();
+    }else{
+      INGEST.state='UNAVAILABLE';              /* never a fabricated or snapshot value */
+      clearState(); buildFilters(); render();
+    }
+    logIngest(reason||'manual');
+    return false;
+  }finally{ INGEST.busy=false; scheduleAuto(); }
 }
-document.getElementById('refresh').addEventListener('click',()=>ingest());
+
+/* ---------- 24-hour refresh policy ----------
+   A browser cannot refresh a closed page, so the policy is: refresh on open,
+   every 24h while open, on return to an open tab that has gone stale, and on
+   demand. No server-side scheduler exists or is required. */
+let AUTO_TIMER=null;
+function liveIsStale(){ return !LIVE.lastFetch || (Date.now()-LIVE.lastFetch.getTime())>=AUTO_REFRESH_MS; }
+function scheduleAuto(){
+  if(AUTO_TIMER) clearInterval(AUTO_TIMER);
+  AUTO_TIMER=setInterval(()=>{ ingest('auto 24h'); }, AUTO_REFRESH_MS);
+}
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden && !INGEST.busy && liveIsStale()) ingest('reopen after 24h');
+});
+document.getElementById('refresh').addEventListener('click',()=>ingest('manual'));
 
 /* ---------- scaling: uniform, width-driven, never > 1 ---------- */
 function fit(){
@@ -1350,6 +1914,10 @@ function reportHTML(){
    +'<p><b>Scope:</b> '+scopeLabel()+'<br><b>Reporting anchor:</b> '+(v.anchor?mLong(v.anchor):DASH)
    +'<br><b>Display domain:</b> 12 rolling 12-month windows ending at the anchor'
    +'<br><b>Source:</b> '+FEED.prov.file+' ('+FEED.prov.version+'), sheets '+FEED.prov.sheets
+   +'<br><b>Data as of:</b> '+(LIVE.dataAsOf
+        ? LIVE.dataAsOf+' (published by '+LIVE.dataAsOfSource+')'
+        : (dataThrough()? mLong(dataThrough())+' \u2014 latest governed reporting period; the source publishes no Data_As_Of field' : DASH))
+   +'<br><b>Last successful live fetch:</b> '+(LIVE.lastFetch?fmtWIB(LIVE.lastFetch)+' WIB':'never')
    +'<br><b>Ingestion:</b> '+INGEST.state+' \u00b7 reconciliation '+(INGEST.recon&&INGEST.recon.pass?'PASS':'FAIL')
    +'<br><b>MIM STATUS:</b> '+MIM[v.mim.state].label+' \u2014 '+v.mim.band
    +'<br><b>Roll-up authority:</b> Owner-governed Page-1 executive roll-up '
@@ -1370,7 +1938,16 @@ function reportHTML(){
    +(KPI_ORDER.some(id=>v.k[id].zeroEvent===true)
       ? '<h2>Zero-event rule</h2><p>'+ZERO_EVENT_NOTE+'</p>' : '')
    +'<h2>Population governance</h2><p>'+FEED.prov.popE+'<br>'+FEED.prov.popC+'<br>'+FEED.prov.cfr_excluded
-   +'<br>'+FEED.prov.cfr_source_declared+'<br>'+FEED.prov.tier2+'</p></body></html>';
+   +'<br>'+FEED.prov.cfr_source_declared+'<br>'+FEED.prov.tier2+'</p>'
+   +'<h2>Source reconciliation</h2><table><tr><th>Measure</th><th>Dashboard</th><th>Governed source</th><th>Result</th></tr>'
+   +((INGEST.recon?INGEST.recon.lines:[]).map(l=>'<tr><td>'+l.measure+'</td><td class="n">'+l.computed
+        +'</td><td class="n">'+(l.published?l.control:DASH)+'</td><td>'
+        +(l.published?(l.delta<=l.tol?'RECONCILED':'VARIANCE'):'not published by source')+'</td></tr>').join(''))
+   +((INGEST.recon?INGEST.recon.advisory:[]).map(a=>'<tr><td>'+a.label+'</td><td class="n">'
+        +(a.computed===null?DASH:Math.round(a.computed*1e4)/1e4)+a.unit+'</td><td class="n">'
+        +(a.published===null?DASH:Math.round(a.published*1e4)/1e4)+a.unit
+        +'</td><td>advisory</td></tr>').join(''))
+   +'</table></body></html>';
 }
 function download(name, blob){
   const u=URL.createObjectURL(blob), a=document.createElement('a');
@@ -1378,6 +1955,8 @@ function download(name, blob){
   setTimeout(()=>URL.revokeObjectURL(u),1500);
 }
 document.getElementById('b-rpt').addEventListener('click',()=>{
+  if(!FEED||!VIEW){ alert('No live data is loaded. The Executive Summary is unavailable until the '
+    +'governed Google Spreadsheet has been read successfully.'); return; }
   download('MIME_Executive_Summary_'+(VIEW.anchor||'nodata')+'.html',
     new Blob([reportHTML()],{type:'text/html;charset=utf-8'}));
 });
@@ -1481,15 +2060,21 @@ function pptx(){
   return zip(files);
 }
 document.getElementById('b-ppt').addEventListener('click',()=>{
+  if(!FEED||!VIEW){ alert('No live data is loaded. The PowerPoint export is unavailable until the '
+    +'governed Google Spreadsheet has been read successfully.'); return; }
   download('MIME_Page1_'+(VIEW.anchor||'nodata')+'.pptx',
     new Blob([pptx()],{type:'application/vnd.openxmlformats-officedocument.presentationml.presentation'}));
 });
 
 /* ---------- boot ---------- */
 fit();
-ingest().then(ok=>{ if(!ok) console.error('INGESTION FAILED', INGEST); });
+/* opening the dashboard is itself a refresh trigger under the 24-hour policy */
+ingest('open').then(ok=>{ if(!ok) console.error('MIME LIVE SOURCE UNAVAILABLE', INGEST.errors); });
 window.__MIME__ = {get view(){return VIEW;}, S, KPI, KPI_ORDER, get ingest(){return INGEST;},
-                   statusFor, fmt, fmtDelta, render, mLong, scopeLabel};
+                   statusFor, fmt, fmtDelta, render, mLong, scopeLabel,
+                   /* live source surface for acceptance testing */
+                   GS, LIVE, get feed(){return FEED;}, refresh:ingest, reconcile,
+                   fixture:FEED_FIXTURE};
 </script>
 </body>
 </html>
