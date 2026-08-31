@@ -576,6 +576,114 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
   #stage-wrap{display:block}
   #app{box-shadow:none}
 }
+/* ============================================================================
+   PAGE-3 — SITE BENCHMARK, ATTRIBUTE VIEW   (7S lens: SKILLS)
+   Geometry transferred by measurement from the approved Page-3 Golden Mockup
+   (artwork 1372x896; y 1:1, x mapped onto the FROZEN production content frame
+   left 200 / width 1123 so the frozen sidebar is never disturbed).
+   Colour tokens only — CH.0 governs, no new colour is declared.
+   The shared shell (sidebar/header/filter-bar/footer) is NOT touched.
+   ========================================================================== */
+#app[data-page="1"] #page3,
+#app[data-page="2"] #page3{display:none}
+#app[data-page="3"] #hero-status,
+#app[data-page="3"] #kpi-grid,
+#app[data-page="3"] #analytics-grid,
+#app[data-page="3"] #page2{display:none}
+#page3{position:absolute;left:0;top:0;width:1344px;height:896px;pointer-events:none}
+#page3>*{pointer-events:auto}
+
+.p3t{position:absolute;left:14px;font-size:12.5px;font-weight:800;letter-spacing:.1px;color:var(--ink)}
+.p3s{position:absolute;left:14px;font-size:9.5px;font-weight:400;color:#5B6166}
+
+/* ---------- C2 · SITE PERFORMANCE ATTRIBUTE QUADRANT (primary mechanism) ---- */
+#p3c2{left:200px;top:137px;width:708px;height:571px}
+#p3c2 .p3t{top:11px}
+#p3c2 .p3s{top:30px}
+#p3-leg{position:absolute;right:14px;top:46px;font-size:8.4px;font-weight:700;
+  letter-spacing:.3px;color:var(--grey)}
+#p3-qlab{position:absolute;left:14px;top:62px;font-size:10px;font-weight:700;color:var(--body)}
+#p3-qlab span{font-weight:400;color:var(--grey)}
+#p3chart{position:absolute;left:-1px;top:80px;width:708px;height:390px;display:block}
+#p3-foot{position:absolute;left:14px;top:472px;font-size:8.6px;font-weight:400;color:var(--grey);
+  display:flex;align-items:center;gap:5px}
+#p3-foot svg{width:11px;height:11px;flex:0 0 11px}
+
+/* ---------- C4a · ENTERPRISE REFERENCE STRIP (filter-invariant, B-2/B-3) ---- */
+#p3ref{position:absolute;left:16px;top:498px;width:676px;height:61px;
+  border:1px solid var(--line);border-radius:7px;background:var(--panel);display:flex;align-items:stretch}
+#p3ref .lab{flex:0 0 176px;padding:11px 0 0 14px;border-right:1px solid var(--line)}
+#p3ref .lab b{display:block;font-size:10.5px;font-weight:800;letter-spacing:.2px;color:var(--title-teal)}
+#p3ref .lab i{display:block;font-style:normal;font-size:7.6px;font-weight:400;color:var(--grey);
+  line-height:10px;margin-top:3px}
+#p3ref .cell{flex:1 1 0;border-right:1px solid var(--line);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px}
+#p3ref .cell:last-child{border-right:0}
+#p3ref .cap{font-size:8px;font-weight:700;letter-spacing:.2px;color:var(--grey)}
+#p3ref .cap em{display:block;font-style:normal;font-size:7.2px;font-weight:400;color:var(--grey-2)}
+#p3ref .val{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+#p3ref .val u{text-decoration:none;font-size:7.6px;font-weight:400;color:var(--grey);margin-left:3px}
+#p3ref .cfr .cap{color:var(--action)}
+#p3ref .cfr .val{color:var(--action)}
+
+/* ---------- C3 · SITE PATTERN DISTRIBUTION + C1 · ATTRIBUTE INSIGHT -------- */
+#p3c3{left:918px;top:137px;width:405px;height:424px}
+#p3c3 .p3t{top:11px}
+#p3c3 .p3s{top:30px}
+#p3tbl{position:absolute;left:14px;top:59px;width:377px;border-collapse:collapse;table-layout:fixed}
+#p3tbl th{font-size:9.2px;font-weight:600;color:var(--body);text-align:left;padding:6px 0 18px 0;
+  border-bottom:1px solid var(--line)}
+#p3tbl th.c{text-align:left;padding-left:12px}
+#p3tbl th.i{padding-left:13px}
+#p3tbl td{border-bottom:1px solid var(--line-soft);padding:17px 0;vertical-align:middle}
+#p3tbl tr:last-child td{padding-bottom:9px}
+#p3tbl tr:last-child td{border-bottom:0}
+#p3tbl td.q{position:relative;padding-left:9px}
+#p3tbl td.q b{display:block;font-size:8.8px;font-weight:800;line-height:11.5px;letter-spacing:.1px}
+#p3tbl td.q s{position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;text-decoration:none}
+#p3tbl td.n{font-size:12px;font-weight:800;color:var(--ink);padding-left:12px;
+  font-variant-numeric:tabular-nums;vertical-align:middle}
+#p3tbl td.ch{padding-left:2px}
+#p3tbl td.ch .chip{display:inline-block;min-width:30px;text-align:center;font-size:8.2px;font-weight:700;
+  color:var(--body);background:var(--panel);border:1px solid var(--line);border-radius:4px;
+  padding:2px 5px;margin-right:4px}
+#p3tbl td.ip{font-size:8.6px;font-weight:400;line-height:12.2px;color:var(--body);padding-left:13px}
+
+#p3tiles{position:absolute;left:14px;top:359px;width:377px;height:54px;display:flex;gap:6px}
+#p3tiles .tile{background:#F4F4F2;border:1px solid var(--line-soft);border-radius:6px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+#p3tiles .tile .k{font-size:7.6px;font-weight:700;letter-spacing:.3px;color:var(--grey)}
+#p3tiles .tile .v{font-size:14px;font-weight:800;line-height:15px}
+#p3tiles .t1{flex:0 0 107px} #p3tiles .t2{flex:0 0 127px} #p3tiles .t3{flex:1 1 auto}
+#p3tiles .t3 .v{font-size:12.5px}
+
+/* ---------- C4b · ABOUT THIS BENCHMARK (context + provenance, B-1) --------- */
+#p3about{left:918px;top:570px;width:405px;height:138px}
+#p3about .p3t{top:12px;font-size:11.5px;color:var(--ink)}
+#p3about .ic{position:absolute;right:13px;top:11px;width:14px;height:14px}
+#p3about ul{position:absolute;left:17px;top:35px;right:14px;list-style:none}
+#p3about li{position:relative;padding-left:13px;font-size:8.8px;font-weight:400;line-height:14.6px;color:var(--body)}
+#p3about li:before{content:"";position:absolute;left:3px;top:6px;width:3px;height:3px;border-radius:50%;
+  background:var(--grey-2)}
+#p3about .prov{position:absolute;left:17px;right:14px;bottom:9px;font-size:7.6px;font-weight:400;
+  color:var(--grey-2);line-height:10px}
+
+/* ---------- C5 · MANAGEMENT INTERPRETATION / IMPLICATION ------------------- */
+#p3c5{position:absolute;left:200px;top:717px;width:1123px;height:102px;border-radius:9px;
+  background:#FDF7E4;border:1px solid #F0E3BC}
+#p3c5 .col{position:absolute;top:0;height:100%}
+#p3c5 .c-l{left:0;width:638px} #p3c5 .c-r{left:638px;width:483px}
+#p3c5 .ic{position:absolute;left:14px;top:29px;width:44px;height:44px;border-radius:50%;
+  background:var(--hero-gold);display:flex;align-items:center;justify-content:center}
+#p3c5 .c-r .ic{background:#FDF7E4;border:1.6px solid var(--hero-gold)}
+#p3c5 .ic svg{width:22px;height:22px}
+#p3c5 .h{position:absolute;left:70px;top:22px;font-size:10.5px;font-weight:800;letter-spacing:.2px;color:var(--ink)}
+#p3c5 .q{position:absolute;left:70px;top:36px;font-size:8.6px;font-weight:400;color:#5B6166}
+#p3c5 .b{position:absolute;left:70px;top:55px;right:16px;font-size:9.4px;font-weight:400;
+  line-height:15px;color:var(--body)}
+#p3c5 .b em{font-style:normal;font-weight:700;color:var(--action)}
+#p3c5 .b i{font-style:normal;font-weight:700}
+
 </style>
 </head>
 <body>
@@ -789,6 +897,61 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
           <div id="p2c4-chips"></div>
           <div id="p2c4-rule"></div>
           <div id="p2c4-cols"></div>
+        </section>
+
+      </section>
+
+      <!-- =========== PAGE 3 — SITE BENCHMARK · ATTRIBUTE VIEW =========== -->
+      <section id="page3">
+
+        <!-- C2 (primary analytical mechanism) + C4a enterprise reference -->
+        <section id="p3c2" class="card">
+          <div class="p3t">SITE BENCHMARK PATTERN (ATTRIBUTE VIEW)</div>
+          <div class="p3s">Is the weakness isolated or systemic?</div>
+          <div id="p3-leg"></div>
+          <div id="p3-qlab">MRR vs MER Quadrant <span>(bubble size = IMR per 1,000,000 MH)</span></div>
+          <svg id="p3chart" viewBox="0 0 708 390" aria-label="Site MRR versus MER attribute quadrant"></svg>
+          <div id="p3-foot">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.6" fill="none" stroke="#9AA1AB" stroke-width="1.2"/><path d="M8 7.2v4.2" stroke="#9AA1AB" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="#9AA1AB"/></svg>
+            <span>Bubble size represents IMR (Illness Medevac Rate) per 1,000,000 man-hours.</span>
+          </div>
+          <div id="p3ref"></div>
+        </section>
+
+        <!-- C3 site pattern distribution + C1 attribute insight tiles -->
+        <section id="p3c3" class="card">
+          <div class="p3t">SITE PATTERN DISTRIBUTION</div>
+          <div class="p3s">How are site performance patterns distributed?</div>
+          <table id="p3tbl">
+            <colgroup><col style="width:98px"><col style="width:34px"><col style="width:96px"><col style="width:149px"></colgroup>
+            <thead><tr><th>Pattern</th><th class="c" colspan="2">Sites</th><th class="i">Interpretation</th></tr></thead>
+            <tbody id="p3tbody"></tbody>
+          </table>
+          <div id="p3tiles"></div>
+        </section>
+
+        <!-- C4b outcome / benchmark context -->
+        <section id="p3about" class="card">
+          <div class="p3t">ABOUT THIS BENCHMARK</div>
+          <svg class="ic" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.8" fill="none" stroke="#6B7280" stroke-width="1.2"/><path d="M8 7.1v4.3" stroke="#6B7280" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="4.8" r=".95" fill="#6B7280"/></svg>
+          <ul id="p3about-l"></ul>
+          <div class="prov" id="p3-prov"></div>
+        </section>
+
+        <!-- C5 management interpretation / implication -->
+        <section id="p3c5">
+          <div class="col c-l">
+            <div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.2" fill="none" stroke="#FFFFFF" stroke-width="2"/><path d="M15.2 15.2 20 20" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+            <div class="h">MANAGEMENT INTERPRETATION</div>
+            <div class="q">What does this mean?</div>
+            <div class="b" id="p3-int"></div>
+          </div>
+          <div class="col c-r">
+            <div class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5.4" y="4.2" width="13.2" height="16" rx="2" fill="none" stroke="#D69E01" stroke-width="1.8"/><rect x="8.8" y="2.4" width="6.4" height="3.6" rx="1.2" fill="none" stroke="#D69E01" stroke-width="1.8"/><path d="M8.8 11h6.4M8.8 15h4.4" stroke="#D69E01" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+            <div class="h">MANAGEMENT IMPLICATION</div>
+            <div class="q">What should we do?</div>
+            <div class="b" id="p3-imp"></div>
+          </div>
         </section>
 
       </section>
@@ -2004,6 +2167,320 @@ function renderP2C4(){
 
 function renderPage2(){ renderP2C1(); renderP2C2(); renderP2C3(); renderP2C4(); }
 
+/* ============================================================================
+   PAGE-3 — SITE BENCHMARK · ATTRIBUTE VIEW      (7S lens: SKILLS)
+   Management question: is the weakness isolated or systemic?
+
+   Architect rulings implemented verbatim:
+     B-1  frozen footer untouched; Golden-Mockup SOURCE line rendered as Page-3
+          provenance inside the approved C4 reference/context area.
+     B-2  Enterprise Reference is FIXED, read from 06_KPI_ENTERPRISE through the
+          EXISTING adapter and evaluated with the EXISTING KPI engine. It never
+          recomputes from the filtered site population and is never hard-coded.
+     B-3  IM-CFR Tier-2 is the published enterprise value (06 Section B, B17),
+          labelled as enterprise reference context. No site-month IM-CFR is
+          derived, allocated or invented.
+     B-4  navigation is a binding only; zero visual change to the frozen shell.
+     TIE  siteValue >= reference => HIGH, siteValue < reference => LOW.
+          ATTRIBUTE classification only — never GOOD/WATCH/ACTION.
+
+   No page-local KPI formula. No page-local status engine. No second filter
+   state. ITEM-1 (Architect, final): bubble colour IS the quadrant attribute
+   pattern. The governed status engine remains frozen and is NOT consulted by
+   this page — GOOD / WATCH / ACTION never reach the attribute quadrant.
+   ========================================================================== */
+
+const P3Q = {
+  HH:{key:'HH', hi:'HIGH MRR', lo:'HIGH MER', col:'var(--action)', corner:'High escalation &amp; high evacuation'},
+  HL:{key:'HL', hi:'HIGH MRR', lo:'LOW MER',  col:'var(--watch)',  corner:'Referral-intensive lower evacuation'},
+  LH:{key:'LH', hi:'LOW MRR',  lo:'HIGH MER', col:'var(--mer)',    corner:'Evacuation-intensive'},
+  LL:{key:'LL', hi:'LOW MRR',  lo:'LOW MER',  col:'var(--good)',   corner:'Lower escalation &amp; evacuation'}
+};
+const P3_ORDER = ['HH','HL','LH','LL'];
+/* approved Golden-Mockup interpretation wording, count-aware only where the
+   approved wording is itself count-bearing (HIGH/HIGH) */
+const P3_INTERP = {
+  HH:n=> n===0 ? 'No common high-escalation / high-evacuation cluster.'
+               : 'High-escalation / high-evacuation cluster present.',
+  HL:()=>'Referral-intensive pattern. Higher referral activity but lower evacuation intensity.',
+  LH:()=>'Evacuation-intensive pattern. High evacuation relative to referral activity.',
+  LL:()=>'Lower escalation and evacuation intensity.'
+};
+
+/* ---------- B-2/B-3 · FILTER-INVARIANT ENTERPRISE REFERENCE ---------------- */
+function p3Ref(){
+  const e = LIVE.enterprise;
+  if(!e || !e.A) return {MRR:null, MER:null, IMR:null, CFR2:null, domain:null};
+  const A=e.A, B=e.B||{};
+  const a={esc:A.esc, mev:A.mev, imev:A.imev, mh:A.mh};      /* governed published num/den */
+  return {
+    MRR: calc(KPI.MRR, a),                                   /* EXISTING engine, not a new formula */
+    MER: calc(KPI.MER, a),
+    IMR: calc(KPI.IMR, a),
+    CFR2:(B.b17===null||B.b17===undefined) ? null : B.b17,    /* 06 Section B — Tier-2, episode level */
+    domain: MONTHS.length ? (MONTHS[0].slice(0,4)+'\u2013'+MONTHS[MONTHS.length-1].slice(0,4)) : null
+  };
+}
+
+/* the ONE global filter state resolves the month set; no Page-3 scope logic */
+function p3Months(){
+  return MONTHS.filter(m =>
+    (S.year ==='ALL' || m.slice(0,4)===S.year) &&
+    (S.month==='ALL' || m.slice(5,7)===S.month));
+}
+
+function p3Extend(v){
+  const ref=p3Ref(), months=p3Months(), pts=[];
+  for(const r of v.siteRows){            /* EXISTING governed scope population only */
+    const a=aggregate(rowsFor([r.code], months));            /* EXISTING pooled aggregation */
+    const mrr=calc(KPI.MRR,a), mer=calc(KPI.MER,a), imr=calc(KPI.IMR,a);
+    const ok=(mrr!==null && mer!==null && ref.MRR!==null && ref.MER!==null);
+    pts.push({code:r.code, name:r.name, mrr:mrr, mer:mer, imr:imr, mh:a.mh,
+              q: ok ? ((mrr>=ref.MRR?'H':'L')+(mer>=ref.MER?'H':'L')) : null});  /* TIE RULE */
+    /* ITEM-1: no performance status is carried into Page-3. The governed status
+       engine stays frozen and is simply NOT consulted here — bubble colour has a
+       different analytical function (attribute pattern), so GOOD/WATCH/ACTION
+       must never reach this surface. */
+  }
+  const counts={HH:0,HL:0,LH:0,LL:0}, mem={HH:[],HL:[],LH:[],LL:[]};
+  for(const p of pts) if(p.q){ counts[p.q]++; mem[p.q].push(p); }
+  const plotted=pts.filter(p=>p.q);
+  v.p3={ref:ref, months:months, pts:pts, plotted:plotted, counts:counts, mem:mem,
+         nodata:pts.length-plotted.length,
+         patterns:P3_ORDER.filter(k=>counts[k]>0).length};
+  return v;
+}
+
+/* ---------- axis scaling (presentation only — not a KPI rule) -------------- */
+function p3Nice(max, step){
+  if(!(max>0)) return step*7;
+  const raw=max, s=step;
+  let m=Math.ceil(raw/s)*s;
+  while(m/s < 4) { return s*4; }
+  return m;
+}
+function p3Axis(max, target){
+  if(!(max>0)) return {max:target, step:target/7};
+  const rough=max/7, mag=Math.pow(10, Math.floor(Math.log10(rough)));
+  const cand=[1,2,2.5,5,10].map(x=>x*mag);
+  let step=cand.find(x=>x>=rough) || cand[cand.length-1];
+  let top=Math.ceil(max/step)*step;
+  while(top/step > 8){ step*=2; top=Math.ceil(max/step)*step; }
+  return {max:top, step:step};
+}
+
+/* ---------- C2 · quadrant --------------------------------------------------- */
+function renderP3C2(){
+  const v=VIEW, p=v.p3, ref=p.ref;
+  /* ITEM-1 MANDATORY SEMANTIC SEPARATION — the Mockup legend slot may not carry
+     GOOD / WATCH / ACTION here. Bubble colour is the quadrant attribute pattern,
+     already keyed by the four in-chart corner captions, so the slot states the
+     semantic and adds no second key. */
+  document.getElementById('p3-leg').textContent = 'BUBBLE COLOUR = QUADRANT PATTERN';
+
+  const L=77, R=684, T=11, B=333;                 /* plot box, measured from the Mockup */
+  const maxX=Math.max(ref.MRR||0, ...p.plotted.map(s=>s.mrr), 0)*1.05;
+  const maxY=Math.max(ref.MER||0, ...p.plotted.map(s=>s.mer), 0)*1.15;
+  const AX=p3Axis(maxX, 140), AY=p3Axis(maxY, 3.5);
+  const sx=x=>L+(x/AX.max)*(R-L), sy=y=>B-(y/AY.max)*(B-T);
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  let g='';
+
+  /* frame */
+  g+='<line x1="'+L+'" y1="'+B+'" x2="'+R+'" y2="'+B+'" stroke="var(--line)" stroke-width="1"/>';
+  g+='<line x1="'+L+'" y1="'+T+'" x2="'+L+'" y2="'+B+'" stroke="var(--line)" stroke-width="1"/>';
+
+  /* axes */
+  for(let t=0;t<=AX.max+1e-9;t+=AX.step){
+    const x=sx(t);
+    g+='<text x="'+x.toFixed(1)+'" y="'+(B+20)+'" text-anchor="middle" font-size="9" fill="var(--grey)">'
+      +(AX.step<1?t.toFixed(1):String(Math.round(t)))+'</text>';
+  }
+  for(let t=0;t<=AY.max+1e-9;t+=AY.step){
+    const y=sy(t);
+    g+='<text x="'+(L-8)+'" y="'+(y+3.2).toFixed(1)+'" text-anchor="end" font-size="9" fill="var(--grey)">'
+      +t.toFixed(2)+'</text>';
+  }
+  g+='<text x="'+((L+R)/2)+'" y="'+(B+42)+'" text-anchor="middle" font-size="9.4" font-weight="600" '
+    +'fill="var(--body)">MRR \u2013 Medical Referral Rate (/ 1,000,000 MH)</text>';
+  g+='<text transform="translate(14,'+((T+B)/2)+') rotate(-90)" text-anchor="middle" font-size="9.4" '
+    +'font-weight="700" fill="var(--body)">MER</text>';
+  g+='<text transform="translate(40,'+((T+B)/2)+') rotate(-90)" text-anchor="middle" font-size="8" '
+    +'fill="var(--grey)">Medical Evacuation Rate (/ 1,000,000 MH)</text>';
+
+  /* fixed enterprise reference lines (B-2) */
+  if(ref.MRR!==null){
+    const x=sx(ref.MRR);
+    g+='<line x1="'+x.toFixed(1)+'" y1="'+T+'" x2="'+x.toFixed(1)+'" y2="'+B+'" stroke="var(--mrr)" stroke-width="1.1"/>';
+    g+='<text x="'+(x+6).toFixed(1)+'" y="'+(B-6)+'" font-size="8.8" font-weight="700" fill="var(--mrr)">'
+      +'Enterprise MRR '+ref.MRR.toFixed(2)+'</text>';
+  }
+  if(ref.MER!==null){
+    const y=sy(ref.MER);
+    g+='<line x1="'+L+'" y1="'+y.toFixed(1)+'" x2="'+R+'" y2="'+y.toFixed(1)+'" stroke="var(--title-teal)" '
+      +'stroke-width="1.1" stroke-dasharray="5 4"/>';
+    g+='<text x="'+R+'" y="'+(y-9).toFixed(1)+'" text-anchor="end" font-size="8.8" font-weight="700" '
+      +'fill="var(--title-teal)">Enterprise MER</text>';
+    g+='<text x="'+R+'" y="'+(y+11).toFixed(1)+'" text-anchor="end" font-size="8.8" font-weight="700" '
+      +'fill="var(--title-teal)">'+ref.MER.toFixed(2)+'</text>';
+  }
+
+  /* quadrant corner captions — ATTRIBUTE labels, never a status */
+  const corner=(k,x,y,anchor)=>{
+    const q=P3Q[k];
+    return '<text x="'+x+'" y="'+y+'" text-anchor="'+anchor+'" font-size="8.8" font-weight="800" fill="'+q.col+'">'+q.hi+'</text>'
+         + '<text x="'+x+'" y="'+(y+13)+'" text-anchor="'+anchor+'" font-size="8.8" font-weight="800" fill="'+q.col+'">'+q.lo+'</text>'
+         + '<text x="'+x+'" y="'+(y+27)+'" text-anchor="'+anchor+'" font-size="8.2" fill="var(--body)">'+q.corner+'</text>';
+  };
+  g+=corner('LH', L+9,  T+15, 'start');
+  g+=corner('HH', R-4,  T+15, 'end');
+  g+=corner('LL', L+9,  B-46, 'start');
+  g+=corner('HL', R-4,  B-46, 'end');
+
+  /* bubbles — position AND colour are both the quadrant ATTRIBUTE (ITEM-1) */
+  const maxI=Math.max(0,...p.plotted.map(s=>s.imr||0));
+  for(const s of p.plotted){
+    const x=sx(Math.min(s.mrr,AX.max)), y=sy(Math.min(s.mer,AY.max));
+    const r = maxI>0 ? 7+4.5*Math.sqrt((s.imr||0)/maxI) : 8.5;
+    g+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+r.toFixed(1)+'" fill="'+P3Q[s.q].col+'"/>';
+    g+='<text x="'+(x+r+7).toFixed(1)+'" y="'+(y-1).toFixed(1)+'" font-size="9.4" font-weight="700" '
+      +'fill="var(--ink)">'+esc(s.code)+'</text>';
+    g+='<text x="'+(x+r+7).toFixed(1)+'" y="'+(y+12).toFixed(1)+'" font-size="8.6" fill="var(--body)">(IMR '
+      +(s.imr===null?DASH:s.imr.toFixed(2))+')</text>';
+  }
+  if(!p.plotted.length){
+    g+='<text x="'+((L+R)/2)+'" y="'+((T+B)/2)+'" text-anchor="middle" font-size="10.5" font-weight="700" '
+      +'fill="var(--nodata)">No governed site data in the selected scope</text>';
+  }
+  document.getElementById('p3chart').innerHTML=g;
+}
+
+/* ---------- C4a · enterprise reference strip -------------------------------- */
+function renderP3C4a(){
+  const ref=VIEW.p3.ref;
+  const n=(v,d)=> v===null||v===undefined ? DASH : v.toFixed(d);
+  const cell=(cap,val,unit)=>'<div class="cell"><div class="cap">'+cap+'</div>'
+    +'<div class="val">'+val+(unit?'<u>'+unit+'</u>':'')+'</div></div>';
+  document.getElementById('p3ref').innerHTML =
+      '<div class="lab"><b>ENTERPRISE REFERENCE</b><i>Pooled '+(ref.domain||DASH)
+    + ' \u00b7 06_KPI_ENTERPRISE \u00b7 fixed, not filtered</i></div>'
+    + cell('MRR', n(ref.MRR,2), '/1,000,000 MH')
+    + cell('MER', n(ref.MER,2), '/1,000,000 MH')
+    + cell('IMR', n(ref.IMR,2), '/1,000,000 MH')
+    + '<div class="cell cfr"><div class="cap">IM-CFR (Tier-2)<em>Illness CFR (episode level)</em></div>'
+    + '<div class="val">'+(ref.CFR2===null?DASH:ref.CFR2.toFixed(2)+'%')+'</div></div>';
+}
+
+/* ---------- C3 · pattern distribution + C1 · attribute insight -------------- */
+function renderP3C3(){
+  const p=VIEW.p3;
+  let h='';
+  for(const k of P3_ORDER){
+    const q=P3Q[k], n=p.counts[k];
+    const chips=p.mem[k].map(s=>'<span class="chip">'+s.code+'</span>').join('');
+    h+='<tr>'
+      +'<td class="q"><s style="background:'+q.col+'"></s>'
+      +'<b style="color:'+q.col+'">'+q.hi+' /</b><b style="color:'+q.col+'">'+q.lo+'</b></td>'
+      +'<td class="n">'+n+'</td>'
+      +'<td class="ch">'+chips+'</td>'
+      +'<td class="ip">'+P3_INTERP[k](n)+'</td></tr>';
+  }
+  document.getElementById('p3tbody').innerHTML=h;
+
+  /* C1 ATTRIBUTE INSIGHT — pattern-level conclusion, not a KPI wall */
+  const hh=p.counts.HH;
+  document.getElementById('p3tiles').innerHTML =
+      '<div class="tile t1"><div class="k">TOTAL SITES</div>'
+    + '<div class="v" style="color:var(--good)">'+p.plotted.length+'</div></div>'
+    + '<div class="tile t2"><div class="k">PATTERNS IDENTIFIED</div>'
+    + '<div class="v" style="color:var(--ink)">'+p.patterns+' of 4</div></div>'
+    + '<div class="tile t3"><div class="k">HIGH-HIGH CLUSTER</div>'
+    + '<div class="v" style="color:'+P3Q.HH.col+'">'+(hh>0?'PRESENT':'NOT PRESENT')+'</div></div>';
+}
+
+/* ---------- C4b · benchmark context + provenance (B-1) --------------------- */
+function renderP3C4b(){
+  const ref=VIEW.p3.ref;
+  document.getElementById('p3about-l').innerHTML =
+    [ 'Rates are per 1,000,000 man-hours.',
+      'IMR (bubble size) adds illness-driven evacuation dimension.',
+      'IM-CFR (Tier-2) provides outcome context for illness episodes.',
+      'Denominator source: '+GS.sheet.icfr+'.'
+    ].map(t=>'<li>'+t+'</li>').join('');
+  document.getElementById('p3-prov').textContent =
+    'Source: '+GS.sheet.siteMonth+' \u00b7 '+GS.sheet.enterprise+' \u00b7 '+GS.sheet.icfr
+    + '. Enterprise reference is fixed and does not follow the filter.';
+}
+
+/* ---------- C5 · management interpretation / implication -------------------- */
+function renderP3C5(){
+  const p=VIEW.p3, n=p.plotted.length, hh=p.counts.HH;
+  const HAND=' Proceed to Page-4 to test whether these patterns persist over time.';
+  let intr, impl;
+  if(!n){
+    intr='No governed site data exists in the selected scope, so no site-performance pattern '
+       + 'can be stated.';
+    impl='No pattern-based management implication can be stated for this scope.'+HAND;
+  }else if(n===1){
+    const s=p.plotted[0], q=P3Q[s.q];
+    intr='Only one operating site is in scope. '+s.code+' sits in the <i>'+q.hi+' / '+q.lo
+       + '</i> quadrant against the fixed enterprise reference, so the portfolio pattern cannot be '
+       + 'characterised as isolated or systemic from this scope alone.';
+    impl='Widen the scope to All Sites to establish whether this position is isolated or shared.'+HAND;
+  }else if(hh>0){
+    intr='Site performance shows a common high-MRR / high-MER cluster: '+hh+' of '+n
+       + ' sites in scope sit in the HIGH MRR / HIGH MER quadrant against the fixed enterprise reference.';
+    impl='Treat the shared high-escalation / high-evacuation pattern as a portfolio-level exposure '
+       + 'rather than a set of site-specific exceptions.'+HAND;
+  }else if(p.patterns===1){
+    const k=P3_ORDER.find(x=>p.counts[x]>0), q=P3Q[k];
+    intr='Site performance shows a single common pattern. All '+n+' sites in scope sit in the <i>'
+       + q.hi+' / '+q.lo+'</i> quadrant against the fixed enterprise reference.';
+    impl='Address the shared pattern as one portfolio theme rather than through site-by-site '
+       + 'intervention.'+HAND;
+  }else{
+    intr='Site performance shows mixed patterns. There is <em>no</em> common high-MRR / high-MER cluster '
+       + 'across the portfolio. Differences are shared across multiple sites in different ways rather '
+       + 'than concentrated in a single site.';
+    impl='Focus on site-specific drivers and targeted interventions based on the observed pattern, '
+       + 'rather than a single enterprise-wide approach.'+HAND;
+  }
+  if(p.nodata>0)
+    intr+=' '+p.nodata+' site(s) in scope carry no governed rate in this period and are not classified.';
+  document.getElementById('p3-int').innerHTML=intr;
+  document.getElementById('p3-imp').innerHTML=impl;
+}
+
+/* ---------- B-4 · MINIMUM FUNCTIONAL NAVIGATION BINDING -------------------
+   The frozen sidebar markup and the shared CSS are NOT touched: no attribute is
+   edited in the source, no rule is added, no geometry/typography/icon/logo is
+   altered. The Page-3 nav element is located by its existing frozen position in
+   the nav list and driven purely by runtime state that is restored on exit, so
+   the RENDERED Page-1 / Page-2 sidebar stays pixel-identical (AT-17/18/19).   */
+const P3_NAV = document.querySelectorAll('#sidebar .nav')[2] || null;
+function p3NavState(on){
+  if(!P3_NAV) return;
+  P3_NAV.classList.toggle('active', on);
+  P3_NAV.setAttribute('aria-disabled', on ? 'false' : 'true');   /* restored on exit */
+  if(on) P3_NAV.setAttribute('aria-current','page'); else P3_NAV.removeAttribute('aria-current');
+}
+if(P3_NAV){
+  const go=()=>{ if(PAGE!==3) setPage(3); };
+  P3_NAV.addEventListener('click', go);
+  P3_NAV.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } });
+  /* leaving Page-3 through the frozen Page-1/Page-2 nav restores the frozen state */
+  document.querySelectorAll('#sidebar .nav[data-page]').forEach(a=>{
+    a.addEventListener('click', ()=>p3NavState(false));
+    a.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') p3NavState(false); });
+  });
+}
+
+function renderPage3(){
+  p3NavState(true);
+  p3Extend(VIEW);
+  renderP3C2(); renderP3C4a(); renderP3C3(); renderP3C4b(); renderP3C5();
+}
+
 /* ---------- page routing (frozen shell, frozen nav geometry) ---------- */
 let PAGE = 1;
 function setPage(n){
@@ -2393,6 +2870,7 @@ function render(){
   renderHero(); renderKPIs(); renderTabs(); renderTrend();
   renderTable(); renderAlerts(); renderDecision(); renderExec(); renderProvenance();
   if(PAGE===2) renderPage2();
+  if(PAGE===3) renderPage3();
   /* §16/§17 the sidebar is a second Operating Site selector: out-of-group sites
      are shown but cannot be selected, so no invalid selection can be created.
      Sidebar geometry is untouched (§34).                                     */
