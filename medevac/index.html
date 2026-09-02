@@ -708,6 +708,11 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
 #app[data-page="4"] #analytics-grid,
 #app[data-page="4"] #page2,
 #app[data-page="4"] #page3{display:none}
+/* SOP Governance OHIH Dashboard v1.0 — final minor presentation correction:
+   Page-4 renders NO header descriptor row. Not emptied, not blanked, not
+   replaced: removed from the render tree. Pages 1-3 keep the frozen shell
+   subtitle untouched. */
+#app[data-page="4"] #page-sub{display:none}
 #page4{position:absolute;left:0;top:0;width:1344px;height:896px;pointer-events:none}
 #page4>*{pointer-events:auto}
 
@@ -715,18 +720,23 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
    --p4-line    = frozen --mrr #0E7C7B; the Golden Mockup C1 stroke measures
                   #207975/#289286, i.e. this approved MIME teal.
    --p4-anchor  = Reporting Anchor, measured from the Golden Mockup.
-   C2 scale     = ARCHITECT RULING R1 §6. Single-hue sequential ramp anchored on
-                  the approved MIME teal. Magnitude only. It is NOT the frozen
-                  green/amber/red status triad and carries no status meaning.
+   C2 scale     = ARCHITECT AUTHORITY OVERRIDE §5/§10. The C2 visual encoding
+                  DUPLICATES the approved Page-4 Golden Mockup. These four tokens
+                  are the SINGLE C2 colour authority: matrix cells and legend both
+                  read them, so the two can never diverge. The earlier sequential
+                  teal ramp (#DCEDEC/#86C3C0/#0E7C7B) is OBSOLETE and removed.
+                  Presentation only — §8: no Low/Medium/High/No Data definition,
+                  historical comparison, threshold, formula, counting unit, site or
+                  year attribution, filter or scope is changed by this correction.
    C3 identity  = ARCHITECT RULING R1 §7, sampled from the frozen brand assets
                   embedded in this file and the frozen site logo assets.
    -------------------------------------------------------------------------- */
 :root{
   --p4-line:#0E7C7B; --p4-anchor:#2FA3B5; --p4-grid:#EDEEEF; --p4-axis:#C9CDD0;
-  --p4-s1:#DCEDEC; --p4-s1-ink:#215F5E;
-  --p4-s2:#86C3C0; --p4-s2-ink:#0B3E3D;
-  --p4-s3:#0E7C7B; --p4-s3-ink:#FFFFFF;
-  --p4-nd:#E6E6E2; --p4-nd-ink:#7A8085;
+  --p4-s1:#B9D3B3; --p4-s1-ink:var(--ink);      /* Low     green  · dark text  */
+  --p4-s2:#F9DB72; --p4-s2-ink:var(--ink);      /* Medium  yellow · dark text  */
+  --p4-s3:#F06653; --p4-s3-ink:#FFFFFF;         /* High    red    · white text */
+  --p4-nd:#E6E6E2; --p4-nd-ink:#7A8085;         /* No Data grey   · grey text  */
   --id-mcg-a:#B6A36A; --id-mcg-b:#98582E;
   --id-mbm-a:#40A66D; --id-mbm-b:#0A2C49;
   --id-mgr:#BA9857;
@@ -810,16 +820,28 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
 /* ---------- C4 · ANALYTICAL READOUT --------------------------------------- */
 #p4c4{left:822px;top:498px;width:501px;height:321px}
 #p4c4 .p4t{top:12px}
-#p4ro{position:absolute;left:14px;top:38px;width:473px;height:265px;
-  border:1px solid var(--line);border-radius:7px;overflow:hidden}
-#p4ro .r{position:relative;display:flex;border-bottom:1px solid var(--line-soft)}
+/* C4 spacing rhythm (AUTHORITY OVERRIDE §4) — one system, no second scale:
+     card edge -> content inset        14px  (left/right/bottom of #p4ro)
+     icon      -> label                 9px  (flex gap)
+     label     -> narrative            12px  (.tx padding-left, off the divider)
+     narrative horizontal padding      12px
+     row divider                        1px
+   Rows carry no fixed height. They size to their own narrative at 12px/17px and
+   share the remaining space evenly, so the larger type GROWS the row instead of
+   the type being reduced to fit a frozen row height. overflow is VISIBLE: any
+   failure to fit must be measurable, never hidden. */
+#p4ro{position:absolute;left:14px;top:34px;width:471px;bottom:14px;
+  border:1px solid var(--line);border-radius:7px;overflow:visible;
+  display:flex;flex-direction:column}
+#p4ro .r{position:relative;display:flex;flex:1 1 auto;
+  border-bottom:1px solid var(--line-soft)}
 #p4ro .r:last-child{border-bottom:0}
 #p4ro .lb{flex:0 0 146px;position:relative;border-right:1px solid var(--line-soft);
-  display:flex;align-items:center;gap:9px;padding-left:12px}
+  display:flex;align-items:center;gap:9px;padding:10px 12px}
 #p4ro .lb svg{width:17px;height:17px;flex:0 0 17px}
-#p4ro .lb b{font-size:9.4px;font-weight:800;color:var(--ink);line-height:11.5px}
-#p4ro .tx{flex:1 1 auto;display:flex;align-items:center;padding:0 12px;
-  font-size:9.2px;font-weight:400;line-height:13.5px;color:var(--body)}
+#p4ro .lb b{font-size:10px;font-weight:800;color:var(--ink);line-height:13px}
+#p4ro .tx{flex:1 1 auto;display:flex;align-items:center;padding:10px 12px;
+  font-size:12px;font-weight:400;line-height:17px;color:var(--body)}
 #p4ro em{font-style:normal;font-weight:700;color:var(--p4-line)}
 #p4ro i{font-style:normal;font-weight:700;color:var(--p4-accent)}
 #p4ro .sig{font-weight:700;color:var(--p4-accent)}
@@ -3205,9 +3227,11 @@ function renderP4C4(v){
          + '.')
       : ND]
   ];
-  const HGT=[39,40,42,47,95];   /* = 263 = 265 box - 2px border (measured) */
-  RO.innerHTML=rows.map((r,i)=>
-    '<div class="r" style="height:'+HGT[i]+'px">'
+  /* No fixed row heights: a frozen row height is exactly what would force the
+     12px/17px narrative to be compressed. Rows are sized by their own content
+     and the CSS rhythm above (AUTHORITY OVERRIDE §4). */
+  RO.innerHTML=rows.map(r=>
+    '<div class="r">'
     +'<div class="lb"><svg viewBox="0 0 17 17" aria-hidden="true">'+P4_ICON[r[0]]+'</svg>'
     +'<b>'+r[1]+'</b></div><div class="tx"><div>'+r[2]+'</div></div></div>').join('');
 }
@@ -3226,10 +3250,6 @@ function renderPage4(){
 
 /* ---------- page routing (frozen shell, frozen nav geometry) ---------- */
 let PAGE = 1;
-/* Approved Page-4 artwork header context (R1 §5). Page identity is
-   PAGE-4 — TEST PERSISTENCE; the navigation label is Trend & Analysis. */
-const P4_HEADER_SUB = 'TREND &amp; ANALYTICAL &nbsp;|&nbsp; Page 4 of 5 &nbsp;&bull;&nbsp;'
-  + '<span style="color:#B9860B">Does the pattern persist, change, concentrate, or migrate?</span>';
 function setPage(n){
   PAGE=n;
   document.getElementById('app').setAttribute('data-page',String(n));
@@ -3238,11 +3258,6 @@ function setPage(n){
     a.classList.toggle('active', on);
     a.setAttribute('aria-current', on?'page':'false');
   });
-  /* The frozen header is unchanged. Page-4 is the one page whose approved
-     artwork carries its own header context line (ARCHITECT RULING R1 §5);
-     only the TEXT of the existing #page-sub element changes. No shell
-     geometry, element or style is touched. */
-  document.getElementById('page-sub').innerHTML = (n===4) ? P4_HEADER_SUB : 'Enterprise View';
   render();
 }
 
