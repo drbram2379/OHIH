@@ -1034,6 +1034,99 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
 #p5-mx tr.on td{font-weight:700}
 #p5-mx .t2{color:var(--p5-mut)}
 
+/* ============================================================================
+   PAGE-5 — GLOSSARY & NOTES  (CONTENT LAYER ONLY)
+   Execution prompt "MIME PAGE-5 — GLOSSARY & NOTES" applied.
+     §2  CONTROLLED CONTENT-LAYER REPLACEMENT. The frozen shell, the KPI
+         registry, calc(), statusFor(), the global state S and the existing
+         Page-5 KPI-dictionary states are REUSED and byte-unchanged.
+     §5  A1..A6 in a 3x2 grid, named and ordered exactly as governed.
+     §9  Frozen shell wins. Content column x200..1323 (1123px) and content
+         band y74..832 are the frozen Page-1..Page-4 column, reused verbatim.
+     §14 badge 24x24 r5 #1E7B34; title Inter 14/700/17 #1E7B34 uppercase;
+         card r10 / border 1 / padding 16; grid gaps 16 / 16.
+     §15 No shrink-to-fit below the governed production floor; overflow is
+         VISIBLE so any failure to fit is MEASURABLE, never hidden.
+   GEOMETRY (Golden Master measured -> frozen 1344x896, see E2):
+     mockup content column x169..1356 (1187)  -> frozen x200..1323 (1123)
+     mockup cols 374 / 380 / 410  (ratio)     -> 350 / 356 / 385, gaps 16
+     mockup row1 y136..467 (331)              -> y154..490 (336)
+     mockup row2 y487..788 (301)              -> y506..816 (310)
+     mockup bottom margin 16                  -> 832-816 = 16
+   NO existing token is redefined. NO existing rule is modified.
+   ========================================================================== */
+/* --- state routing: GLOSS hides the KPI-dictionary cards and vice versa --- */
+#page5[data-k5="GLOSS"] #p5-a1,#page5[data-k5="GLOSS"] #p5-a2,
+#page5[data-k5="GLOSS"] #p5-a3,#page5[data-k5="GLOSS"] #p5-a4,
+#page5[data-k5="GLOSS"] #p5-a5,#page5[data-k5="GLOSS"] #p5-a6{display:none}
+#page5:not([data-k5="GLOSS"]) .p5g{display:none}
+
+/* §13 active state — 2px border, governed green. Radius 10. No height change. */
+.p5-t{border-radius:10px}
+.p5-t.on{border-width:2px}
+
+/* --- A1..A6 card geometry (§14) --- */
+.p5g{position:absolute;padding:16px;border-radius:10px;overflow:visible;
+  display:flex;flex-direction:column}
+#p5g-a1{left:200px;top:146px;width:382px;height:348px}
+#p5g-a2{left:598px;top:146px;width:324px;height:348px}
+#p5g-a3{left:938px;top:146px;width:385px;height:348px}
+#p5g-a4{left:200px;top:510px;width:382px;height:316px}
+#p5g-a5{left:598px;top:510px;width:324px;height:316px}
+#p5g-a6{left:938px;top:510px;width:385px;height:316px}
+
+/* --- [A#] SECTION TITLE (§14) --- */
+.p5g-h{display:flex;align-items:flex-start;gap:10px;margin-bottom:7px}
+.p5g-h b{flex:0 0 24px;width:24px;height:24px;border-radius:5px;background:#1E7B34;
+  color:#FFFFFF;font-family:var(--font);font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;letter-spacing:.2px}
+.p5g-h .t{font-family:var(--font);font-size:14px;font-weight:700;line-height:17px;
+  color:#1E7B34;text-transform:uppercase;letter-spacing:.1px}
+.p5g-h .s{font-family:var(--font);font-size:9px;font-weight:400;line-height:12px;
+  color:var(--p5-mut);text-transform:none;letter-spacing:0;margin-top:1px}
+
+/* --- governed tables (§16): wrap, never clip, row height may grow --- */
+.p5g table{width:100%;border-collapse:collapse;table-layout:fixed}
+.p5g th{font-family:var(--font);font-size:9px;font-weight:700;color:var(--p5-lab);
+  text-align:left;padding:3px 6px 3px 0;border-bottom:1px solid var(--p5-line);
+  background:#F4F6F4;line-height:11.5px;vertical-align:middle}
+.p5g th:first-child{padding-left:6px}
+.p5g td{font-family:var(--font);font-size:9px;font-weight:400;color:var(--p5-val);
+  line-height:11.4px;padding:3px 6px 3px 0;border-bottom:1px solid var(--p5-line);
+  vertical-align:top;word-wrap:break-word;overflow-wrap:break-word}
+.p5g td:first-child{padding-left:6px}
+.p5g tr:last-child td{border-bottom:0}
+.p5g td.k{font-weight:700;color:var(--p5-lab)}
+.p5g td em{font-style:normal;font-weight:700;color:var(--p5-val)}
+.p5g td .sub{display:block;color:var(--p5-mut);font-size:8.4px;line-height:10.4px}
+.p5g ul{list-style:none;margin:0;padding:0}
+.p5g li{position:relative;padding-left:9px;line-height:11.4px;margin-top:1px}
+.p5g li:first-child{margin-top:0}
+.p5g li::before{content:"\2022";position:absolute;left:0;top:-1px}
+
+/* --- A4 status chips: colour + explicit text (§17) --- */
+.p5g .p5-chip{min-width:0;width:100%;padding:4px 3px;font-size:8.4px;line-height:10px}
+
+/* --- A6 classification cell --- */
+.p5g td.cls{font-weight:700;text-align:center;letter-spacing:.1px;
+  color:var(--p5-lab);white-space:nowrap;word-wrap:normal;overflow-wrap:normal}
+
+/* --- governed footnote strip (§21) --- */
+.p5g-f{position:absolute;left:16px;right:16px;bottom:10px;display:flex;
+  align-items:flex-start;gap:7px;font-family:var(--font);font-size:8.4px;
+  font-weight:400;line-height:11px;color:var(--p5-mut)}
+.p5g-f svg{flex:0 0 13px;margin-top:-1px}
+.p5g-b{flex:1 1 auto;min-height:0;padding-bottom:20px;overflow:visible}
+.p5g-h{flex:0 0 auto}
+/* §15 A4/A6 use the EXISTING governed Page-5 reference/status typographic floor
+   (#p5-st 8.4px, #p5-mx 8.2px). This is REUSE of an approved register, not a
+   shrink-to-fit below it. Row height still grows; nothing is clipped.      */
+#p5g-a4 td,#p5g-a4 th,#p5g-a5 td,#p5g-a5 th,#p5g-a6 td,#p5g-a6 th{font-size:8.4px;line-height:10.6px}
+#p5g-a5 li{line-height:10.6px}
+#p5g-a4 td,#p5g-a4 th,#p5g-a3 td,#p5g-a3 th{padding-top:2px;padding-bottom:2px}
+#p5g-a6 li{line-height:10.6px}
+#p5g-a4 .p5-chip{font-size:8px}
+
 </style>
 </head>
 <body>
@@ -1421,6 +1514,37 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
         <section id="p5-a6" class="card">
           <div class="p5-h"><b>A6</b><span>ENTERPRISE KPI REFERENCE MATRIX</span></div>
           <table id="p5-mx"></table>
+        </section>
+
+        <section id="p5g-a1" class="card p5g">
+          <div class="p5g-h"><b>A1</b><div><div class="t">Core Terms &amp; Abbreviations</div><div class="s">Key MIME terms and KPI definitions</div></div></div>
+          <div class="p5g-b"><table id="p5g-t1"></table></div>
+          <div class="p5g-f" id="p5g-f1"></div>
+        </section>
+        <section id="p5g-a2" class="card p5g">
+          <div class="p5g-h"><b>A2</b><div><div class="t">Medical Incident &amp; Case Terms</div><div class="s">Event, referral, evacuation and episode concepts</div></div></div>
+          <div class="p5g-b"><table id="p5g-t2"></table></div>
+          <div class="p5g-f" id="p5g-f2"></div>
+        </section>
+        <section id="p5g-a3" class="card p5g">
+          <div class="p5g-h"><b>A3</b><div><div class="t">KPI Measurement Conventions</div><div class="s">How KPI values are constructed</div></div></div>
+          <div class="p5g-b"><table id="p5g-t3"></table></div>
+          <div class="p5g-f" id="p5g-f3"></div>
+        </section>
+        <section id="p5g-a4" class="card p5g">
+          <div class="p5g-h"><b>A4</b><div><div class="t">Governance &amp; Status Terms</div><div class="s">How status and governance language is interpreted</div></div></div>
+          <div class="p5g-b"><table id="p5g-t4"></table></div>
+          <div class="p5g-f" id="p5g-f4"></div>
+        </section>
+        <section id="p5g-a5" class="card p5g">
+          <div class="p5g-h"><b>A5</b><div><div class="t">Data, Interpretation &amp; Limitation Notes</div><div class="s">What the numbers do and do not mean</div></div></div>
+          <div class="p5g-b"><table id="p5g-t5"></table></div>
+          <div class="p5g-f" id="p5g-f5"></div>
+        </section>
+        <section id="p5g-a6" class="card p5g">
+          <div class="p5g-h"><b>A6</b><div><div class="t">Reference &amp; Authority Map</div><div class="s">Hierarchy of authority and reference</div></div></div>
+          <div class="p5g-b"><table id="p5g-t6"></table></div>
+          <div class="p5g-f" id="p5g-f6"></div>
         </section>
       </section>
 
@@ -4399,6 +4523,13 @@ const P5_SEL = [
   {id:'GLOSS', w:167, k:'Glossary &amp; Notes', d:'Definitions &amp; Abbreviations'}
 ];
 const P5_ORDER = ['MRR','MER','IMR','IMCFR','ICFR'];   /* §8 — five, no more   */
+/* §13 selector geometry. Seven governed tiles, gap 12, distributed across the
+   FROZEN content column (1123px) so the strip terminates on the card edge as
+   in the approved Golden Mockup. The tile RHYTHM is the existing governed
+   rhythm (137/136/136/136/145/146/167) scaled by 1051/1003; the 60px height
+   and the 78px top are FROZEN and unchanged — see finding F-002.          */
+const P5_SELGAP = 12;
+const P5_SELW = {LEAD:144, MRR:142, MER:142, IMR:142, IMCFR:152, ICFR:153, GLOSS:176};
 
 /* §14 semantics + §15 colours. ONE Page-5 legend, identical in every state.  */
 const P5_LEGEND = [
@@ -4621,26 +4752,178 @@ function p5Row(l,v,bold){
 }
 function p5Bul(arr){ return '<ul>'+arr.map(x=>'<li>'+x+'</li>').join('')+'</ul>'; }
 
+/* ============================================================================
+   PAGE-5 — GLOSSARY & NOTES  CONTENT AUTHORITY + RENDERER
+   Every string below is transcribed from the APPROVED CONTENT AUTHORITY v1.0
+   as presented in the approved Page-5 Golden Mockup. Nothing is invented,
+   paraphrased or re-derived (§6). No KPI logic, no status engine, no second
+   calculation path exists here — this layer only DISPLAYS governed definitions
+   (§8, §23). The status rules rendered in A4 are read from the existing
+   P5_LEGEND, which is itself verified against statusFor() by p5LegendCheck().
+   ========================================================================== */
+const P5G_A1 = [
+  ['KPI',       'A defined performance indicator used to monitor, evaluate, or communicate performance.'],
+  ['Indicator', 'A defined measure or observable signal.'],
+  ['Metric',    'A quantitative measure used to evaluate a characteristic, event, activity, exposure, or outcome.'],
+  ['Rate',      'Frequency of events relative to a denominator.'],
+  ['MRR',       'Medical Referral Rate<span class="sub">(Clinical medical escalation events / Actual man-hours \u00d7 1,000,000)</span>'],
+  ['MER',       'Medical Evacuation Rate<span class="sub">(Medevac events / Actual man-hours \u00d7 1,000,000)</span>'],
+  ['IMR',       'Illness Medevac Rate<span class="sub">(Illness medevac events / Actual man-hours \u00d7 1,000,000)</span>'],
+  ['IM-CFR',    'Illness Medevac Case Fatality Rate<span class="sub">(Illness deaths / Illness medevac events \u00d7 100%)</span>'],
+  ['ICFR',      'All Illness Case Fatality Rate<span class="sub">(All illness deaths / All illness episodes \u00d7 100%)</span>']
+];
+const P5G_A2 = [
+  ['Clinical Medical Escalation', 'Escalation of a case from on-site medical care to another medical facility or higher level of care based on clinical need.'],
+  ['Medevac (Medical Evacuation)','Transport of a patient from site/facility to another medical facility for further care.'],
+  ['Illness',                     'Medical conditions of non-injury origin including acute and chronic diseases.'],
+  ['Illness Episode',             'A period of illness requiring medical intervention with a defined start and end.'],
+  ['Illness Medevac Event',       'A single medical evacuation related to an illness episode.'],
+  ['Tier-1 Event Level',          'Event-level assessment (per medevac event).'],
+  ['Tier-2 Episode Level',        'Episode-level assessment (per illness episode).'],
+  ['Death',                       'A fatal outcome recorded within the governed MIME data and case-definition boundaries.']
+];
+const P5G_A3 = [
+  ['Numerator',        'Count of events, cases or episodes with explicit definition and boundary.'],
+  ['Denominator',      'Actual man-hours worked within the reporting scope.'],
+  ['Actual Man-hours', 'Employees + contractors, regular + overtime hours.'],
+  ['1M Man-hours',     'Normalization factor: per 1,000,000 actual man-hours.'],
+  ['Reporting Period', 'Defined temporal interval (monthly).'],
+  ['Reporting Scope',  'All operating sites within MDKA Group (unless otherwise specified).'],
+  ['Aggregation',      'SUM(numerator) / SUM(denominator).'],
+  ['Rounding',         '2 decimal places.'],
+  ['Baseline',         '12-Month Rolling Median.'],
+  ['Target',           'Owner-approved performance level.<span class="sub">(Baseline \u2260 Target \u2260 Threshold)</span>'],
+  ['Threshold',        'Boundary for status transition.'],
+  ['Frequency',        'Monthly.']
+];
+/* §17 — the four governed statuses. chip + rule are read from the SINGLE
+   existing Page-5 legend (P5_LEGEND), not restated here. Only the governance
+   definitions and the four non-status governance terms are content. */
+const P5G_A4_DEF = {
+  'GOOD':   'Performance within expected range.',
+  'WATCH':  'Performance above baseline; requires monitoring.',
+  'ACTION': 'Performance significantly above baseline; management action required.',
+  'NO DATA':'No valid denominator or missing data.'
+};
+const P5G_A4_GOV = [
+  ['Reference',        'Source of guidance or best practice used for benchmarking or context only.'],
+  ['Authority',        'Governing policy, standard, or regulation that mandates compliance.'],
+  ['Clinical Judgment','Professional medical assessment, not a KPI status.'],
+  ['Verification',     'Process to confirm data, calculation and interpretation.']
+];
+const P5G_A5 = [
+  ['Data Scope',    'All KPIs are calculated within the defined reporting scope (Enterprise / Business Group / Site).'],
+  ['Data Quality',  'Data must be complete, accurate, and timely. Follow OHIH Data Governance Policy.'],
+  ['NO DATA vs ZERO','NO DATA means data is not available or insufficient. ZERO means a valid and calculated zero.'],
+  ['Baseline vs Target vs Threshold',
+     '<ul><li><em>Baseline:</em> 12M Rolling Median (reference point)</li>'
+    +'<li><em>Target:</em> Performance goal relative to baseline</li>'
+    +'<li><em>Threshold:</em> Boundaries for status classification</li></ul>'],
+  ['Interpretation','KPI interpretation must consider operational and medical context (case mix, severity, access to care, location, data completeness, etc.).'],
+  ['Limitations',   'KPI does not by itself measure clinical outcome quality. Use in conjunction with clinical review and investigation.']
+];
+const P5G_A6 = [
+  ['MIME / INTERNAL AUTHORITIES (MANDATORY)',
+   ['OHIH Medical Incident Management Policy','Medical Incident Management Procedure',
+    'OHIH Data Governance Policy','KPI Governance Decision 2B'], 'AUTHORITY'],
+  ['INDONESIAN REGULATORY CONTEXT',
+   ['UU No. 1 Tahun 1970 (Keselamatan Kerja)','Permenaker No. 5 Tahun 2018 (K3 Lingkungan Kerja)',
+    'Permenaker No. 11 Tahun 2020 (PJK3)','Permenaker No. 48 Tahun 2016 (SMK3)',
+    'Permenaker No. 15 Tahun 2008 (Kegawatdaruratan)','Kepmenkes No. 1118/MENKES/SK/VIII/2003'], 'AUTHORITY'],
+  ['INTERNATIONAL / GOOD PRACTICE REFERENCES',
+   ['ISO 45001:2018 (OHS Management System)','ISO 31000:2018 (Risk Management)',
+    'WHO Emergency Care Systems Framework','ILO Guidelines on OSH Performance Indicators',
+    'IOGP Life-Saving Rules \u2013 Medical Intervention'], 'REFERENCE']
+];
+/* §21 — the three approved governance messages. The visible per-card strips
+   carry these MEANINGS; the full governed wording is retained verbatim and
+   surfaced on the strip so no governance meaning is removed.               */
+const P5G_FOOT = [
+  ['All terms are used consistently across all KPI definitions and reports.',        1],
+  ['All cases must be documented and classified according to OHIH procedures.',      1],
+  ['Methodology must be applied consistently to ensure comparability over time.',    1],
+  ['Status applies for management attention and does not replace clinical judgment.',3],
+  ['These notes must be read together with KPI definitions and methodology.',        3],
+  ['Authority items are non-negotiable. Reference items inform good practice.',      2]
+];
+const P5G_FN = {
+ 1:'FOOTNOTE 01 \u2014 AUTHORITY. MIME KPI definitions, formulas, scope, case boundaries, '
+  +'measurement conventions and status rules are governed by the approved MIME KPI / Formula '
+  +'Authority and applicable data contract.',
+ 2:'FOOTNOTE 02 \u2014 EXTERNAL REFERENCES. External references are provided for terminology, '
+  +'regulatory context, measurement methodology and good practice. They do not override the '
+  +'approved MIME KPI / Formula Authority.',
+ 3:'FOOTNOTE 03 \u2014 INTERPRETATION. MIME KPI status is intended for management attention and '
+  +'performance governance. It does not replace clinical judgment, establish clinical diagnosis, '
+  +'or by itself establish causation, medical quality, or regulatory compliance.'
+};
+
+function p5gRows(arr,kw){
+  return '<colgroup><col style="width:'+kw+'"><col></colgroup><tbody>'
+    + arr.map(r=>'<tr><td class="k">'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('')
+    + '</tbody>';
+}
+function p5gHead(a,b,c){
+  return '<thead><tr><th>'+a+'</th><th>'+b+'</th>'+(c?'<th>'+c+'</th>':'')+'</tr></thead>';
+}
+
+function renderPage5Gloss(){
+  document.getElementById('p5g-t1').innerHTML =
+    p5gHead('Term / Abbreviation','Definition (Summary)') + p5gRows(P5G_A1,'74px');
+  document.getElementById('p5g-t2').innerHTML =
+    p5gHead('Term','Definition') + p5gRows(P5G_A2,'92px');
+  document.getElementById('p5g-t3').innerHTML =
+    p5gHead('Aspect','Description / Rule') + p5gRows(P5G_A3,'88px');
+
+  /* A4 — ONE status authority. chip + rule come from P5_LEGEND (§17/§23). */
+  document.getElementById('p5g-t4').innerHTML =
+      '<colgroup><col style="width:70px"><col><col style="width:84px"></colgroup>'
+    + p5gHead('Status Term','Definition','Rule (vs Baseline)')
+    + '<tbody>'
+    + P5_LEGEND.map(r=>'<tr><td><span class="p5-chip '+r.cls+'">'+r.chip+'</span></td>'
+        + '<td>'+(P5G_A4_DEF[r.s]||'\u2014')+'</td><td>'+r.rule+'</td></tr>').join('')
+    + P5G_A4_GOV.map(r=>'<tr><td class="k">'+r[0]+'</td><td>'+r[1]+'</td>'
+        + '<td style="text-align:center">\u2014</td></tr>').join('')
+    + '</tbody>';
+
+  document.getElementById('p5g-t5').innerHTML = p5gRows(P5G_A5,'82px');
+
+  document.getElementById('p5g-t6').innerHTML =
+      '<colgroup><col style="width:92px"><col><col style="width:60px"></colgroup>'
+    + p5gHead('Reference Category','Examples (Non-exhaustive)','Classification')
+    + '<tbody>' + P5G_A6.map(r=>'<tr><td class="k">'+r[0]+'</td><td><ul>'
+        + r[1].map(x=>'<li>'+x+'</li>').join('') + '</ul></td>'
+        + '<td class="cls">'+r[2]+'</td></tr>').join('') + '</tbody>';
+
+  P5G_FOOT.forEach((f,i)=>{
+    const el=document.getElementById('p5g-f'+(i+1));
+    el.innerHTML = P5_INFO+'<span>'+f[0]+'</span>';
+    el.setAttribute('title', P5G_FN[f[1]]);
+  });
+}
+
 function renderPage5(){
-  const id = P5_ORDER.indexOf(S.k5)>=0 ? S.k5 : 'MRR';
-  const d  = P5[id];
+  const gloss = (S.k5==='GLOSS');
+  const id = gloss ? 'GLOSS' : (P5_ORDER.indexOf(S.k5)>=0 ? S.k5 : 'MRR');
+  const dictId = gloss ? 'MRR' : id;
+  const d  = P5[dictId];
   const root = document.getElementById('page5');
-  root.setAttribute('data-acc', P5_ACCENT[id]);
+  root.setAttribute('data-acc', gloss ? 'green' : P5_ACCENT[id]);
+  root.setAttribute('data-k5', id);
 
   /* --- §19 selector ------------------------------------------------------- */
   let x=0;
   document.getElementById('p5-sel').innerHTML = P5_SEL.map(t=>{
-    const lead = t.id==='LEAD', gl = t.id==='GLOSS';
+    const lead = t.id==='LEAD';
     const on   = (t.id===id);
-    const h = '<div class="p5-t'+(lead?' lead':'')+(on?' on':'')+'" style="left:'+x+'px;width:'+t.w+'px"'
-      + (lead||gl ? ' aria-disabled="true"' : ' role="button" tabindex="0" data-k5="'+t.id+'"')
-      + (gl ? ' title="Glossary &amp; Notes has no approved Page-5 Golden Mockup state '
-             +'(finding F-07). Not implemented — no state is invented."' : '')
+    const w    = P5_SELW[t.id];
+    const h = '<div class="p5-t'+(lead?' lead':'')+(on?' on':'')+'" style="left:'+x+'px;width:'+w+'px"'
+      + (lead ? ' aria-disabled="true"' : ' role="button" tabindex="0" data-k5="'+t.id+'"')
       + (on ? ' aria-current="true"' : '')
       + '><div class="k">'+t.k+'</div><div class="d">'+t.d+'</div>'
       + (t.d2?'<div class="d2">'+t.d2+'</div>':'')
       + (lead? P5_CHEV : '') + '</div>';
-    x += t.w + 3;
+    x += w + P5_SELGAP;
     return h;
   }).join('');
   document.querySelectorAll('#p5-sel .p5-t[data-k5]').forEach(el=>{
@@ -4648,6 +4931,8 @@ function renderPage5(){
     el.addEventListener('click',go);
     el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();go();} });
   });
+
+  if(gloss){ renderPage5Gloss(); return; }
 
   /* --- A1 KPI IDENTITY ---------------------------------------------------- */
   document.getElementById('p5-a1-b').innerHTML =
@@ -4743,7 +5028,11 @@ window.__MIME__ = {get view(){return VIEW;}, S, KPI, KPI_ORDER, KPI_P2, get inge
                    /* Page-5 acceptance surface */
                    p5:{get kpi(){return S.k5;}, set kpi(v){S.k5=v; render();},
                        order:P5_ORDER, content:P5, matrix:P5_MATRIX,
-                       legend:P5_LEGEND, legendCheck:p5LegendCheck}};
+                       legend:P5_LEGEND, legendCheck:p5LegendCheck,
+                       gloss:{a1:P5G_A1,a2:P5G_A2,a3:P5G_A3,a4def:P5G_A4_DEF,
+                              a4gov:P5G_A4_GOV,a5:P5G_A5,a6:P5G_A6,
+                              foot:P5G_FOOT,notes:P5G_FN},
+                       selw:P5_SELW, selgap:P5_SELGAP}};
 </script>
 </body>
 </html>
