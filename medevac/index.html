@@ -13,10 +13,30 @@
   R3 artworks      : MIME_page_1_{Good,Watch,Act}_Status.png — authority for MIM colour,
                      icon, label, state narrative and band descriptor ONLY (adjudication B1).
   FEED             : Medevac_Medical_Referral_Analytical_FEED_v0.5.xlsx — ANALYTICAL TRUTH
-  MIM roll-up      : OWNER-GOVERNED PAGE-1 EXECUTIVE ROLL-UP RULE (adjudication A/A5).
+  MIM roll-up      : SUPERSEDED BY P1-RC-01 (see below). The retired rule was
                      0-1 above baseline = GOOD | 2 = WATCH | >=3 = ACTION REQUIRED.
-                     Consumes the existing per-KPI classifier only (A1). Not a statutory,
-                     IOGP, clinical or diagnostic classification (A4).
+                     Retained here as revision history only; it is NOT the running rule.
+
+  P1-RC-01 patch   : PAGE-1 EXECUTIVE SUMMARY — REVISION CONTRACT P1-RC-01. PATCH ONLY.
+    DEFECT  : Corporate MIM STATUS was derived from a KPI-count corporate rule
+              (number of enterprise KPIs above the 12M baseline) while site-level
+              status already used the governed statusFor() outputs. Two corporate
+              semantics coexisted, permitting MIM = GOOD while the visible active
+              scope contained ACTION / WATCH sites. Architecture defect, not cosmetic.
+    FIX     : ONE MIM SEMANTIC. mimRollup() now consumes the EXISTING governed site
+              status output. Hierarchy ACTION REQUIRED > WATCH > GOOD; NO DATA when
+              the active scope holds no valid governed site status.
+                  existing statusFor() -> existing site status -> MIM status
+    ALSO    : MIM hero supporting statement + management message set to the §19
+              content contract; Decision Required and Executive Message copy aligned
+              to the same governed state (§18, §25). Enterprise KPI aggregate is
+              retained as a factual analytical statement only and no longer generates
+              the MIM headline (§20).
+    UNCHANGED: KPI definitions, formulas, numerators, denominators, baselines,
+              thresholds, direction, frequency, statusFor(), the site-status roll-up,
+              scopeSites(), siteRows, alerts, filters, FEED, normalize, validate,
+              reconcile, transport, exports, navigation, Pages 2-5 logic, canvas,
+              component geometry, typography, header, sidebar, footer, frozen assets.
   C-5              : CLOSED. Tier-1 IM-CFR = Illness_Medevac=Y AND Date_Quality=VALID,
                      NOT future-quarantined. In_Denominator NOT applied. 9/288 = 3.13%.
   Design freedom   : ZERO.  Analytical invention: ZERO.
@@ -2411,47 +2431,85 @@ const ST = {
 };
 const ST_RANK = {NODATA:-1, GOOD:0, WATCH:1, ACTION:2};
 
-/* ---------- 5b. MIM EXECUTIVE ROLL-UP — owner-governed Page-1 rule ----------
-   Adopted by Architect adjudication (R3 §A / §A5) as the Page-1 executive
-   roll-up methodology. It is NOT a statutory, IOGP, clinical, diagnostic or
-   medevac risk classification (§A4).
+/* ---------- 5b. MIM EXECUTIVE ROLL-UP — P1-RC-01 GOVERNED SITE-STATUS ROLL-UP
+   REVISION CONTRACT P1-RC-01 (§5, §6, §10, §20).
 
-   §A1  It consumes the EXISTING governed per-KPI classifier output only:
-        KPI -> 12M baseline -> statusFor() -> above-baseline count -> roll-up.
-        No second KPI engine, baseline engine, threshold or classifier.
-   §A2  ONE definition drives both the classification and the visible band
-        descriptor, so logic and caption can never diverge.                   */
-const MIM_RULE = [
-  {state:'GOOD',   test:n=>n<=1,  band:'0\u20131 KPI above 12M baseline'},
-  {state:'WATCH',  test:n=>n===2, band:'2 of 4 KPIs above 12M baseline'},
-  {state:'ACTION', test:n=>n>=3,  band:'\u22653 KPIs above 12M baseline'}
-];
+   RETIRED: the KPI-count corporate semantic
+       (0-1 KPI above baseline = GOOD / 2 = WATCH / >=3 = ACTION REQUIRED)
+   That rule created a SECOND corporate status semantic alongside the governed
+   site-status layer, allowing MIM = GOOD while the visible active scope
+   contained ACTION / WATCH sites. That is an architecture defect (§4).
+
+   APPROVED: MIM STATUS has ONE semantic only —
+       "Management-attention state of the active analytical scope."
+   It is NOT an aggregate KPI score, NOT a count of KPIs above baseline, NOT a
+   clinical diagnosis, NOT a medical acceptability judgement (§5).
+
+   §6  MIM STATUS CONSUMES THE EXISTING GOVERNED SITE STATUS OUTPUT.
+       No second KPI classifier. No Page-1-specific status engine. No new
+       baseline, threshold, formula, numerator, denominator or scope engine.
+
+           existing statusFor()  ->  existing site status  ->  MIM status
+
+       Hierarchy:  ACTION REQUIRED > WATCH > GOOD
+       NO DATA applies when there is no valid governed status in scope.
+
+   This is a STATUS ROLL-UP. It is NOT a new KPI CLASSIFIER.                  */
 const MIM = {
   GOOD:  {label:'GOOD',            cls:'mim-good',
-          narr:'Medical incident performance is within governed performance limits '
-             + 'and does not indicate enterprise-level deterioration.'},
+          narr:'No governed site-level exception requiring elevated management '
+             + 'attention is present within the active scope.'},
   WATCH: {label:'WATCH',           cls:'mim-watch',
-          narr:'Medical incident performance shows emerging deterioration and '
-             + 'requires management attention.'},
+          narr:'Watch-level governed exceptions are present within the active '
+             + 'scope and require management monitoring.'},
   ACTION:{label:'ACTION REQUIRED', cls:'mim-action', word:'ACTION<br>REQUIRED',
-          narr:'Medical incident performance exceeds governed action limits and '
-             + 'requires immediate management action.'},
+          narr:'Action-level governed exceptions are present within the active '
+             + 'scope and require targeted management review.'},
   NODATA:{label:'NO DATA',         cls:'mim-nodata',
-          narr:'One or more governed Page-1 KPIs has no valid state in the selected '
-             + 'scope. No enterprise MIM classification can be stated.'}
+          narr:'Insufficient valid governed data to determine the MIM status for '
+             + 'the active scope.'}
 };
-/* §A3 DATA COMPLETENESS GATE — the roll-up is valid only when all four Tier-1
-   KPIs carry a governed analytical state in the active scope. Missing data is
-   never counted as GOOD, never counted as "not above baseline", and may never
-   manufacture a performance-positive enterprise classification.              */
+
+/* §19 supporting statement — scope-aware, derived from the SAME governed site
+   rows the roll-up classified. §14: when a single site is in scope the
+   statement names that site and no other site's status may leak into it. */
+function mimBand(state, valid, actionRows, watchRows){
+  if(state==='ACTION')
+    return actionRows.length===1
+      ? actionRows[0].code+' requires action-level review.'
+      : actionRows.length+' sites require action-level review.';
+  if(state==='WATCH')
+    return watchRows.length===1
+      ? watchRows[0].code+' requires watch-level monitoring.'
+      : watchRows.length+' sites require watch-level monitoring.';
+  if(state==='GOOD')
+    return valid.length===1
+      ? valid[0].code+' is within governed limits.'
+      : 'All '+valid.length+' sites are within governed limits.';
+  return 'No valid governed site status in the active scope.';
+}
+
+/* §33 NO-DATA RULE — missing data is never converted to zero, never inferred as
+   GOOD/WATCH/ACTION and never estimated. A site whose every governed KPI is
+   NO DATA carries status NODATA and is excluded from the valid population; if
+   no valid governed site status exists, MIM is NO DATA.                       */
 function mimRollup(v){
   if(!v.anchor)
-    return {state:'NODATA', band:'no complete governed reporting period'};
-  if(v.counts.NODATA>0)
-    return {state:'NODATA', band:v.counts.NODATA+' of '+KPI_ORDER.length
-                                +' KPIs without a governed state'};
-  const n=v.above.length, r=MIM_RULE.find(x=>x.test(n));
-  return {state:r.state, band:r.band};
+    return {state:'NODATA', band:'No complete governed reporting period in scope.',
+            nAction:0, nWatch:0, nGood:0, nValid:0};
+  const rows   = v.siteRows || [];
+  const valid  = rows.filter(r=>r.status!=='NODATA');   /* governed statuses only */
+  const action = valid.filter(r=>r.status==='ACTION');
+  const watch  = valid.filter(r=>r.status==='WATCH');
+  const good   = valid.filter(r=>r.status==='GOOD');
+  let state;
+  if(action.length)     state='ACTION';                 /* any ACTION  -> ACTION  */
+  else if(watch.length) state='WATCH';                  /* any WATCH   -> WATCH   */
+  else if(valid.length) state='GOOD';                   /* all valid GOOD -> GOOD */
+  else                  state='NODATA';                 /* no valid status        */
+  return {state, band:mimBand(state, valid, action, watch),
+          nAction:action.length, nWatch:watch.length,
+          nGood:good.length, nValid:valid.length};
 }
 
 /* ---------- 6. GLOBAL STATE — exactly one ---------- */
@@ -3864,11 +3922,17 @@ function renderAlerts(){
 /* R3.3 §G — GOOD is an ENTERPRISE/scope-level verdict; it never asserts that
    every individual site is within baseline. The site-level exceptions stay
    visible in Priority Alerts and the Site Performance Summary. */
+/* P1-RC-01 §18/§19 — Decision Required KEEPS its existing architecture and
+   continues to consume the SAME single governed MIM state. Only the copy is
+   aligned to the approved MIM semantic: MIM is a management-attention state,
+   not a medical acceptability judgement (§5), so the retired verdict wording
+   ("performance is unacceptable", "within baseline across the enterprise")
+   prohibited by §19 is replaced by the approved management messages. */
 const P1NARR = {
-  GOOD:  'Medical incident performance is within baseline for the selected scope.',
-  WATCH: 'Medical incident performance is deteriorating and requires management attention.',
-  ACTION:'Medical incident performance is unacceptable and requires immediate management action.',
-  NODATA:'No valid governed KPI state is available for the selected scope.'
+  GOOD:  'No governed site-level exception requiring elevated management attention is present within the active scope.',
+  WATCH: 'Watch-level governed exceptions are present within the active scope and require management monitoring.',
+  ACTION:'Action-level governed exceptions are present within the active scope and require targeted management review.',
+  NODATA:'Insufficient valid governed data to determine the MIM status for the active scope.'
 };
 function renderDecision(){
   const v=VIEW, box=document.getElementById('dc-box'), cols=document.getElementById('dc-cols');
@@ -3921,10 +3985,16 @@ function renderExec(){
   const lead = v.above.length ? KPI[v.above[0]] : KPI[movers.length?movers[0].id:'MRR'];
   e2.textContent = lead.disp+' is a governed OHIH KPI ['+lead.auth+']. Its current value is '
     + (v.k[lead.id].status==='GOOD' ? 'at or below' : 'above')+' the 12M rolling baseline for this scope.';
-  e3.textContent = v.above.length+' of '+KPI_ORDER.length+' KPIs above baseline. '
-    + v.sitesAbove+' of '+v.nSites+' site'+(v.nSites===1?'':'s')+' above baseline on at least one KPI. '
-    + v.alerts.length+' priority site'+(v.alerts.length===1?'':'s')+' listed. '
-    + 'MIM STATUS '+MIM[v.mim.state].label+' \u00b7 '+v.mim.band+'.';
+  /* P1-RC-01 §25 — the impact line is aligned to the SAME governed site-status
+     state that now determines MIM. The enterprise KPI aggregate is retained as
+     a factual analytical statement only (§20) and no longer implies the MIM
+     classification. FACT -> INTERPRETATION -> MANAGEMENT IMPLICATION. */
+  const mm=v.mim;
+  e3.textContent = mm.nAction+' action-level and '+mm.nWatch+' watch-level site'
+    + (mm.nWatch===1?'':'s')+' of '+mm.nValid+' governed site'+(mm.nValid===1?'':'s')
+    + ' in the active scope. '
+    + v.above.length+' of '+KPI_ORDER.length+' enterprise KPIs above 12M baseline. '
+    + 'MIM STATUS '+MIM[v.mim.state].label+' \u00b7 '+v.mim.band;
 }
 
 function fmtWIB(d){
