@@ -1289,7 +1289,7 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
             <div class="c-title">PRIORITY ALERTS <span style="color:#6B7280">(Top 3)</span></div>
             <table id="atbl">
               <colgroup><col style="width:155px"><col style="width:35px"><col style="width:42px"><col style="width:84px"><col style="width:96px"></colgroup>
-              <thead><tr><th class="s" style="text-align:left;padding-left:14px">Site</th><th>KPI</th><th>Current</th><th>vs Baseline</th><th>Status</th></tr></thead>
+              <thead><tr><th class="s" style="text-align:left;padding-left:14px">Site</th><th>KPI</th><th>Current</th><th>vs Stretch Target</th><th>Status</th></tr></thead>
               <tbody id="atbody"></tbody>
             </table>
             <button type="button" class="lnk" id="lnk-alerts" style="top:165px"
@@ -1313,10 +1313,10 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
             <colgroup><col style="width:158px"><col style="width:52px"><col style="width:44px"><col style="width:52px"><col style="width:47px"><col style="width:52px"><col style="width:47px"><col style="width:60px"><col style="width:55px"><col style="width:128px"></colgroup>
             <thead><tr>
               <th style="text-align:left;padding-left:13px">Site</th>
-              <th colspan="2">MRR<em>(vs 12M Baseline)</em></th>
-              <th colspan="2">MER<em>(vs 12M Baseline)</em></th>
-              <th colspan="2">IMR<em>(vs 12M Baseline)</em></th>
-              <th colspan="2">IM-CFR<em>(vs 12M Baseline)</em></th>
+              <th colspan="2">MRR<em>(vs Stretch Target)</em></th>
+              <th colspan="2">MER<em>(vs Stretch Target)</em></th>
+              <th colspan="2">IMR<em>(vs Stretch Target)</em></th>
+              <th colspan="2">IM-CFR<em>(vs Stretch Target)</em></th>
               <th>Overall<em style="font-size:9px;font-weight:700;color:var(--body)">Status</em></th>
             </tr></thead>
             <tbody id="stbody"></tbody>
@@ -1367,7 +1367,7 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
               <colgroup><col style="width:51px"><col style="width:48px"><col style="width:123px"><col style="width:59px"><col style="width:77px"><col style="width:160px"></colgroup>
               <thead><tr>
                 <th>SITE</th><th class="wrap">KPI<br>EXCEPTION</th><th>CURRENT</th>
-                <th class="wrap">12M ROLLING<br>MEDIAN</th><th>VARIANCE</th><th>DRIVER LEVEL</th>
+                <th class="wrap">STRETCH<br>TARGET</th><th>VARIANCE</th><th>DRIVER LEVEL</th>
               </tr></thead>
               <tbody id="p2c3body"></tbody>
             </table>
@@ -2415,8 +2415,10 @@ const KPI_ORDER = ['MRR','MER','IMR','IMCFR'];
        Normal  = normal approved target            (P50)
        Stretch = most ambitious approved target    (P25)
 
-   BOUNDARY (contract §4). TARGET is not the CURRENT 12M ROLLING REFERENCE and
-   is not a STATUS THRESHOLD. Nothing in this block feeds statusFor().
+   BOUNDARY (contract §4, as amended by the approved status migration §3/§4).
+   TARGET is not the CURRENT 12M ROLLING REFERENCE. The Stretch and Minimum
+   tiers ARE the governed status thresholds and are read by the single status
+   authority statusFor(cur, base, id). Normal is informational only.
 
    These values are FROZEN. They are never recalculated, rounded differently,
    scaled by a baseline, or derived from data. Pages 1-5 consume THIS OBJECT
@@ -2456,9 +2458,9 @@ function tgtTriplet(id, sep){
   return TARGET_TIERS.map(k=>TARGET_LABEL[k]+' '+fmtTgt(id,k)).join(sep||' \u00b7 ');
 }
 /* Analytical CONTEXT ONLY. This reports which approved target tier a governed
-   actual currently attains. It is NEVER a status, never feeds statusFor(),
-   never produces GOOD/WATCH/ACTION, and no page colours status from it
-   (contract §22 / v1.1 §8).                                                  */
+   actual currently attains (including the informational NORMAL tier). It is
+   NOT the status classifier: statusFor() is, and it is a separate function.
+   No page colours status from tgtAttained().                                 */
 function tgtAttained(id, value){
   const t=tgtOf(id);
   if(!t || value===null || value===undefined) return null;
@@ -2475,8 +2477,9 @@ function tgtAttained(id, value){
    no new derivation is created here.
 
    base (median of the twelve trailing-12M windows) is NOT this quantity and is
-   NOT renamed. base remains the existing status reference consumed by
-   statusFor(cur, base), which is untouched.
+   NOT renamed. Its CALCULATION is untouched. Following the approved status
+   migration (§3) it is the historical analytical reference only: it no longer
+   classifies status and is retained in the statusFor() signature unread.
 
    The period is DERIVED from the governed calendar through the existing
    resolveAnchor() -> windowOf() chain on every render. It is never stored,
@@ -2536,16 +2539,41 @@ function zeroEventIMCFR(k, sites, months, a){
 }
 
 /* ---------- 5. STATUS ENGINE — the only classifier ----------
-   Governed rule (Golden Mockup footnote, per-KPI):
-   GOOD (<= baseline) · WATCH (> baseline to <= 1.5x baseline) · ACTION (> 1.5x baseline)
-   Applies to a KPI value against its own 12M rolling median. No rollup rule
-   is invented for the enterprise (R2 C-3).                                    */
-function statusFor(cur, base){
-  if(cur===null || base===null) return 'NODATA';
-  if(base===0) return cur<=0 ? 'GOOD' : 'ACTION';
-  if(cur<=base) return 'GOOD';
-  if(cur<=1.5*base) return 'WATCH';
-  return 'ACTION';
+   ARCHITECT ADJUDICATION — GOVERNED SEMANTIC MIGRATION (SS-3 / SS-4 / SS-5, §3).
+
+   RETIRED AS A STATUS AUTHORITY: the relative 12M-rolling-median rule
+       GOOD (<= base) / WATCH (> base to <= 1.5x base) / ACTION (> 1.5x base).
+   `base` (the 12M rolling median) is NOT deleted, NOT renamed and NOT
+   recalculated. It remains the governed historical/analytical reference and is
+   still returned by kpiBlock(). It simply no longer DETERMINES visible status.
+
+   APPROVED: visible management status is classified against the approved
+   MIME_TARGET_SSOT tiers. All governed Page-1 KPIs are LOWER IS BETTER:
+
+       GOOD            KPI <= STRETCH
+       WATCH           STRETCH < KPI < MINIMUM      (strict on both sides)
+       ACTION REQUIRED KPI >= MINIMUM
+       NO DATA         no governed value, or no governed target to classify with
+
+   The boundaries are STRICT so no two states can ever claim the same value.
+   NORMAL is an INFORMATIONAL TARGET LEVEL between STRETCH and MINIMUM. It is
+   NOT a status state and NOT a status boundary; nothing below reads t.normal.
+
+   THIS REMAINS THE ONLY CLASSIFIER (§3). It is extended, not duplicated. No
+   priorityAlertStatus(), siteSummaryStatus(), decisionStatus(), page2Status()
+   or page5Status() exists. Every presentation module consumes THIS result via
+   the single kpiBlock() -> .status path.
+
+   The `base` parameter is retained in the signature so the existing call
+   contract, the historical baseline calculation and every analytical consumer
+   of `base` are untouched. It is deliberately not read here.                  */
+function statusFor(cur, base, id){
+  if(cur===null || cur===undefined) return 'NODATA';   /* §17 — never inferred */
+  const t = tgtOf(id);
+  if(!t || t.stretch===undefined || t.minimum===undefined) return 'NODATA';
+  if(cur <= t.stretch) return 'GOOD';                  /* KPI <= STRETCH       */
+  if(cur >= t.minimum) return 'ACTION';                /* KPI >= MINIMUM       */
+  return 'WATCH';                                      /* STRETCH < KPI < MIN  */
 }
 const ST = {
   GOOD:  {label:'GOOD',            cls:'good',   color:'var(--good)',   glyph:'\u2713'},
@@ -2699,7 +2727,7 @@ function median(v){
   return a.length%2 ? a[h] : (a[h-1]+a[h])/2;
 }
 function kpiBlock(sites, anchor, k){
-  if(!anchor) return {cur:null, base:null, delta:null, status:'NODATA', pts:[], zeroEvent:false};
+  if(!anchor) return {cur:null, base:null, delta:null, tdelta:null, status:'NODATA', pts:[], zeroEvent:false};
   const pts=series(sites,anchor,k);
   const cur=pts[pts.length-1].value, base=median(pts.map(p=>p.value));
   const zeroEvent = pts[pts.length-1].zeroEvent === true;   /* R3.1 §5 provenance */
@@ -2707,7 +2735,19 @@ function kpiBlock(sites, anchor, k){
   if(cur!==null && base!==null){
     delta = (k.deltaUnit==='pp') ? (cur-base) : (base===0 ? null : (cur-base)/base*100);
   }
-  return {cur, base, delta, status:statusFor(cur,base), pts, zeroEvent};
+  /* GOVERNED MANAGEMENT COMPARATOR (§5). tdelta is the visible management
+     comparator and its SOURCE IS THE STRETCH TARGET read from the existing
+     MIME_TARGET_SSOT — never the 12M rolling median, never a page-local table.
+     The existing display convention is preserved exactly: percentage-point for
+     the pp-unit KPI (IM-CFR), relative percentage for the rate KPIs. `delta`
+     (vs base) is UNCHANGED and remains available to analytical consumers.   */
+  let tdelta=null;
+  const _t = tgtOf(k.id);
+  if(cur!==null && _t && _t.stretch!==undefined){
+    tdelta = (k.deltaUnit==='pp') ? (cur - _t.stretch)
+           : (_t.stretch===0 ? null : (cur - _t.stretch)/_t.stretch*100);
+  }
+  return {cur, base, delta, tdelta, status:statusFor(cur,base,k.id), pts, zeroEvent};
 }
 
 /* ---------- formatting ---------- */
@@ -2760,7 +2800,7 @@ const P2ST = {
 /* C4 presentation of the SINGLE governed MIM enterprise state — Blocker 2 */
 const C4MAP = {
   GOOD:  {lvl1:'ROUTINE MONITORING',
-          narr:'Medical incident performance is within baseline for the selected scope.<br>'
+          narr:'Medical incident performance is at or better than Stretch Target for the selected scope.<br>'
               +'Continue routine monitoring and standard management review.',
           rev:'RECOMMENDED REVIEW (ROUTINE)',
           revText:'Continue standard management review and monitoring of medical incident '
@@ -2842,11 +2882,12 @@ function p2Extend(v){
     const ex = KPI_ORDER.map(id=>({id, b:r.k[id]}))
       .filter(x=>x.b.status==='WATCH'||x.b.status==='ACTION')
       .sort((a,b)=> (WORST[b.b.status]-WORST[a.b.status])
-                 || ((b.b.delta===null?-1e9:b.b.delta)-(a.b.delta===null?-1e9:a.b.delta)));
+                 || ((b.b.tdelta===null?-1e9:b.b.tdelta)-(a.b.tdelta===null?-1e9:a.b.tdelta)));
     if(!ex.length) continue;
     v.drivers.push({code:r.code, name:r.name,
       level:(r.status===worst?'PRIMARY':'SECONDARY'),
-      rows:ex.map(x=>({kpi:x.id, cur:x.b.cur, base:x.b.base, delta:x.b.delta, status:x.b.status}))});
+      rows:ex.map(x=>({kpi:x.id, cur:x.b.cur, base:x.b.base, delta:x.b.delta,
+                       tdelta:x.b.tdelta, status:x.b.status}))});
   }
   v.exKPIs = [...new Set(v.drivers.reduce((a,d)=>a.concat(d.rows.map(r=>r.kpi)),[]))];
   return v;
@@ -2932,7 +2973,7 @@ function renderP2C3(){
     empty.innerHTML = v.anchor
       ? '<div class="hd"><span style="width:44px;height:44px;display:block">'+ICO.check+'</span>'
         + '<b>NO KPI EXCEPTIONS ACROSS ALL SITES</b></div>'
-        + '<p>All governed KPI results are within baseline thresholds<br>'
+        + '<p>All governed KPI results are at or better than Stretch Target<br>'
         + 'No KPI exceptions are driving management attention.</p>'
       : '<div class="hd"><b style="color:var(--nodata)">NO GOVERNED REPORTING PERIOD</b></div>'
         + '<p>No complete governed reporting period exists in the selected scope.<br>'
@@ -2951,9 +2992,9 @@ function renderP2C3(){
         + '<td class="kx'+(first?' pt':'')+(last?' pb':'')+'">'+k.tab+'</td>'
         + '<td class="cu'+(first?' pt':'')+(last?' pb':'')+'">'+fmt(k,x.cur)
           +(k.suffix?'':' / 1,000,000 MH')+'</td>'
-        + '<td class="ba'+(first?' pt':'')+(last?' pb':'')+'">'+fmt(k,x.base)+'</td>'
+        + '<td class="ba'+(first?' pt':'')+(last?' pb':'')+'">'+fmtTgt(x.kpi,'stretch')+'</td>'
         + '<td class="va'+(first?' pt':'')+(last?' pb':'')+'" style="color:'+st.col+'">'
-          +fmtDelta(k,x.delta)+'</td>'
+          +fmtDelta(k,x.tdelta)+'</td>'
         + '<td class="'+(first?'pt ':'')+(last?'pb':'')+'">'
           + '<span class="p2pill st" style="background:'+st.col+'">'+(x.status==='ACTION'?'ACTION':'WATCH')+'</span>'
           + '<span class="p2pill dv" style="border-color:'+st.bd+';color:'+st.col+';margin-left:8px">'+d.level+'</span>'
@@ -2979,7 +3020,7 @@ function renderP2C4(){
      site is within baseline. Same governed data, corrected wording only. */
   var narr = m.narr;
   if(state==='GOOD' && v.priority.length){
-    narr = 'Enterprise performance is within baseline for the selected scope.<br>'
+    narr = 'Enterprise performance is at or better than Stretch Target for the selected scope.<br>'
          + 'Site-level exceptions remain visible below for targeted review.';
   }
   document.getElementById('p2c4-n').innerHTML=narr;
@@ -2994,7 +3035,7 @@ function renderP2C4(){
      (statusFor -> site rollup); no second classifier is created. */
   const nEx = v.priority.length;
   const l2 = nd ? 'NO GOVERNED SITE CLASSIFICATION'
-     : (good ? ('ENTERPRISE PERFORMANCE IS WITHIN BASELINE'
+     : (good ? ('ENTERPRISE PERFORMANCE IS WITHIN STRETCH TARGET'
                 + (nEx ? '  \u2014  ' + nEx + ' SITE' + (nEx===1?'':'S')
                          + ' WITH GOVERNED EXCEPTIONS' : ''))
              : (chipRows.length+' SITE'+(chipRows.length===1?' REQUIRES':'S REQUIRE')
@@ -3676,8 +3717,8 @@ function renderP4C2(v){
     + ' \u00b7 ICFR ' + fmtTgt('ICFR','normal');
   p4s2.title = 'Enterprise Target SSOT \u2014 IMR: '+tgtTriplet('IMR')+'; IM-CFR: '+tgtTriplet('IMCFR')
     + '; ICFR: '+tgtTriplet('ICFR')+'. '+TARGET_METHOD
-    + ' Targets apply to the governed KPI RATES, not to the recorded event counts plotted here, '
-    + 'are management context only, and never generate status.';
+    + ' Targets apply to the governed KPI RATES, not to the recorded event counts plotted here. '
+    + 'The recorded event counts on this page carry no governed status.';
   const H=document.getElementById('p4tbl-h'), B=document.getElementById('p4tbl-b');
   if(v.state==='NODATA' || !v.cols){
     H.innerHTML='<th class="s">Operating Site</th>';
@@ -3868,23 +3909,26 @@ function computeView(){
     for(const id of KPI_ORDER){
       const b=r.k[id];
       if(b.status==='WATCH'||b.status==='ACTION')
-        cand.push({site:r.name, code:r.code, kpi:id, cur:b.cur, base:b.base, delta:b.delta, status:b.status});
+        cand.push({site:r.name, code:r.code, kpi:id, cur:b.cur, base:b.base,
+                   delta:b.delta, tdelta:b.tdelta, status:b.status});
     }
   }
   /* R3.1 §3 — every governed KPI exception in scope, from the same already
      governed candidate collection, captured BEFORE the existing Top 3 slice.
      No second classifier, baseline engine or site-status engine is created. */
+  /* §5 — the ordering basis follows the visible comparator so the rendered
+     table is monotonic in the number it displays. Status rank is unchanged. */
   v.alertsAll = cand.slice().sort((a,b)=>
-    (ST_RANK[b.status]-ST_RANK[a.status]) || ((b.delta===null?-1e9:b.delta)-(a.delta===null?-1e9:a.delta))
+    (ST_RANK[b.status]-ST_RANK[a.status]) || ((b.tdelta===null?-1e9:b.tdelta)-(a.tdelta===null?-1e9:a.tdelta))
   );
   const best=new Map();
   for(const c of cand){
     const k=c.code, p=best.get(k);
-    const key=x=>[ST_RANK[x.status], x.delta===null?-1e9:x.delta];
+    const key=x=>[ST_RANK[x.status], x.tdelta===null?-1e9:x.tdelta];
     if(!p || key(c)[0]>key(p)[0] || (key(c)[0]===key(p)[0] && key(c)[1]>key(p)[1])) best.set(k,c);
   }
   v.alerts=[...best.values()].sort((a,b)=>
-    (ST_RANK[b.status]-ST_RANK[a.status]) || ((b.delta===null?-1e9:b.delta)-(a.delta===null?-1e9:a.delta))
+    (ST_RANK[b.status]-ST_RANK[a.status]) || ((b.tdelta===null?-1e9:b.tdelta)-(a.tdelta===null?-1e9:a.tdelta))
   ).slice(0,3);
   v.above = KPI_ORDER.filter(id=>v.k[id].status==='WATCH'||v.k[id].status==='ACTION');
   v.counts = {GOOD:0,WATCH:0,ACTION:0,NODATA:0};
@@ -3917,7 +3961,7 @@ function renderHero(){
        at top:40, so a wrapping head would collide with it */
     head.textContent = 'Reporting anchor unavailable';
   }else{
-    head.textContent = v.above.length+' of '+KPI_ORDER.length+' KPIs above '+STATUS_REF_LABEL;
+    head.textContent = v.above.length+' of '+KPI_ORDER.length+' KPIs above Stretch Target';
   }
   const tl=document.getElementById('hero-tiles');
   tl.innerHTML = [['GOOD','GOOD','t-good'],['WATCH','WATCH','t-watch'],
@@ -3929,9 +3973,9 @@ function renderKPIs(){
   const v=VIEW, g=document.getElementById('kpi-grid');
   g.innerHTML = KPI_ORDER.map(id=>{
     const k=KPI[id], b=v.k[id];
-    const fav = b.delta===null ? null : (b.delta<=0);
-    const arrow = b.delta===null ? '' : (b.delta<0?'\u2193 ':(b.delta>0?'\u2191 ':''));
-    const dcol = b.delta===null ? 'var(--grey)' : (fav?'var(--good)':'var(--action)');
+    const fav = b.tdelta===null ? null : (b.tdelta<=0);
+    const arrow = b.tdelta===null ? '' : (b.tdelta<0?'\u2193 ':(b.tdelta>0?'\u2191 ':''));
+    const dcol = b.tdelta===null ? 'var(--grey)' : (fav?'var(--good)':'var(--action)');
     const ze = b.zeroEvent === true;                       /* R3.1 §5 */
     return '<div class="kpi" data-kpi="'+id+'"'+(ze?' title="'+ZERO_EVENT_NOTE+'"':'')+'>'
       + (ze?'<span class="sr-only">'+ZERO_EVENT_NOTE+'</span>':'')
@@ -3945,11 +3989,13 @@ function renderKPIs(){
          and remains stated on the Site Performance table, the trend metadata and
          Page-5. The governed comparison VALUE is retained below.             */
       + '<div class="hr"></div>'
-      + '<div class="dlt" style="color:'+dcol+'">'+arrow+fmtDelta(k,b.delta,false)+'</div>'
+      + '<div class="dlt" style="color:'+dcol+'">'+arrow+fmtDelta(k,b.tdelta,false)+'</div>'
       /* Target SSOT, existing sub-line, no new element and no geometry change
          (v1.1 §11). The full approved tier set is exposed on the same node. */
       + '<div class="dir" title="Approved MIME KPI Target SSOT \u2014 '+k.tab+': '
-      + tgtTriplet(id)+'. '+TARGET_METHOD+' Target \u2260 Rolling Reference \u2260 Status Threshold.">'
+      + tgtTriplet(id)+'. '+TARGET_METHOD+' Status: GOOD \u2264 Stretch, WATCH > Stretch to '
+      + '< Minimum, ACTION REQUIRED \u2265 Minimum. Normal is an informational target level, '
+      + 'not a status state. Target \u2260 Current 12M Rolling Reference.">'
       + 'Normal target <b>'+fmtTgt(id,'normal')+'</b></div></div>';
   }).join('');
 }
@@ -4003,9 +4049,12 @@ function renderTrend(){
        + val.toFixed(dec)+'</text>';
   }
   out+='<line x1="'+L+'" y1="'+B+'" x2="'+R+'" y2="'+B+'" stroke="#E6E8EC" stroke-width="1"/>';
+  /* SS-2 FROZEN — MINIMUM red dotted 2px, NORMAL amber dotted 2px, STRETCH
+     green dotted 2px. Solid lines and 2.5px are prohibited. The target VALUES,
+     the KPI series and the legend order are unchanged.                       */
   TGT.forEach(t=>{ if(t.v===null || t.v>top) return;
     out+='<line x1="'+L+'" y1="'+y(t.v)+'" x2="'+R+'" y2="'+y(t.v)+'" '
-       + 'style="stroke:'+t.tok+';stroke-width:2"/>'; });
+       + 'style="stroke:'+t.tok+';stroke-width:2;stroke-dasharray:2 4"/>'; });
   const pth=b.pts.map((p,i)=>p.value===null?null:(i===0?'M':'L')+x(i)+' '+y(p.value)).filter(Boolean).join(' ')
               .replace(/^L/,'M');
   out+='<path d="'+pth+'" fill="none" stroke="'+k.hex+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
@@ -4032,7 +4081,8 @@ function trendNote(){
   let s = 'Rates per 1,000,000 man-hours; IM-CFR per 100 dated illness-medevac events. '
         + ROLLING_REF_LABEL+' '+rollingRefPeriodLabel(v.anchor)+'. '
         + 'Target: '+tgtTriplet(id)+'. '
-        + 'Status ref = '+STATUS_REF_LABEL+' (1.5x threshold).';
+        + 'Status: GOOD \u2264 Stretch \u00b7 WATCH > Stretch to < Minimum \u00b7 '
+        + 'ACTION REQUIRED \u2265 Minimum.';
   if(v.anchor) s += ' Anchor '+mLong(v.anchor)+'.';
   if(v.resolve.suppressed) s += ' '+mLong(v.resolve.suppressed)+' incomplete \u2014 excluded.';
   return s;
@@ -4050,7 +4100,7 @@ function renderTable(){
       const dcol= b.status==='ACTION'?'var(--action)':(b.status==='WATCH'?'var(--watch)':'#7A8085');
       tds+='<td class="num" style="color:'+col+'"'
          + (b.zeroEvent===true?' title="'+ZERO_EVENT_NOTE+'"':'')+'>'+fmt(k,b.cur)+'</td>'
-         + '<td class="dlt" style="color:'+dcol+'">('+fmtDelta(k,b.delta)+')</td>';
+         + '<td class="dlt" style="color:'+dcol+'">('+fmtDelta(k,b.tdelta)+')</td>';
     }
     const st=ST[r.status];
     tds+='<td class="st"><span class="dot" style="background:'+st.color+'"></span>'
@@ -4058,8 +4108,9 @@ function renderTable(){
     return '<tr'+(sel.indexOf(r.code)<0?' class="dim"':'')+'>'+tds+'</tr>';
   }).join('');
   document.getElementById('tbl-note').textContent =
-    'Baseline = 12M rolling median. Status: GOOD (\u2264 baseline), WATCH (> baseline to \u2264 1.5x baseline), '
-    + 'ACTION REQUIRED (> 1.5x baseline).';
+    'Comparator = approved Stretch Target. Status: GOOD (\u2264 Stretch), '
+    + 'WATCH (> Stretch to < Minimum), ACTION REQUIRED (\u2265 Minimum). '
+    + 'Normal is informational.';
   document.getElementById('site-performance').title =
     'Overall Status = worst governed per-KPI status for the site (NO DATA never outranks a governed verdict).';
 }
@@ -4068,7 +4119,7 @@ function renderAlerts(){
   const v=VIEW, tb=document.getElementById('atbody');
   if(!v.alerts.length){
     tb.innerHTML='<tr><td class="s" colspan="5" style="color:#8A9096;font-size:8.8px">'
-      + (v.anchor ? 'No site is above its 12M rolling baseline for the selected scope.'
+      + (v.anchor ? 'No site is above its Stretch Target for the selected scope.'
                   : 'No complete governed reporting period in scope.')+'</td></tr>';
     return;
   }
@@ -4078,7 +4129,7 @@ function renderAlerts(){
     const bd = a.status==='ACTION'?'var(--badge-action-bd)':'var(--badge-watch-bd)';
     return '<tr><td class="s">'+a.site+'</td><td class="k">'+k.tab+'</td>'
       + '<td class="v">'+fmt(k,a.cur)+'</td>'
-      + '<td class="b" style="color:'+st.color+'">'+fmtDelta(k,a.delta)+'</td>'
+      + '<td class="b" style="color:'+st.color+'">'+fmtDelta(k,a.tdelta)+'</td>'
       + '<td class="st"><span class="badge" style="background:'+bg+';border-color:'+bd+';color:'+st.color+'">'
       + '<i style="background:'+st.color+'">'+st.glyph+'</i>'+st.label+'</span></td></tr>';
   }).join('');
@@ -4128,8 +4179,9 @@ function renderDecision(){
     const nAbove=KPI_ORDER.filter(id=>j.k[id].status==='WATCH'||j.k[id].status==='ACTION').length;
     return '<div class="dcol"><div class="hd"><img src="'+ICONS['mini'+(i+1)]+'" alt="">'
       + '<b style="color:'+sx.color+'">'+a.code+'</b></div>'
-      + '<p>'+k.tab+' '+fmt(k,a.cur)+' vs '+fmt(k,a.base)+' baseline ('+fmtDelta(k,a.delta)+').<br>'
-      + 'Above baseline on '+nAbove+' of '+KPI_ORDER.length+' KPIs.</p></div>';
+      + '<p>'+k.tab+' '+fmt(k,a.cur)+' vs Stretch Target '+fmtTgt(a.kpi,'stretch')
+      + ' ('+fmtDelta(k,a.tdelta)+').<br>'
+      + 'Above Stretch Target on '+nAbove+' of '+KPI_ORDER.length+' KPIs.</p></div>';
   }).join('');
 }
 
@@ -4154,11 +4206,11 @@ function renderExec(){
         const k=KPI[m.id];
         return k.tab+' '+(m.d>0?'increased ':(m.d<0?'decreased ':'unchanged '))
              + Math.abs(m.d).toFixed(1)+(k.deltaUnit==='pp'?' pp':'%');
-      }).join('; ')+' vs 12M baseline.'
-    : 'No KPI movement can be measured against the 12M baseline in this scope.';
+      }).join('; ')+' vs 12M rolling median (analytical reference).'
+    : 'No KPI movement can be measured against the 12M rolling median in this scope.';
   const lead = v.above.length ? KPI[v.above[0]] : KPI[movers.length?movers[0].id:'MRR'];
   e2.textContent = lead.tab+' is '
-    + (v.k[lead.id].status==='GOOD' ? 'at or below' : 'above')+' the 12M baseline for this scope.';
+    + (v.k[lead.id].status==='GOOD' ? 'at or below' : 'above')+' the Stretch Target for this scope.';
   /* P1-RC-01 §25 — the impact line is aligned to the SAME governed site-status
      state that now determines MIM. The enterprise KPI aggregate is retained as
      a factual analytical statement only (§20) and no longer implies the MIM
@@ -4303,18 +4355,18 @@ function fillAlerts(){
     return;
   }
   body.innerHTML = '<table class="mdlg-t"><thead><tr><th>Site</th><th>KPI</th>'
-    + '<th class="n">Current</th><th class="n">12M baseline</th><th class="n">Variance</th>'
+    + '<th class="n">Current</th><th class="n">Stretch Target</th><th class="n">Variance</th>'
     + '<th>Governed status</th></tr></thead><tbody>'
     + rows.map(a=>{ const k=KPI[a.kpi], st=ST[a.status];
         return '<tr><td>'+a.site+'</td><td>'+k.tab+'</td>'
-          + '<td class="n">'+fmt(k,a.cur)+'</td><td class="n">'+fmt(k,a.base)+'</td>'
-          + '<td class="n">'+fmtDelta(k,a.delta)+'</td>'
+          + '<td class="n">'+fmt(k,a.cur)+'</td><td class="n">'+fmtTgt(a.kpi,'stretch')+'</td>'
+          + '<td class="n">'+fmtDelta(k,a.tdelta)+'</td>'
           + '<td><span class="mdlg-st" style="color:'+st.color+'">'+st.label+'</span></td></tr>';
       }).join('')
     + '</tbody></table><p class="mdlg-foot">Every governed KPI exception (WATCH / ACTION REQUIRED) '
     + 'in the active scope. The Priority Alerts card continues to show the Top 3 only. '
-    + 'Status: GOOD (\u2264 baseline), WATCH (> baseline to \u2264 1.5x baseline), '
-    + 'ACTION REQUIRED (> 1.5x baseline).</p>';
+    + 'Status: GOOD (\u2264 Stretch), WATCH (> Stretch to < Minimum), '
+    + 'ACTION REQUIRED (\u2265 Minimum).</p>';
 }
 
 function fillActions(){
@@ -4325,18 +4377,18 @@ function fillActions(){
     body.innerHTML = '<p class="mdlg-empty">'
       + (v && v.anchor
           ? 'No escalation action is indicated from the selected scope\u2019s current governed '
-            + 'KPI results. No site is above its 12M rolling baseline.'
+            + 'KPI results. No site is above its Stretch Target.'
           : 'No complete governed reporting period in scope. No escalation action can be '
             + 'indicated from the selected scope\u2019s current governed KPI results.')
       + '</p>';
     return;
   }
   body.innerHTML = '<table class="mdlg-t"><thead><tr><th>Site</th><th>KPI</th>'
-    + '<th class="n">Current vs 12M baseline</th><th>Governed status</th>'
+    + '<th class="n">Current vs Stretch Target</th><th>Governed status</th>'
     + '<th>Recommended action</th></tr></thead><tbody>'
     + rows.map(a=>{ const k=KPI[a.kpi], st=ST[a.status];
         return '<tr><td>'+a.site+'</td><td>'+k.tab+'</td>'
-          + '<td class="n">'+fmt(k,a.cur)+' vs '+fmt(k,a.base)+' ('+fmtDelta(k,a.delta)+')</td>'
+          + '<td class="n">'+fmt(k,a.cur)+' vs '+fmtTgt(a.kpi,'stretch')+' ('+fmtDelta(k,a.tdelta)+')</td>'
           + '<td><span class="mdlg-st" style="color:'+st.color+'">'+st.label+'</span></td>'
           + '<td class="act">'+RECO[a.kpi]+'</td></tr>';
       }).join('')
@@ -4590,8 +4642,10 @@ function xlsx(){
   });
   s2.push([]);
   s2.push(['Target method', TARGET_METHOD]);
-  s2.push(['Boundary', 'Target \u2260 Current 12M Rolling Reference \u2260 Status Threshold. '
-                     + 'Targets never generate GOOD / WATCH / ACTION.']);
+  s2.push(['Boundary', 'Target \u2260 Current 12M Rolling Reference. The approved Stretch and '
+                     + 'Minimum targets ARE the governed status thresholds: GOOD \u2264 Stretch, '
+                     + 'WATCH > Stretch to < Minimum, ACTION REQUIRED \u2265 Minimum. Normal is an '
+                     + 'informational target level, not a status state.']);
   const files = [
     {name:'[Content_Types].xml', data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
       +'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
@@ -4744,19 +4798,20 @@ function pptx(){
     shapes+=tb(id++,x,1700000,cw,1500000,[
       {t:k.name,sz:900,b:1,c:k.hex.replace('#','')},
       {t:fmt(k,b.cur),sz:2800,b:1,c:k.hex.replace('#','')},
-      {t:'vs 12M Baseline (Median) '+fmt(k,b.base),sz:800,c:'4A5155'},
-      {t:fmtDelta(k,b.delta)+' vs baseline \u00b7 '+ST[b.status].label,sz:800,b:1,
+      {t:'vs Stretch Target '+fmtTgt(idk,'stretch'),sz:800,c:'4A5155'},
+      {t:fmtDelta(k,b.tdelta)+' vs Stretch Target \u00b7 '+ST[b.status].label,sz:800,b:1,
        c:(b.status==='ACTION'?'C2262C':(b.status==='WATCH'?'D19A0B':'0F8A24'))}]);
     x+=cw+80000;
   }
   const alerts = v.alerts.length ? v.alerts.map(a=>({t:a.site+' \u2014 '+KPI[a.kpi].tab+' '+fmt(KPI[a.kpi],a.cur)
-      +' ('+fmtDelta(KPI[a.kpi],a.delta)+') \u00b7 '+ST[a.status].label, sz:1000, c:'2B2F31'}))
-    : [{t:'No site is above its 12M rolling baseline for the selected scope.',sz:1000,c:'2B2F31'}];
+      +' ('+fmtDelta(KPI[a.kpi],a.tdelta)+') \u00b7 '+ST[a.status].label, sz:1000, c:'2B2F31'}))
+    : [{t:'No site is above its Stretch Target for the selected scope.',sz:1000,c:'2B2F31'}];
   shapes+=tb(id++,457200,3400000,11277600,1600000,[{t:'Priority alerts (Top 3)',sz:1300,b:1,c:'A32A2C'}].concat(alerts));
   shapes+=tb(id++,457200,5100000,11277600,1200000,[
     {t:'MIM STATUS: '+MIM[v.mim.state].label+' \u2014 '+v.mim.band,sz:1000,b:1,
      c:(v.mim.state==='ACTION'?'8A0A00':(v.mim.state==='WATCH'?'BB7B01':(v.mim.state==='GOOD'?'033B3E':'4A4F54')))},
-    {t:'Owner-governed Page-1 executive roll-up (0-1 GOOD / 2 WATCH / >=3 ACTION REQUIRED). '
+    {t:'Owner-governed Page-1 executive roll-up \u2014 the worst governed site status in the '
+      +'active scope (ACTION REQUIRED > WATCH > GOOD > NO DATA). '
       +'Not a statutory, IOGP, clinical or diagnostic classification.',sz:800,c:'6B7280'},
     {t:'C-5 CLOSED: '+FEED.prov.c5,sz:800,c:'6B7280'},
     {t:'IM-CFR Tier-1 population: '+FEED.prov.popC,sz:800,c:'6B7280'},
@@ -4838,8 +4893,9 @@ function qaInjectFeed(feed, label){
      formula authority : the existing KPI{} registry + calc(). Page-5 renders
                          the governed DEFINITION of those formulas; it does not
                          compute, re-derive or re-state any KPI value.
-     status authority  : the existing statusFor() + ST{}. P5_LEGEND below is a
-                         PRESENTATION of that one classifier and is verified
+     status authority  : the existing statusFor() + ST{}, now target-based per
+                         the approved status migration (§3). P5_LEGEND below is
+                         a PRESENTATION of that ONE classifier and is verified
                          against it at runtime by p5LegendCheck().
      scope/state       : the existing global S. Page-5 adds ONE field (S.k5 =
                          active dictionary KPI) to that same object. No second
@@ -4881,25 +4937,31 @@ const P5_SELGAP = 12;
 const P5_SELW = {LEAD:144, MRR:142, MER:142, IMR:142, IMCFR:152, ICFR:153, GLOSS:176};
 
 /* §14 semantics + §15 colours. ONE Page-5 legend, identical in every state.  */
-/* v1.1 §8, §9, §16A — the status rule is stated against the 12M ROLLING MEDIAN
-   (`base`), which is the existing status reference. It is NOT the Current 12M
-   Rolling Reference and NOT a target. statusFor(cur, base) is unchanged; the
-   approved Target SSOT does not appear in this table and never generates a
-   status. The 1.50x ACTION threshold is retained and disclosed here.        */
+/* GOVERNED STATUS MIGRATION §8 — Page-5 is the governance/proof page, so it must
+   describe the status authority that PRODUCTION actually uses. The visible
+   status is now classified against the approved MIME_TARGET_SSOT tiers by the
+   single authority statusFor(cur, base, id). The 12M Rolling Median and the
+   retired 1.50x threshold no longer classify status and are therefore no
+   longer stated here as the status rule. NORMAL is an informational target
+   level between STRETCH and MINIMUM and is NOT a status state.             */
 const P5_LEGEND = [
-  {s:'GOOD',   cls:'good',   chip:'GOOD',            rule:'\u2264 1.00 \u00d7 Median',
-   mean:'Performance within expected range.'},
-  {s:'WATCH',  cls:'watch',  chip:'WATCH',           rule:'> 1.00 \u00d7 to \u2264 1.50 \u00d7 Median',
-   mean:'Performance above reference. Requires monitoring.'},
-  {s:'ACTION', cls:'action', chip:'ACTION<br>REQUIRED', rule:'> 1.50 \u00d7 Median',
-   mean:'Performance significantly above reference. Management action required.'},
+  {s:'GOOD',   cls:'good',   chip:'GOOD',            rule:'\u2264 Stretch Target',
+   mean:'Performance at or better than the approved Stretch Target.'},
+  {s:'WATCH',  cls:'watch',  chip:'WATCH',           rule:'> Stretch to < Minimum',
+   mean:'Performance above the Stretch Target but below the Minimum Target. '
+       +'Requires monitoring.'},
+  {s:'ACTION', cls:'action', chip:'ACTION<br>REQUIRED', rule:'\u2265 Minimum Target',
+   mean:'Performance at or above the Minimum Target. Management action required.'},
   {s:'NO DATA',cls:'nodata', chip:'NO DATA',         rule:'No valid denominator or missing data',
-   mean:'Insufficient data to determine performance.'}
+   mean:'Insufficient valid governed data to determine performance.'}
 ];
 const P5_NOTE = 'Status applies for management attention and does not replace clinical judgement.';
-const P5_NOTE_FULL = 'Status is classified against the 12M Rolling Median (status reference) only. '
-  + 'The approved Minimum / Normal / Stretch values are management targets and never generate '
-  + 'GOOD / WATCH / ACTION REQUIRED / NO DATA.';
+const P5_NOTE_FULL = 'Status is classified against the approved KPI Target SSOT. For these '
+  + 'lower-is-better KPIs: GOOD (\u2264 Stretch), WATCH (> Stretch to < Minimum), '
+  + 'ACTION REQUIRED (\u2265 Minimum), NO DATA (insufficient valid governed data). '
+  + 'Normal is an informational target level between Stretch and Minimum and is not a '
+  + 'status state. The 12M Rolling Median is retained as the historical analytical '
+  + 'reference and no longer classifies status.';
 
 /* §21 — enterprise matrix. FORMULA (Summary) strings are the governed §9
    formulas. The IM-CFR row uses the §9/§10 wording, not the abbreviated
@@ -4922,7 +4984,7 @@ const P5_DEN_EXPOSURE = 'Actual man-hours worked within the reporting scope and 
 const P5_DEN_MH_INC   = ['All employees','All contractors','All sites within selected scope',
                          'Regular and overtime hours'];
 const P5_A3_COMMON = {
-  bench:'12-Month Rolling Median (Status Reference)',
+  bench:'12-Month Rolling Median (Historical Analytical Reference)',
   src:'Sub Medevac &amp; Medical Referral Reports',
   freq:'Monthly',
   scope:'All Operating Sites (MDKA Group)<br>Employees + Contractors',
@@ -5082,14 +5144,23 @@ ICFR:{
 };
 
 /* §13 — the legend is a PRESENTATION of statusFor(). This check proves the two
-   can never silently diverge; it is surfaced on window.__MIME__.p5.            */
+   can never silently diverge; it is surfaced on window.__MIME__.p5. It is
+   exercised against the SINGLE governed authority using the approved Target
+   SSOT values themselves, at every governed boundary, for every governed KPI. */
 function p5LegendCheck(){
-  const b=10, t=[];
-  t.push(['GOOD  @ 1.00x', statusFor(1.00*b,b)==='GOOD']);
-  t.push(['WATCH @ 1.01x', statusFor(1.01*b,b)==='WATCH']);
-  t.push(['WATCH @ 1.50x', statusFor(1.50*b,b)==='WATCH']);
-  t.push(['ACTION@ 1.51x', statusFor(1.51*b,b)==='ACTION']);
-  t.push(['NODATA null  ', statusFor(null,b)==='NODATA']);
+  const t=[];
+  for(const id of KPI_ORDER){
+    const g=tgtOf(id); if(!g) continue;
+    const mid=(g.stretch+g.minimum)/2, e=(g.minimum-g.stretch)/100;
+    t.push([id+' GOOD   @ Stretch',      statusFor(g.stretch,   null, id)==='GOOD'  ]);
+    t.push([id+' WATCH  @ Stretch+e',    statusFor(g.stretch+e, null, id)==='WATCH' ]);
+    t.push([id+' WATCH  @ midpoint',     statusFor(mid,         null, id)==='WATCH' ]);
+    t.push([id+' WATCH  @ Normal',       statusFor(g.normal,    null, id)==='WATCH' ]);
+    t.push([id+' WATCH  @ Minimum-e',    statusFor(g.minimum-e, null, id)==='WATCH' ]);
+    t.push([id+' ACTION @ Minimum',      statusFor(g.minimum,   null, id)==='ACTION']);
+    t.push([id+' ACTION @ Minimum+e',    statusFor(g.minimum+e, null, id)==='ACTION']);
+    t.push([id+' NODATA @ null',         statusFor(null,        null, id)==='NODATA']);
+  }
   return {pass:t.every(x=>x[1]), lines:t};
 }
 
@@ -5147,24 +5218,26 @@ const P5G_A3 = [
   ['Reporting Scope',  'All operating sites within MDKA Group (unless otherwise specified).'],
   ['Aggregation',      'SUM(numerator) / SUM(denominator).'],
   ['Rounding',         '2 decimal places.'],
-  ['Baseline',         '12-Month Rolling Median \u2014 the status reference used by the status '
-                      +'classifier. Not a target.'],
+  ['Baseline',         '12-Month Rolling Median \u2014 historical analytical reference. '
+                      +'Not a target and not the status classifier.'],
   ['Current 12M<br>Rolling Reference',
                        'Current trailing-12-month pooled KPI value. Dynamic and data-derived; '
                       +'the period rolls forward with the governed calendar.'],
   ['Target',           'Owner-approved absolute performance level (Minimum / Normal / Stretch), '
-                      +'frozen and independent of the rolling reference.'
-                      +'<span class="sub">(Rolling Reference \u2260 Target \u2260 Threshold)</span>'],
-  ['Threshold',        'Boundary for status transition.'],
+                      +'frozen and independent of the rolling reference. The Stretch and '
+                      +'Minimum tiers are the governed status boundaries.'
+                      +'<span class="sub">(Rolling Reference \u2260 Target)</span>'],
+  ['Threshold',        'Boundary for status transition \u2014 the approved Stretch and Minimum '
+                      +'targets.'],
   ['Frequency',        'Monthly.']
 ];
 /* §17 — the four governed statuses. chip + rule are read from the SINGLE
    existing Page-5 legend (P5_LEGEND), not restated here. Only the governance
    definitions and the four non-status governance terms are content. */
 const P5G_A4_DEF = {
-  'GOOD':   'Performance within expected range.',
-  'WATCH':  'Performance above baseline; requires monitoring.',
-  'ACTION': 'Performance significantly above baseline; management action required.',
+  'GOOD':   'Performance at or better than Stretch Target.',
+  'WATCH':  'Performance above Stretch Target but below Minimum Target; requires monitoring.',
+  'ACTION': 'Performance at or above Minimum Target; management action required.',
   'NO DATA':'No valid denominator or missing data.'
 };
 const P5G_A4_GOV = [
@@ -5181,9 +5254,10 @@ const P5G_A5 = [
      '<ul><li><em>Current 12M Rolling Reference:</em> current trailing-12M pooled value (moving)</li>'
     +'<li><em>Target:</em> approved absolute Minimum / Normal / Stretch level (frozen; '
     +'lower is better, so Stretch &lt; Normal &lt; Minimum)</li>'
-    +'<li><em>12M Rolling Median:</em> status reference consumed by the status classifier</li>'
-    +'<li><em>Threshold:</em> boundaries for status classification (1.50\u00d7 the status '
-    +'reference); targets never generate status</li></ul>'],
+    +'<li><em>12M Rolling Median:</em> historical analytical reference; not consumed by '
+    +'the status classifier</li>'
+    +'<li><em>Threshold:</em> boundaries for status classification \u2014 the approved '
+    +'Stretch and Minimum targets; Normal is informational and is not a boundary</li></ul>'],
   ['Interpretation','KPI interpretation must consider operational and medical context (case mix, severity, access to care, location, data completeness, etc.).'],
   ['Limitations',   'KPI does not by itself measure clinical outcome quality. Use in conjunction with clinical review and investigation.']
 ];
@@ -5243,7 +5317,7 @@ function renderPage5Gloss(){
   /* A4 — ONE status authority. chip + rule come from P5_LEGEND (§17/§23). */
   document.getElementById('p5g-t4').innerHTML =
       '<colgroup><col style="width:70px"><col><col style="width:84px"></colgroup>'
-    + p5gHead('Status Term','Definition','Rule (vs 12M Rolling Median)')
+    + p5gHead('Status Term','Definition','Rule (vs Target)')
     + '<tbody>'
     + P5_LEGEND.map(r=>'<tr><td><span class="p5-chip '+r.cls+'">'+r.chip+'</span></td>'
         + '<td>'+(P5G_A4_DEF[r.s]||'\u2014')+'</td><td>'+r.rule+'</td></tr>').join('')
@@ -5370,7 +5444,7 @@ function renderPage5(){
   /* --- A5 STATUS GOVERNANCE (§13/§14/§15 — one authority, never colour alone) */
   document.getElementById('p5-st').innerHTML =
       '<colgroup><col style="width:40px"><col style="width:66px"><col style="width:52px"><col></colgroup>'
-    + '<thead><tr><th>STATUS</th><th>RULE (vs 12M MEDIAN)</th><th>VISUAL</th><th>MEANING</th></tr></thead>'
+    + '<thead><tr><th>STATUS</th><th>RULE (vs TARGET)</th><th>VISUAL</th><th>MEANING</th></tr></thead>'
     + '<tbody>'+P5_LEGEND.map(r=>
         '<tr><td class="s">'+r.s+'</td><td class="r">'+r.rule+'</td>'
       + '<td style="text-align:center"><span class="p5-chip '+r.cls+'">'+r.chip+'</span></td>'
