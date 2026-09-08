@@ -4206,8 +4206,8 @@ function renderExec(){
         const k=KPI[m.id];
         return k.tab+' '+(m.d>0?'increased ':(m.d<0?'decreased ':'unchanged '))
              + Math.abs(m.d).toFixed(1)+(k.deltaUnit==='pp'?' pp':'%');
-      }).join('; ')+' vs 12M rolling median (analytical reference).'
-    : 'No KPI movement can be measured against the 12M rolling median in this scope.';
+      }).join('; ')+'.'
+    : 'No governed KPI movement can be measured in this scope.';
   const lead = v.above.length ? KPI[v.above[0]] : KPI[movers.length?movers[0].id:'MRR'];
   e2.textContent = lead.tab+' is '
     + (v.k[lead.id].status==='GOOD' ? 'at or below' : 'above')+' the Stretch Target for this scope.';
@@ -4300,6 +4300,7 @@ if(document.fonts && document.fonts.ready){ document.fonts.ready.then(fitSiteNam
 function render(){
   VIEW = computeView();
   fitSiteNames();
+  renderBrand();                 /* §10 — header brand follows the active scope */
   renderHero(); renderKPIs(); renderTabs(); renderTrend();
   renderTable(); renderAlerts(); renderDecision(); renderExec(); renderProvenance();
   if(PAGE===2) renderPage2();
@@ -4336,7 +4337,7 @@ const DLG_B = document.getElementById('dlg-actions');
 function dlgScope(){
   const v=VIEW;
   return 'Scope: '+scopeLabel()+'  \u00b7  Reporting anchor: '+(v&&v.anchor?mLong(v.anchor):DASH)
-       + '  \u00b7  Baseline: 12M rolling median';
+       + '  \u00b7  Status basis: Stretch / Minimum Target (governed Target SSOT)';
 }
 function activeExceptions(){ return (VIEW && VIEW.alertsAll) ? VIEW.alertsAll : []; }
 
@@ -4739,11 +4740,340 @@ function download(name, blob){
   a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(u),1500);
 }
+
+/* ============================================================================
+   P1-TG-02 — SURGICAL ADDITIONS. PATCH, NOT REBUILD.
+   Consumes the EXISTING authorities only:
+     MIME_TARGET_SSOT · statusFor() · kpiBlock() · computeView() · download()
+   Creates NO second target table, NO second status engine, NO second ranking,
+   NO second data pipeline. Geometry, typography and frozen shell untouched.
+   ========================================================================== */
+
+/* ---------- §10  DYNAMIC BRAND — ONE AUTHORITY, REUSED BY PAGE-1 AND PDF ----
+   Uses the EXISTING embedded logo assets only. Nothing is redrawn, replaced,
+   regenerated or resized: the asset src is read back out of the frozen DOM.  */
+const BRAND_ASSET = {
+  MCG:{sel:'#brand-panel .bg-1', label:'Merdeka Copper Gold'},
+  MBM:{sel:'#brand-panel .bg-2', label:'Merdeka Battery Materials'},
+  MGR:{sel:'#brand-panel .bg-3', label:'Merdeka Gold Resources'},
+  BSI:{sel:'#sidebar .site[data-site="BSI"] img.lg', label:'Bumi Suksesindo (BSI) / Tujuh Bukit Operations'},
+  BTR:{sel:'#sidebar .site[data-site="BTR"] img.lg', label:'Batutua Tembaga Raya (BTR) / BKP'},
+  SCM:{sel:'#sidebar .site[data-site="SCM"] img.lg', label:'Sulawesi Cahaya Mineral (SCM)'},
+  MTI:{sel:'#sidebar .site[data-site="MTI"] img.lg', label:'Merdeka Tsingshan Indonesia (MTI)'},
+  PGM:{sel:'#sidebar .site[data-site="PGM"] img.lg', label:'Pani Gold Mine (PGM)'}
+};
+const BRAND_SRC_CACHE = {};
+function brandSrc(code){
+  if(BRAND_SRC_CACHE[code]!==undefined) return BRAND_SRC_CACHE[code];
+  const a=BRAND_ASSET[code]; if(!a) return (BRAND_SRC_CACHE[code]=null);
+  const el=document.querySelector(a.sel);
+  return (BRAND_SRC_CACHE[code] = el ? el.getAttribute('src') : null);
+}
+/* Owning group of a site — derived from the EXISTING GROUPS cascade (§12.3).
+   No cross-group site relationship is invented. */
+function ownerGroup(site){
+  const g=GROUPS.find(x=>x.code!=='ALL' && x.sites.indexOf(site)>=0);
+  return g ? g.code : null;
+}
+/* §10.1-§10.9 — the panel is a pure function of (Business Group, Operating
+   Site). It is recomputed on EVERY render, so it follows every filter change. */
+function brandFor(group, site){
+  const G=group||'ALL', S_=site||'ALL';
+  if(G==='ALL'){
+    if(S_==='ALL') return ['MCG','MBM','MGR'];          /* §10.1 */
+    const og=ownerGroup(S_);                            /* group + its site   */
+    return og ? [og, S_] : ['MCG','MBM','MGR'];
+  }
+  if(S_!=='ALL') return [G, S_];                        /* §10.3/4/6/7/10.9   */
+  const g=GROUPS.find(x=>x.code===G);                   /* §10.2/10.5/10.8    */
+  return g ? [G].concat(g.sites) : [G];
+}
+function renderBrand(){
+  const panel=document.getElementById('brand-panel'); if(!panel) return;
+  const codes=brandFor(S.group, S.site);
+  const html=codes.map((c,i)=>{
+    const src=brandSrc(c), a=BRAND_ASSET[c];
+    if(!src||!a) return '';
+    return '<img class="bg-'+(i+1)+'" src="'+src+'" alt="'+a.label+'">';
+  }).join('');
+  if(panel.innerHTML!==html) panel.innerHTML=html;      /* no needless reflow */
+  panel.setAttribute('data-brand', codes.join('+'));    /* E6 measurable hook */
+}
+function brandLabels(){ return brandFor(S.group,S.site).map(c=>BRAND_ASSET[c].label); }
+
+/* ============================================================================
+   §13-§26  EXECUTIVE SUMMARY — DETERMINISTIC ONE-PAGE PDF
+   Written by the application. No window.print(), no external library, no
+   second export subsystem: it reuses the existing download() transport.
+   ========================================================================== */
+
+/* Helvetica advance widths (units/1000, ASCII 32-126) — real metrics, so the
+   one-page fit in §24 is computed, not guessed. Bold is approximated at 1.08x,
+   which OVER-estimates and therefore can only prevent overflow, never cause it. */
+const HELV_W=[278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,
+556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,
+1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,
+667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,
+333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,
+556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
+function txtW(s,size,bold){
+  let w=0; for(let i=0;i<s.length;i++){ const c=s.charCodeAt(i);
+    w += (c>=32&&c<=126) ? HELV_W[c-32] : 556; }
+  return w/1000*size*(bold?1.08:1);
+}
+/* §24 — width-aware wrap with a HARD line cap. Content is SHORTENED, never
+   set below the approved minimum type size. */
+function wrapT(s,size,bold,maxW,maxLines){
+  const words=String(s).split(/\s+/).filter(Boolean), out=[]; let line='';
+  for(const w of words){
+    const t=line?line+' '+w:w;
+    if(txtW(t,size,bold)<=maxW){ line=t; continue; }
+    if(line) out.push(line);
+    line=w;
+    if(maxLines && out.length===maxLines) break;
+  }
+  if(line && (!maxLines || out.length<maxLines)) out.push(line);
+  if(maxLines && out.length>=maxLines){
+    const last=out[maxLines-1];
+    if(words.join(' ')!==out.join(' ')){
+      let t=last;
+      while(t && txtW(t+'\u2026',size,bold)>maxW) t=t.slice(0,-1);
+      out[maxLines-1]=t.replace(/[ ,;.]$/,'')+'\u2026';
+    }
+    return out.slice(0,maxLines);
+  }
+  return out;
+}
+function pdfEsc(s){ return String(s).replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)')
+  .replace(/[^\x20-\x7E]/g,c=>({'\u2013':'-','\u2014':'-','\u2018':"'",'\u2019':"'",
+   '\u201c':'"','\u201d':'"','\u00b7':'-','\u2192':'->','\u2265':'>=','\u2264':'<=',
+   '\u00d7':'x','\u2026':'...'}[c]||'?')); }
+
+/* ---------- PDF page canvas ---------- */
+function pdfPage(){
+  const ops=[], imgs=[];
+  const api={
+    W:595.28, H:841.89,
+    rgb(r,g,b){ ops.push([r,g,b].map(n=>(n/255).toFixed(3)).join(' ')+' rg'); return api; },
+    stroke(r,g,b){ ops.push([r,g,b].map(n=>(n/255).toFixed(3)).join(' ')+' RG'); return api; },
+    text(x,y,size,bold,s){ ops.push('BT /'+(bold?'F2':'F1')+' '+size+' Tf 1 0 0 1 '
+      +x.toFixed(2)+' '+y.toFixed(2)+' Tm ('+pdfEsc(s)+') Tj ET'); return api; },
+    rect(x,y,w,h){ ops.push(x.toFixed(2)+' '+y.toFixed(2)+' '+w.toFixed(2)+' '+h.toFixed(2)+' re f'); return api; },
+    line(x1,y1,x2,y2,w){ ops.push((w||0.6).toFixed(2)+' w '+x1.toFixed(2)+' '+y1.toFixed(2)
+      +' m '+x2.toFixed(2)+' '+y2.toFixed(2)+' l S'); return api; },
+    img(bytes,x,y,w,h){ const n=imgs.length+1; imgs.push(bytes);
+      ops.push('q '+w.toFixed(2)+' 0 0 '+h.toFixed(2)+' '+x.toFixed(2)+' '+y.toFixed(2)+' cm /Im'+n+' Do Q');
+      return api; },
+    build(){ return {stream:ops.join('\n'), imgs}; }
+  };
+  return api;
+}
+/* Raster a frozen DOM logo to baseline JPEG so it can be embedded with the
+   native DCTDecode filter — no deflate implementation is required. */
+function jpegOf(src,maxH){
+  try{
+    const im=new Image(); im.src=src;
+    if(!im.complete || !im.naturalWidth) return null;
+    const sc=maxH/im.naturalHeight, w=Math.max(1,Math.round(im.naturalWidth*sc)), h=Math.max(1,Math.round(maxH));
+    const c=document.createElement('canvas'); c.width=w*3; c.height=h*3;
+    const g=c.getContext('2d'); g.fillStyle='#FFFFFF'; g.fillRect(0,0,c.width,c.height);
+    g.drawImage(im,0,0,c.width,c.height);
+    const d=c.toDataURL('image/jpeg',0.92).split(',')[1];
+    const bin=atob(d), u=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+    return {bytes:u, w:c.width, h:c.height, dw:w, dh:h};
+  }catch(e){ return null; }
+}
+function pdfBuild(page){
+  const {stream,imgs}=page.build();
+  const enc=new TextEncoder(), chunks=[], off=[]; let pos=0;
+  const push=u=>{ chunks.push(u); pos+=u.length; };
+  const S_=s=>push(enc.encode(s));
+  S_('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+  const objs=[]; const nImg=imgs.length;
+  const imgRes=imgs.map((_,i)=>'/Im'+(i+1)+' '+(7+i)+' 0 R').join(' ');
+  objs[1]='1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n';
+  objs[2]='2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n';
+  objs[3]='3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] '
+        +'/Resources << /Font << /F1 5 0 R /F2 6 0 R >>'
+        +(nImg?' /XObject << '+imgRes+' >>':'')+' >> /Contents 4 0 R >>\nendobj\n';
+  objs[4]='4 0 obj\n<< /Length '+enc.encode(stream).length+' >>\nstream\n'+stream+'\nendstream\nendobj\n';
+  objs[5]='5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>\nendobj\n';
+  objs[6]='6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>\nendobj\n';
+  const xref=[];
+  for(let i=1;i<=6;i++){ xref[i]=pos; S_(objs[i]); }
+  imgs.forEach((im,i)=>{
+    const n=7+i; xref[n]=pos;
+    S_(n+' 0 obj\n<< /Type /XObject /Subtype /Image /Width '+im.w+' /Height '+im.h
+      +' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+im.bytes.length+' >>\nstream\n');
+    push(im.bytes); S_('\nendstream\nendobj\n');
+  });
+  const total=6+nImg, start=pos;
+  let x='xref\n0 '+(total+1)+'\n0000000000 65535 f \n';
+  for(let i=1;i<=total;i++) x+=String(xref[i]).padStart(10,'0')+' 00000 n \n';
+  x+='trailer\n<< /Size '+(total+1)+' /Root 1 0 R >>\nstartxref\n'+start+'\n%%EOF\n';
+  S_(x);
+  let len=0; chunks.forEach(c=>len+=c.length);
+  const out=new Uint8Array(len); let o=0;
+  chunks.forEach(c=>{ out.set(c,o); o+=c.length; });
+  return out;
+}
+
+/* ---------- §17-§23  THE ONE-PAGE MANAGEMENT REPORT ---------- */
+const C_INK=[43,47,49], C_SUB=[90,97,102], C_TEAL=[14,124,123], C_RULE=[214,218,222];
+const C_ST={GOOD:[27,122,74], WATCH:[176,124,12], ACTION:[176,42,42], NODATA:[138,144,150]};
+
+function execPDF(){
+  const v=VIEW, p=pdfPage(), M=36, R=p.W-M, CW=R-M;
+  let y=p.H-M;
+
+  /* ---- HEADER (§17) — same dynamic brand authority as Page-1 ---- */
+  const codes=brandFor(S.group,S.site);
+  let lx=R;
+  codes.slice().reverse().forEach(c=>{
+    const j=jpegOf(brandSrc(c),22); if(!j) return;
+    const w=j.dw*(22/j.dh);
+    lx-=w; p.img(j,lx,y-20,w,22); lx-=8;
+  });
+  p.rgb(...C_INK).text(M,y-9,14,1,'Medical Incident Management Performance');
+  p.rgb(...C_TEAL).text(M,y-24,10.5,1,'EXECUTIVE SUMMARY');
+  y-=34;
+  const gLab=(GROUPS.find(g=>g.code===S.group)||{}).label||'All Groups';
+  const sLab=(S.site==='ALL')?'All Sites':((SITE_REG.find(s=>s.code===S.site)||{}).name||S.site);
+  const per=v.anchor? rollingRefPeriodLabel(v.anchor) : DASH;
+  const scope=[['Business Group',gLab],['Operating Site',sLab],
+               ['Reporting period',per],['Data status',(INGEST.state||'IDLE')+(INGEST.recon?' \u00b7 RECONCILED':'')]];
+  p.rgb(...C_RULE).line(M,y,R,y,0.8); y-=13;
+  scope.forEach((r,i)=>{
+    const cx=M+(i%2)*(CW/2), cy=y-Math.floor(i/2)*12;
+    p.rgb(...C_SUB).text(cx,cy,8,0,r[0]+':');
+    p.rgb(...C_INK).text(cx+78,cy,8,1,r[1]);
+  });
+  y-=24; p.rgb(...C_RULE).line(M,y,R,y,0.8); y-=16;
+
+  const H=(t)=>{ p.rgb(...C_TEAL).text(M,y,9.5,1,t); y-=13; };
+  const body=(t,maxLines)=>{ wrapT(t,8.5,0,CW,maxLines||3).forEach(l=>{
+      p.rgb(...C_INK).text(M,y,8.5,0,l); y-=11; }); };
+
+  /* ---- SECTION A — CURRENT POSITION (§18), all values dynamic ---- */
+  H('A \u00b7 CURRENT POSITION');
+  const c=v.counts, mimLab=(ST[v.mim]||ST.NODATA).label;
+  const lead=v.alerts[0];
+  p.rgb(...C_SUB).text(M,y,8,0,'Overall MIM status:');
+  p.rgb(...(C_ST[v.mim]||C_ST.NODATA)).text(M+92,y,9,1,mimLab);
+  p.rgb(...C_SUB).text(M+190,y,8,0,'Governed KPIs:');
+  p.rgb(...C_ST.GOOD).text(M+258,y,8.5,1,c.GOOD+' GOOD');
+  p.rgb(...C_ST.WATCH).text(M+312,y,8.5,1,c.WATCH+' WATCH');
+  p.rgb(...C_ST.ACTION).text(M+375,y,8.5,1,c.ACTION+' ACTION REQUIRED');
+  y-=14;
+  body(lead
+    ? 'Highest-priority exception: '+KPI[lead.kpi].tab+' at '+lead.site+', currently '
+      +fmt(KPI[lead.kpi],lead.cur)+' against a Stretch Target of '+fmtTgt(lead.kpi,'stretch')
+      +' and a Minimum Target of '+fmtTgt(lead.kpi,'minimum')+'. '
+      +v.sitesAbove+' of '+v.nSites+' operating sites in scope carry a WATCH or ACTION REQUIRED status.'
+    : 'No governed KPI exception is present in the selected scope. All governed KPIs are at or below the Stretch Target.',2);
+  y-=6;
+
+  /* ---- SECTION B — KPI TARGET POSITION (§19). No baseline column. ---- */
+  H('B \u00b7 KPI TARGET POSITION');
+  const col=[M, M+150, M+225, M+300, M+375, M+455];
+  const head=['KPI','Current','STRETCH','NORMAL','MINIMUM','Status'];
+  p.rgb(...C_RULE).rect(M,y-3,CW,13);
+  head.forEach((h,i)=>p.rgb(...C_SUB).text(col[i],y,7.5,1,h));
+  y-=15;
+  KPI_ORDER.forEach(id=>{
+    const k=KPI[id], b=v.k[id];
+    p.rgb(...C_INK).text(col[0],y,8,0,k.disp);
+    p.rgb(...C_INK).text(col[1],y,8,1,fmt(k,b.cur));
+    p.rgb(...C_SUB).text(col[2],y,8,0,fmtTgt(id,'stretch'));
+    p.rgb(...C_SUB).text(col[3],y,8,0,fmtTgt(id,'normal'));
+    p.rgb(...C_SUB).text(col[4],y,8,0,fmtTgt(id,'minimum'));
+    p.rgb(...(C_ST[b.status]||C_ST.NODATA)).text(col[5],y,8,1,ST[b.status].label);
+    y-=12;
+  });
+  p.rgb(...C_RULE).line(M,y+4,R,y+4,0.5); y-=10;
+
+  /* ---- SECTION C — MANAGEMENT PRIORITIES (§20). Existing ranking, max 3. ---- */
+  H('C \u00b7 MANAGEMENT PRIORITIES');
+  if(!v.alerts.length){
+    body('No site/KPI exception is ranked for management attention in this scope.',1);
+  } else v.alerts.slice(0,3).forEach((a,i)=>{
+    const k=KPI[a.kpi];
+    p.rgb(...C_SUB).text(M,y,7.5,1,'PRIORITY '+(i+1));
+    p.rgb(...C_INK).text(M+56,y,8,1,a.site);
+    p.rgb(...C_INK).text(M+170,y,8,0,k.tab);
+    p.rgb(...C_INK).text(M+240,y,8,1,fmt(k,a.cur));
+    p.rgb(...C_SUB).text(M+300,y,8,0,'Minimum '+fmtTgt(a.kpi,'minimum'));
+    p.rgb(...(C_ST[a.status]||C_ST.NODATA)).text(M+400,y,8,1,ST[a.status].label);
+    y-=12;
+  });
+  y-=6;
+
+  /* ---- SECTION D — McKINSEY 7S (§21/§22). Compact matrix, evidence-bound. -- */
+  H('D \u00b7 McKINSEY 7S \u2014 MANAGEMENT ALIGNMENT');
+  const actKPI=KPI_ORDER.filter(id=>v.k[id].status==='ACTION').map(id=>KPI[id].tab);
+  const wchKPI=KPI_ORDER.filter(id=>v.k[id].status==='WATCH').map(id=>KPI[id].tab);
+  const sites=v.alerts.map(a=>a.site).filter((s,i,arr)=>arr.indexOf(s)===i);
+  const S7=[
+    ['STRATEGY','HARD','Prioritise reduction of target-level medical incident exposure, with immediate focus on '
+      +(actKPI.length? actKPI.join(', ')+' (at or above Minimum Target)'
+        : (wchKPI.length? wchKPI.join(', ')+' (above Stretch Target)' : 'sustaining all governed KPIs at or below Stretch Target'))+'.'],
+    ['STRUCTURE','HARD','Accountability runs '+gLab+' \u2192 '+sLab+' \u2192 governed KPI. '
+      +(sites.length? 'Management review is required at: '+sites.join(', ')+'.' : 'No site-level escalation is open in this scope.')],
+    ['SYSTEMS','HARD','Governed chain in force: source \u2192 validation \u2192 reconciliation \u2192 KPI \u2192 target status \u2192 management action. '
+      +'Status is classified against the approved Stretch/Minimum targets.'],
+    ['SHARED VALUES','SOFT','Management implication: shared focus should remain on prevention, early escalation and evidence-based occupational health decisions.'],
+    ['STYLE','SOFT','Management implication: leadership attention should be directed to target-level exceptions and timely management review.'],
+    ['STAFF','SOFT','Management implication: ensure responsible medical/OHIH stakeholders are assigned to review every ACTION REQUIRED and WATCH exception.'],
+    ['SKILLS','SOFT','Capability consideration: strengthen KPI interpretation, target-based escalation, case management and data-quality review where required.']
+  ];
+  const cw=(CW-10)/2, cellH=34;
+  S7.forEach((s,i)=>{
+    const cx=M+(i%2)*(cw+10), cy=y-Math.floor(i/2)*cellH;
+    p.rgb(246,248,249).rect(cx,cy-cellH+8,cw,cellH-4);
+    p.rgb(...C_TEAL).text(cx+5,cy,7.5,1,s[0]);
+    p.rgb(...C_SUB).text(cx+cw-26,cy,7,0,s[1]);   /* §24 type floor: 6.5pt */
+    wrapT(s[2],7,0,cw-10,3).forEach((l,j)=>p.rgb(...C_INK).text(cx+5,cy-9-j*8,7,0,l));
+  });
+  y-=Math.ceil(S7.length/2)*cellH+4;
+
+  /* ---- SECTION E — 7S ALIGNMENT PRIORITY (§23). Max 3, scope-driven. ---- */
+  H('E \u00b7 7S ALIGNMENT PRIORITY');
+  const acts=[
+    'Strategy \u2014 '+(actKPI.length? 'focus management action on '+actKPI.join(', ')+', now at or above Minimum Target.'
+      : (wchKPI.length? 'hold '+wchKPI.join(', ')+' under review until returned to Stretch Target.'
+        : 'sustain current governed performance at or below Stretch Target.')),
+    'Systems \u2014 maintain target-based escalation and governed data reconciliation across the selected scope.',
+    'Skills/Staff \u2014 ensure responsible stakeholders can interpret and act on target-level exceptions'
+      +(sites.length? ' at '+sites.join(', ')+'.' : ' across the enterprise scope.')
+  ].slice(0,3);
+  acts.forEach((a,i)=>{ wrapT((i+1)+'. '+a,8,0,CW,2).forEach(l=>{
+    p.rgb(...C_INK).text(M,y,8,0,l); y-=10; }); });
+
+  /* ---- FOOTER ---- */
+  p.rgb(...C_RULE).line(M,M+16,R,M+16,0.6);
+  p.rgb(...C_SUB).text(M,M+6,6.5,0,
+    'Status authority: MIME_TARGET_SSOT (Stretch / Normal / Minimum). GOOD <= Stretch \u00b7 WATCH between \u00b7 ACTION REQUIRED >= Minimum. '
+    +'7S content is evidence-constrained; soft elements are stated as management implications, not established organisational facts.');
+  return pdfBuild(p);
+}
+function pdfName(){
+  const d=new Date(), q=n=>String(n).padStart(2,'0');
+  return 'Medical Incident Management '+d.getFullYear()+'-'+q(d.getMonth()+1)+'-'+q(d.getDate())+'.pdf';
+}
+
+/* §26 — the Executive Summary button now emits a deterministic one-page PDF.
+   The legacy reportHTML() builder is RETAINED, unreferenced, as change history
+   (it is the superseded technical dump described in §13). */
 document.getElementById('b-rpt').addEventListener('click',()=>{
   if(!FEED||!VIEW){ alert('No live data is loaded. The Executive Summary is unavailable until the '
     +'governed Google Spreadsheet has been read successfully.'); return; }
-  download('MIME_Executive_Summary_'+(VIEW.anchor||'nodata')+'.html',
-    new Blob([reportHTML()],{type:'text/html;charset=utf-8'}));
+  try{
+    download(pdfName(), new Blob([execPDF()],{type:'application/pdf'}));
+  }catch(e){
+    console.error('[P1-TG-02] Executive Summary PDF failed:', e);
+    alert('The Executive Summary PDF could not be generated for this scope.');
+  }
 });
 
 /* ---------- PPTX: real OOXML package, hand-built store-only ZIP ---------- */
@@ -5482,6 +5812,8 @@ window.__MIME__ = {get view(){return VIEW;}, S, KPI, KPI_ORDER, KPI_P2, get inge
                    /* live source surface for acceptance testing */
                    GS, LIVE, get feed(){return FEED;}, refresh:ingest, reconcile,
                    xlsx, xlName,
+                   /* P1-TG-02 acceptance surface */
+                   execPDF, pdfName, brandFor, renderBrand, brandLabels, BRAND_ASSET,
                    fixture:FEED_FIXTURE,
                    /* Page-4 acceptance surface */
                    get p4(){return VIEW&&VIEW.p4;}, P4, P4_SIGNAL, p4Compute,
