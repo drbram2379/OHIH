@@ -226,19 +226,55 @@ body{display:block;overflow-x:hidden}
 
 /* ---------- filter bar ---------- */
 #filter-bar{position:absolute;left:0;top:66px;width:1344px;height:50px;pointer-events:auto}
-.f-l{position:absolute;top:5px;font-size:9px;font-weight:600;line-height:11px;color:var(--body)}
-.f-s{position:absolute;top:18px;height:29px;border:1px solid #D8DADD;border-radius:6px;background:var(--panel);
+/* P1-TG-02-CLOSEOUT-R1 §2.3 — SEVEN CONTROLS, ONE GRID.
+   LEFT 200 (aligned to the page title) -> RIGHT 1323 (aligned to Refresh).
+   Usable width 1123 = 7 equal flexible columns + 6 x 10px gaps, so each column
+   resolves to 151.857px. The fractional width is accepted deliberately: the
+   earlier fixed 145px broke the right anchor and is no longer used. */
+#f-row{position:absolute;left:200px;top:18px;width:1123px;height:29px;
+  display:grid;grid-template-columns:repeat(7,minmax(0,1fr));column-gap:10px;align-items:start}
+.f-cell{position:relative;height:29px;min-width:0}
+/* §2.4 labels sit above their control and share ONE baseline */
+.f-l{position:absolute;left:0;top:-13px;font-size:9px;font-weight:600;line-height:11px;
+  color:var(--body);white-space:nowrap}
+.f-s{position:absolute;left:0;top:0;width:100%;height:29px;box-sizing:border-box;
+  border:1px solid #D8DADD;border-radius:6px;background:var(--panel);
   font-family:var(--font);font-size:10px;line-height:14px;color:var(--body);padding:0 24px 0 10px;
   -webkit-appearance:none;appearance:none;cursor:pointer;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3.2 L5 7 L9 3.2' fill='none' stroke='%234F555A' stroke-width='1.4' stroke-linecap='round'/></svg>");
   background-repeat:no-repeat;background-position:right 7px center}
 .f-s[data-nodata="true"]{color:#8A9096}
-.btn{position:absolute;top:18px;height:29px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+/* §2.4 control value text is vertically centred; §3.4 never clipped mid-meaning */
+.f-s.ms{display:flex;align-items:center}
+.f-s.ms .ms-v{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.f-s.ms[aria-expanded="true"]{border-color:var(--title-teal)}
+.f-s.ms:focus-visible{outline:2px solid #E0B457;outline-offset:1px}
+.btn{position:absolute;left:0;top:0;width:100%;height:29px;box-sizing:border-box;
+  border-radius:6px;display:flex;align-items:center;justify-content:center;
   gap:5px;font-family:var(--font);font-size:9.5px;font-weight:600;cursor:pointer;border:1px solid transparent;white-space:nowrap}
-#b-xls{left:820px;width:145px;background:var(--panel);border-color:#D8DADD;color:var(--body)}
-#b-rpt{left:975px;width:145px;background:var(--btn-dark);color:#FFF4DF}
-#b-ppt{left:1130px;width:145px;background:linear-gradient(90deg,var(--btn-gold-a),var(--btn-gold-b));color:#FFFFFF}
+#b-xls{background:var(--panel);border-color:#D8DADD;color:var(--body)}
+#b-rpt{background:var(--btn-dark);color:#FFF4DF}
+#b-ppt{background:linear-gradient(90deg,var(--btn-gold-a),var(--btn-gold-b));color:#FFFFFF}
 .btn svg{width:11px;height:11px;flex:0 0 11px}
+
+/* §3.5 controlled multi-select popover — no library, no CDN, no framework.
+   Reuses the existing panel/line/teal tokens, radius and shadow conventions.
+   It opens BELOW its control and stays inside the dashboard canvas. */
+.ms-pop{position:absolute;z-index:60;box-sizing:border-box;
+  background:var(--panel);border:1px solid #D8DADD;border-radius:6px;
+  box-shadow:0 6px 18px rgba(16,20,24,.16);
+  padding:4px;max-height:308px;overflow-y:auto;min-width:120px}
+.ms-pop[hidden]{display:none}
+.ms-o{display:flex;align-items:center;gap:7px;padding:4px 7px;border-radius:4px;
+  font-family:var(--font);font-size:10px;line-height:14px;color:var(--body);cursor:pointer;white-space:nowrap}
+.ms-o:hover{background:#F2F5F6}
+.ms-o .bx{flex:0 0 11px;width:11px;height:11px;border:1px solid #B9BEC3;border-radius:3px;
+  background:var(--panel);position:relative}
+.ms-o[aria-selected="true"] .bx{background:var(--title-teal);border-color:var(--title-teal)}
+.ms-o[aria-selected="true"] .bx::after{content:"";position:absolute;left:3px;top:.5px;
+  width:3px;height:6px;border:solid #FFFFFF;border-width:0 1.6px 1.6px 0;transform:rotate(43deg)}
+.ms-o.all{font-weight:700}
+.ms-sep{height:1px;margin:3px 5px;background:var(--line-soft)}
 
 /* ---------- hero ---------- */
 #hero-status{position:absolute;left:200px;top:131px;width:795px;height:105px;background:var(--hero);border-radius:10px}
@@ -435,13 +471,27 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
 #dc-box{position:absolute;left:15px;top:35px;width:385px;height:53px;border-radius:6px;background:var(--decision-bg);
   display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 14px;
   font-size:10.8px;font-weight:700;line-height:16px;color:#0E4F4E}
-#dc-cols{position:absolute;left:14px;top:97px;width:386px;height:80px;display:grid;grid-template-columns:136px 131px 119px}
+/* P1-TG-02-CLOSEOUT-R1 §5.1 — card x/y/width/height and title geometry are
+   FROZEN. Only internal content placement is corrected below.
+   §5.4 — the card is overflow:hidden as required, but overflow is NOT the fix:
+   the content is made to genuinely fit by shortening redundant narrative and
+   normalizing internal spacing. Typography is NOT shrunk and nothing is
+   clipped, hidden or truncated. E6 proves scrollHeight <= clientHeight. */
+#decision-required{overflow:hidden}
+/* §5.3 CONTENT BOUNDARY — the decision columns end at 97+88 = 185, before the
+   188 limit, reserving the 24px bottom action-link zone (184 -> 208). */
+#dc-cols{position:absolute;left:14px;top:97px;width:386px;height:88px;display:grid;grid-template-columns:136px 131px 119px}
 .dcol{padding-right:8px;position:relative}
 .dcol+.dcol{border-left:1px solid var(--line-soft);padding-left:14px}
 .dcol .hd{display:flex;align-items:center;gap:6px}
 .dcol .hd img{width:26px;height:26px;object-fit:contain}
 .dcol .hd b{font-size:12px;font-weight:700}
-.dcol p{margin-top:6px;font-size:9.5px;font-weight:400;line-height:12.6px;color:#4A5155}
+/* §5.4 SECOND — internal spacing normalized (6 -> 4). Type size and leading
+   are unchanged: 9.5px / 12.6px exactly as approved. */
+.dcol p{margin-top:4px;font-size:9.5px;font-weight:400;line-height:12.6px;color:#4A5155}
+/* §5.4 THIRD — reflow: one governed fact per line, so wrapping is deterministic
+   and no line can drift into the action-link zone. */
+.dcol p .l{display:block}
 .dcol.empty p{color:var(--grey-2)}
 
 /* footer */
@@ -1225,26 +1275,54 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
       <div id="updated">&mdash;</div>
     </header>
 
+    <!-- P1-TG-02-CLOSEOUT-R1 §2 — the seven governed controls now sit in ONE
+         equal-column grid anchored left 200 (page title) to right 1323 (Refresh).
+         §3.5 — the four scope controls are controlled multi-select popovers.
+         Native <select multiple> is deliberately NOT used: its rendering is
+         inconsistent across browsers and would break the controlled geometry. -->
     <section id="filter-bar">
-      <div class="f-l" style="left:200px">Year</div>
-      <select class="f-s" id="f-year" style="left:200px;width:145px"></select>
-      <div class="f-l" style="left:355px">Month</div>
-      <select class="f-s" id="f-month" style="left:355px;width:145px"></select>
-      <div class="f-l" style="left:510px">Business Group</div>
-      <select class="f-s" id="f-group" style="left:510px;width:145px"
-        title="Governed Business Group mapping (R3 §14). Controls the Operating Site cascade and the whole page."></select>
-      <div class="f-l" style="left:665px">Operating Site</div>
-      <select class="f-s" id="f-site" style="left:665px;width:145px"></select>
-
-      <button class="btn" id="b-xls" type="button" title="Download the governed source data as an Excel workbook: KPI_Site_Month (governed site-month dataset) + KPI_Enterprise (governed enterprise KPI block).">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.2" y="2.6" width="11.6" height="10.8" rx="1.2" fill="none" stroke="#2B2F31" stroke-width="1.3"/><path d="M2.2 6.4h11.6M6.4 6.4v7" fill="none" stroke="#2B2F31" stroke-width="1.3"/></svg>
-        Download Excel</button>
-      <button class="btn" id="b-rpt" type="button">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.5h5l3 3v10H4z" fill="none" stroke="#FFF4DF" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 8h4M6 10.5h4" stroke="#FFF4DF" stroke-width="1.3" stroke-linecap="round"/></svg>
-        Executive Summary Report</button>
-      <button class="btn" id="b-ppt" type="button">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.2" y="3" width="11.6" height="9" rx="1.2" fill="none" stroke="#FFFFFF" stroke-width="1.3"/><path d="M5.4 9V6h2a1.5 1.5 0 0 1 0 3z" fill="none" stroke="#FFFFFF" stroke-width="1.2" stroke-linejoin="round"/></svg>
-        PowerPoint</button>
+      <div id="f-row">
+        <div class="f-cell">
+          <div class="f-l" id="l-year">Year</div>
+          <div class="f-s ms" id="f-year" role="button" tabindex="0"
+               aria-haspopup="listbox" aria-expanded="false" aria-labelledby="l-year"><span class="ms-v">All Year</span></div>
+        </div>
+        <div class="f-cell">
+          <div class="f-l" id="l-month">Month</div>
+          <div class="f-s ms" id="f-month" role="button" tabindex="0"
+               aria-haspopup="listbox" aria-expanded="false" aria-labelledby="l-month"><span class="ms-v">All Month</span></div>
+        </div>
+        <div class="f-cell">
+          <div class="f-l" id="l-group">Business Group</div>
+          <div class="f-s ms" id="f-group" role="button" tabindex="0"
+               aria-haspopup="listbox" aria-expanded="false" aria-labelledby="l-group"
+               title="Governed Business Group mapping (R3 §14). Controls the Operating Site cascade and the whole page."><span class="ms-v">All Groups</span></div>
+        </div>
+        <div class="f-cell">
+          <div class="f-l" id="l-site">Operating Site</div>
+          <div class="f-s ms" id="f-site" role="button" tabindex="0"
+               aria-haspopup="listbox" aria-expanded="false" aria-labelledby="l-site"><span class="ms-v">All Sites</span></div>
+        </div>
+        <div class="f-cell">
+          <button class="btn" id="b-xls" type="button" title="Download the governed source data as an Excel workbook: KPI_Site_Month (governed site-month dataset) + KPI_Enterprise (governed enterprise KPI block).">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.2" y="2.6" width="11.6" height="10.8" rx="1.2" fill="none" stroke="#2B2F31" stroke-width="1.3"/><path d="M2.2 6.4h11.6M6.4 6.4v7" fill="none" stroke="#2B2F31" stroke-width="1.3"/></svg>
+            Download Excel</button>
+        </div>
+        <div class="f-cell">
+          <button class="btn" id="b-rpt" type="button">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.5h5l3 3v10H4z" fill="none" stroke="#FFF4DF" stroke-width="1.3" stroke-linejoin="round"/><path d="M6 8h4M6 10.5h4" stroke="#FFF4DF" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Executive Summary Report</button>
+        </div>
+        <div class="f-cell">
+          <button class="btn" id="b-ppt" type="button">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.2" y="3" width="11.6" height="9" rx="1.2" fill="none" stroke="#FFFFFF" stroke-width="1.3"/><path d="M5.4 9V6h2a1.5 1.5 0 0 1 0 3z" fill="none" stroke="#FFFFFF" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            PowerPoint</button>
+        </div>
+      </div>
+      <div class="ms-pop" id="pop-year"  role="listbox" aria-multiselectable="true" hidden></div>
+      <div class="ms-pop" id="pop-month" role="listbox" aria-multiselectable="true" hidden></div>
+      <div class="ms-pop" id="pop-group" role="listbox" aria-multiselectable="true" hidden></div>
+      <div class="ms-pop" id="pop-site"  role="listbox" aria-multiselectable="true" hidden></div>
     </section>
 
     <section id="page-content">
@@ -1266,7 +1344,7 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
       <section id="analytics-grid">
 
         <section id="trend-card" class="card">
-          <div class="c-title">TREND OVER TIME <span id="trend-sub">(PER 1,000,000 MAN-HOURS)</span></div>
+          <div class="c-title">TREND OVER TIME <span id="trend-sub">(PER 1 MILLION MAN-HOURS)</span></div>
           <div id="tabs"></div>
           <div id="legend"></div>
           <svg id="chart" viewBox="1 1 695 211" aria-label="12-month rolling trend"></svg>
@@ -1301,14 +1379,14 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
             <div class="c-title">DECISION REQUIRED</div>
             <div id="dc-box"></div>
             <div id="dc-cols"></div>
-            <button type="button" class="lnk" id="lnk-actions" style="top:183px"
+            <button type="button" class="lnk" id="lnk-actions" style="top:190px"
               aria-haspopup="dialog">View recommended actions &rarr;</button>
           </section>
 
         </aside>
 
         <section id="site-performance" class="card">
-          <div class="c-title">SITE PERFORMANCE SUMMARY <span id="tbl-sub">(PER 1,000,000 MAN-HOURS)</span></div>
+          <div class="c-title">SITE PERFORMANCE SUMMARY <span id="tbl-sub">(PER 1 MILLION MAN-HOURS)</span></div>
           <table id="stbl">
             <colgroup><col style="width:158px"><col style="width:52px"><col style="width:44px"><col style="width:52px"><col style="width:47px"><col style="width:52px"><col style="width:47px"><col style="width:60px"><col style="width:55px"><col style="width:128px"></colgroup>
             <thead><tr>
@@ -2311,8 +2389,26 @@ const GROUPS = [
   {code:'MGR', label:'Merdeka Gold Resources (MGR)',    sites:['PGM']}
 ];
 const GROUP_BY = {}; GROUPS.forEach(g=>GROUP_BY[g.code]=g);
-function activeGroup(){ return GROUP_BY[S.group] || GROUP_BY.ALL; }
-function groupSites(){ return activeGroup().sites.slice(); }
+/* §3.2/§3.9 — the EXISTING governed mapping, resolved over a multi-selection.
+   No mapping is invented: the union is taken across the selected GROUPS rows. */
+function activeGroups(){
+  if(selAll(S.group)) return [GROUP_BY.ALL];
+  const g = S.group.map(c=>GROUP_BY[c]).filter(Boolean);
+  return g.length ? g : [GROUP_BY.ALL];
+}
+/* retained for every existing single-group consumer (label authority) */
+function activeGroup(){
+  const g = activeGroups();
+  return g.length===1 ? g[0] : GROUP_BY.ALL;
+}
+function activeGroupLabel(){
+  return selLabel(S.group, GROUP_BY.ALL.label, c=>(GROUP_BY[c]||{}).label||c);
+}
+function groupSites(){
+  const out=[];
+  activeGroups().forEach(g=>g.sites.forEach(s=>{ if(out.indexOf(s)<0) out.push(s); }));
+  return out.length ? out : GROUP_BY.ALL.sites.slice();
+}
 function siteInGroup(code){ return groupSites().indexOf(code)>=0; }
 /* PAGE-4 adds two governed measures. Both are PUBLISHED source flags:
    ievt = Recorded Illness-Related Events (03 Illness_Case = Y)
@@ -2665,8 +2761,55 @@ function mimRollup(v){
 }
 
 /* ---------- 6. GLOBAL STATE — exactly one ---------- */
-const S = {year:'ALL', month:'ALL', group:'ALL', site:'ALL', tab:'MRR'};
+/* P1-TG-02-CLOSEOUT-R1 §3.7 — the SAME single global state authority. The four
+   scope members are minimally widened from scalar to NORMALIZED ARRAY so the
+   governed scope can hold multiple selections. There is no page1MultiSelectState,
+   no filterState2 and no scopeState2: this object remains the only scope state,
+   and scopeSites() below remains the only scope resolver.
+   Canonical form: ['ALL']  or  a sorted array of specific codes. Never both. */
+const S = {year:['ALL'], month:['ALL'], group:['ALL'], site:['ALL'], tab:'MRR'};
 /* group/site are governed by §14–§18: default = All Groups + All Sites = ENTERPRISE VIEW */
+
+/* ---------- 6a. SELECTION AUTHORITY (§3.3 ALL semantics) ------------------
+   A. ALL selected            -> every available value is in scope
+   B. a specific value picked -> ALL is cleared
+   C. every specific picked   -> normalize back to ALL
+   D. ALL + specifics         -> never held as an analytical state
+   Normalization runs BEFORE scope calculation, so no downstream consumer can
+   ever observe a mixed state. */
+function selAll(sel){ return !Array.isArray(sel) || (sel.length===1 && sel[0]==='ALL'); }
+function selHas(sel,v){ return selAll(sel) || sel.indexOf(v)>=0; }
+function selOne(sel){ return (!selAll(sel) && sel.length===1) ? sel[0] : null; }
+function selCount(sel,domain){ return selAll(sel) ? (domain?domain.length:0) : sel.length; }
+function selNorm(sel, domain){
+  const dom = domain||[];
+  let v = (Array.isArray(sel)?sel:[sel]).filter(x=>x!=='ALL');
+  if(dom.length) v = v.filter(x=>dom.indexOf(x)>=0);       /* D + validity */
+  v = v.filter((x,i)=>v.indexOf(x)===i);
+  if(!v.length) return ['ALL'];                            /* B inverse */
+  if(dom.length && v.length>=dom.length) return ['ALL'];   /* C */
+  return v.sort();
+}
+/* §3.4 collapsed display — compact, never clipped, never an ellipsized meaning.
+   This form is for the 152px CONTROL only. */
+function selLabel(sel, allWord, nameFn){
+  if(selAll(sel)) return allWord;
+  if(sel.length===1) return nameFn ? nameFn(sel[0]) : sel[0];
+  return sel.length+' selected';
+}
+/* Full enumeration for surfaces that are NOT width-constrained (exports, the
+   Executive Summary scope block, export file names). §3.4 constrains the
+   control, not the governed record: an exported artefact must state exactly
+   which periods, groups and sites it covers. */
+function selLabelFull(sel, allWord, nameFn){
+  if(selAll(sel)) return allWord;
+  return sel.map(v=>nameFn?nameFn(v):v).join(' + ');
+}
+/* Branding (§10) is a pure function of a SINGLE group/site pair. A pooled
+   multi-selection is not one site or one group, so it resolves to the parent
+   scope mark. This is a presentation projection, not a second scope engine. */
+function gScalar(){ return selOne(S.group) || 'ALL'; }
+function sScalar(){ return selOne(S.site)  || 'ALL'; }
 
 /* ---------- period helpers ---------- */
 const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -2675,12 +2818,20 @@ function mKey(i){ const y=Math.floor(i/12), mo=i%12+1; return y+'-'+String(mo).p
 function mLabel(m){ return MN[+m.slice(5,7)-1]+" '"+m.slice(2,4); }
 function mLong(m){ return MN[+m.slice(5,7)-1]+' '+m.slice(0,4); }
 
+/* §3.8 — the ONE scope resolver. It returns the INTERSECTION of the Business
+   Group scope and the Operating Site selection. Year/Month intersect the same
+   scope through the period predicates below. KPI formulas, numerators,
+   denominators, targets and statusFor() are untouched: only the population
+   that feeds them changes. */
 function scopeSites(){
-  if(Array.isArray(S.site)) return S.site.slice();          /* pooled multi-site scope */
-  const g=groupSites();                                     /* §19 group scopes the page */
-  if(S.site==='ALL') return g;
-  return g.indexOf(S.site)>=0 ? [S.site] : g;               /* §17 invalid site never applies */
+  const g = groupSites();                                   /* §19 group scopes the page */
+  if(selAll(S.site)) return g;
+  const pick = S.site.filter(c=>g.indexOf(c)>=0);           /* intersection */
+  return pick.length ? pick : g;                            /* §17 invalid site never applies */
 }
+/* §3.8 period predicates — the same normalized state, one authority */
+function inYear(m){  return selHas(S.year,  m.slice(0,4)); }
+function inMonth(m){ return selHas(S.month, m.slice(5,7)); }
 function periodComplete(m, sites){ return sites.every(s => (MH.get(s+'|'+m)||0) > 0); }
 
 /* Reporting Anchor: latest COMPLETE governed period inside the active scope.
@@ -2688,8 +2839,8 @@ function periodComplete(m, sites){ return sites.every(s => (MH.get(s+'|'+m)||0) 
 function resolveAnchor(){
   const sites = scopeSites();
   let cand = EXP_MONTHS.filter(m => {
-    if(S.year!=='ALL' && m.slice(0,4)!==S.year) return false;
-    if(S.month!=='ALL' && m.slice(5,7)!==S.month) return false;
+    if(!inYear(m))  return false;
+    if(!inMonth(m)) return false;
     return true;
   });
   const complete = cand.filter(m=>periodComplete(m,sites));
@@ -2903,9 +3054,9 @@ function p2Cell(b){
 function renderP2C1(){
   const v=VIEW;
   const per = v.anchor ? mLong(v.anchor) : (v.resolve&&v.resolve.requested ? mLong(v.resolve.requested)+' (incomplete)' : DASH);
-  const scope = (S.site==='ALL')
-      ? (S.group==='ALL' ? 'All Operating Sites' : activeGroup().label)
-      : ((SITE_REG.find(x=>x.code===S.site)||{}).name || S.site);
+  const scope = selAll(S.site)
+      ? (selAll(S.group) ? 'All Operating Sites' : activeGroupLabel())
+      : selLabel(S.site,'All Operating Sites',c=>(SITE_REG.find(x=>x.code===c)||{}).name||c);
   const n=v.nSites;
   const it=[[ICO.scope,scope],[ICO.cal,per],[ICO.site,n+' site'+(n===1?'':'s')],
             [ICO.kpi,OHIH_KPI_LABEL]];
@@ -3055,10 +3206,12 @@ function renderP2C4(){
        'across all sites' is false when a single Operating Site is selected. */
     var revText = m.revText;
     if(state==='GOOD'){
-      var sc = (S.site==='ALL')
-        ? (S.group==='ALL' ? 'across all operating sites in scope'
+      var sc = selAll(S.site)
+        ? (selAll(S.group) ? 'across all operating sites in scope'
                            : 'across '+activeGroup().label)
-        : 'at '+(((SITE_REG.find(function(x){return x.code===S.site;})||{}).name)||S.site);
+        : (selOne(S.site)
+            ? 'at '+(((SITE_REG.find(function(x){return x.code===selOne(S.site);})||{}).name)||selOne(S.site))
+            : 'across '+S.site.length+' selected operating sites');
       revText = 'Continue standard management review and monitoring of medical incident '
               + 'performance '+sc+'.';
     }
@@ -3134,9 +3287,7 @@ function p3Ref(){
 
 /* the ONE global filter state resolves the month set; no Page-3 scope logic */
 function p3Months(){
-  return MONTHS.filter(m =>
-    (S.year ==='ALL' || m.slice(0,4)===S.year) &&
-    (S.month==='ALL' || m.slice(5,7)===S.month));
+  return MONTHS.filter(m => inYear(m) && inMonth(m));
 }
 
 function p3Extend(v){
@@ -3476,8 +3627,8 @@ function p4Periods(){
   return MONTHS.filter(m => monthEligible(m) && m>=GS.domainFrom && m<=GS.ceiling);
 }
 function p4InFilter(m){
-  if(S.year !=='ALL' && m.slice(0,4)!==S.year ) return false;
-  if(S.month!=='ALL' && m.slice(5,7)!==S.month) return false;
+  if(!inYear(m))  return false;
+  if(!inMonth(m)) return false;
   return true;
 }
 /* Page-4 period resolution. Page-4 counts EVENTS, so the anchor is the latest
@@ -3733,12 +3884,12 @@ function renderP4C2(v){
 
 /* ---------- C3 renderer -------------------------------------------------- */
 function renderP4C3(v){
-  const yl = S.year==='ALL' ? 'All Year' : S.year;
+  const yl = selLabel(S.year,'All Year');
   /* the scope line must state the SAME resolved scope every other component
      consumes: an active Business Group narrows the operating sites, so it is
      reported here rather than the literal 'All Operating Sites'. */
-  const sl = S.site!=='ALL' ? (SITE_REG.find(x=>x.code===S.site)||{}).name
-           : S.group!=='ALL' ? activeGroup().label
+  const sl = !selAll(S.site) ? selLabel(S.site,'All Operating Sites',c=>(SITE_REG.find(x=>x.code===c)||{}).name||c)
+           : !selAll(S.group) ? activeGroupLabel()
            : 'All Operating Sites';
   document.getElementById('p4c3-ls').textContent = sl+' | '+yl;
   document.getElementById('p4c3-rs').textContent = yl;
@@ -3841,9 +3992,8 @@ function renderP4C4(v){
 }
 
 function p4ScopeLine(){
-  const g = S.group==='ALL' ? 'All Business Group' : activeGroup().label;
-  const s = S.site==='ALL' ? 'All Operating Sites'
-          : (SITE_REG.find(x=>x.code===S.site)||{}).name;
+  const g = selAll(S.group) ? 'All Business Group' : activeGroupLabel();
+  const s = selLabel(S.site,'All Operating Sites',c=>(SITE_REG.find(x=>x.code===c)||{}).name||c);
   return g+' | '+s;
 }
 function renderPage4(){
@@ -4020,7 +4170,7 @@ function renderTrend(){
   /* SS-8 ADJUDICATED — the governed unit qualifier is presented; the retired
      "12M ROLLING RATE" wording is not.                                        */
   document.getElementById('trend-sub').textContent = k.id==='IMCFR'
-    ? '(PER 100 EVENTS)' : '(PER 1,000,000 MAN-HOURS)';
+    ? '(PER 100 EVENTS)' : '(PER 1 MILLION MAN-HOURS)';
   const L=44, R=680, T=63, B=171;
   let out='';
   if(!v.anchor || !b.pts.length){
@@ -4078,7 +4228,7 @@ function trendNote(){
   const v=VIEW;
   const id = S.tab;
   /* The three quantities are stated separately and never conflated (§4).     */
-  let s = 'Rates per 1,000,000 man-hours; IM-CFR per 100 dated illness-medevac events. '
+  let s = 'Rates per 1 million man-hours; IM-CFR per 100 dated illness-medevac events. '
         + ROLLING_REF_LABEL+' '+rollingRefPeriodLabel(v.anchor)+'. '
         + 'Target: '+tgtTriplet(id)+'. '
         + 'Status: GOOD \u2264 Stretch \u00b7 WATCH > Stretch to < Minimum \u00b7 '
@@ -4107,10 +4257,13 @@ function renderTable(){
        + '<span class="st-t" style="color:'+st.color+'">'+st.label+'</span></td>';
     return '<tr'+(sel.indexOf(r.code)<0?' class="dim"':'')+'>'+tds+'</tr>';
   }).join('');
-  document.getElementById('tbl-note').textContent =
-    'Comparator = approved Stretch Target. Status: GOOD (\u2264 Stretch), '
-    + 'WATCH (> Stretch to < Minimum), ACTION REQUIRED (\u2265 Minimum). '
-    + 'Normal is informational.';
+  /* P1-TG-02-CLOSEOUT-R1 §4.2 — the redundant explanatory note is REMOVED and is
+     NOT replaced by another explanatory paragraph. SIMPLIFY THE NARRATIVE, NOT THE
+     GOVERNED INFORMATION: the comparator identity stays in the table header
+     ('vs Stretch Target'), the current value, the delta and the Overall Status
+     stay in the table itself, and the full status-band authority remains on the
+     KPI cards, the trend metadata and Page-5. Nothing governed is lost. */
+  document.getElementById('tbl-note').textContent = '';
   document.getElementById('site-performance').title =
     'Overall Status = worst governed per-KPI status for the site (NO DATA never outranks a governed verdict).';
 }
@@ -4177,11 +4330,21 @@ function renderDecision(){
     const k=KPI[a.kpi], sx=ST[a.status];
     const j=v.siteRows.find(r=>r.code===a.code);
     const nAbove=KPI_ORDER.filter(id=>j.k[id].status==='WATCH'||j.k[id].status==='ACTION').length;
-    return '<div class="dcol"><div class="hd"><img src="'+ICONS['mini'+(i+1)]+'" alt="">'
+    /* §5.4 FIRST — redundant narrative is shortened, governed information is not.
+       'vs Stretch Target' was stated twice per column while the comparator is
+       already named in the Site Performance table header (§4.3). The comparator
+       is now labelled once. KPI identity, CURRENT, TARGET, the governed delta and
+       the management implication are all retained, and the full unabridged
+       governed sentence is retained as metadata on the same node. */
+    const full = k.tab+' '+fmt(k,a.cur)+' vs Stretch Target '+fmtTgt(a.kpi,'stretch')
+      + ' ('+fmtDelta(k,a.tdelta)+'). Above Stretch Target on '+nAbove
+      + ' of '+KPI_ORDER.length+' KPIs.';
+    return '<div class="dcol" title="'+full.replace(/"/g,'&quot;')+'">'
+      + '<div class="hd"><img src="'+ICONS['mini'+(i+1)]+'" alt="">'
       + '<b style="color:'+sx.color+'">'+a.code+'</b></div>'
-      + '<p>'+k.tab+' '+fmt(k,a.cur)+' vs Stretch Target '+fmtTgt(a.kpi,'stretch')
-      + ' ('+fmtDelta(k,a.tdelta)+').<br>'
-      + 'Above Stretch Target on '+nAbove+' of '+KPI_ORDER.length+' KPIs.</p></div>';
+      + '<p><span class="l">'+k.tab+' '+fmt(k,a.cur)+' ('+fmtDelta(k,a.tdelta)+')</span>'
+      + '<span class="l">Stretch '+fmtTgt(a.kpi,'stretch')+'</span>'
+      + '<span class="l">'+nAbove+' of '+KPI_ORDER.length+' KPIs above</span></p></div>';
   }).join('');
 }
 
@@ -4303,6 +4466,7 @@ function render(){
   renderBrand();                 /* §10 — header brand follows the active scope */
   renderHero(); renderKPIs(); renderTabs(); renderTrend();
   renderTable(); renderAlerts(); renderDecision(); renderExec(); renderProvenance();
+  msSync();                      /* §3.4 collapsed multi-select labels follow the state */
   if(PAGE===2) renderPage2();
   if(PAGE===3) renderPage3();
   if(PAGE===4) renderPage4();
@@ -4312,7 +4476,7 @@ function render(){
      Sidebar geometry is untouched (§34).                                     */
   document.querySelectorAll('#sidebar .site').forEach(el=>{
     const c=el.dataset.site, ok=(c==='ALL')||siteInGroup(c);
-    el.classList.toggle('sel', c===S.site);
+    el.classList.toggle('sel', (c==='ALL') ? selAll(S.site) : (!selAll(S.site) && S.site.indexOf(c)>=0));
     el.classList.toggle('out', !ok);
     el.setAttribute('aria-disabled', ok?'false':'true');
   });
@@ -4422,42 +4586,128 @@ function refreshDialogs(){                    /* no stale out-of-scope content *
 
 /* ---------- filters ---------- */
 let FILTERS_BOUND=false;
-function buildFilters(){
-  const y=document.getElementById('f-year');
-  y.innerHTML='<option value="ALL">All Year</option>'+YEARS.map(v=>'<option value="'+v+'">'+v+'</option>').join('');
-  const m=document.getElementById('f-month');
-  m.innerHTML='<option value="ALL">All Month</option>'+MN.map((n,i)=>
-    '<option value="'+String(i+1).padStart(2,'0')+'">'+n+'</option>').join('');
-  const g=document.getElementById('f-group');
-  g.innerHTML=GROUPS.map(x=>'<option value="'+x.code+'">'+x.label+'</option>').join('');
-  buildSiteOptions();
-  y.value=S.year; m.value=S.month; g.value=S.group;
-  if(FILTERS_BOUND) return;                       /* option domains rebuild; listeners bind once */
-  FILTERS_BOUND=true;
-  y.addEventListener('change',e=>{S.year=e.target.value; render();});
-  m.addEventListener('change',e=>{S.month=e.target.value; render();});
-  document.getElementById('f-site').addEventListener('change',e=>{S.site=e.target.value; render();});
-  /* §16 the ONLY authorized cascade: Business Group -> Operating Site validity */
-  g.addEventListener('change',e=>{
-    S.group=e.target.value;
-    if(S.site!=='ALL' && !siteInGroup(S.site)) S.site='ALL';   /* §17 reset, never leave invalid */
-    buildSiteOptions();
-    render();                                   /* §19 the whole page recalculates */
+/* ==========================================================================
+   §3.5/§3.6 CONTROLLED MULTI-SELECT — presentation/control mechanism only.
+   It writes into the SAME single global state S and then calls the SAME
+   render(). It does not compute, aggregate or classify anything.
+   ========================================================================== */
+const MONTH_CODES = MN.map((n,i)=>String(i+1).padStart(2,'0'));
+const MS = {
+  year : {ctl:'f-year',  pop:'pop-year',  allWord:'All Year',
+          domain:()=>YEARS.slice(),                                     label:v=>v},
+  month: {ctl:'f-month', pop:'pop-month', allWord:'All Month',
+          domain:()=>MONTH_CODES.slice(),                               label:v=>MN[+v-1]},
+  group: {ctl:'f-group', pop:'pop-group', allWord:'All Groups',
+          domain:()=>GROUPS.filter(g=>g.code!=='ALL').map(g=>g.code),   label:v=>(GROUP_BY[v]||{}).label||v},
+  site : {ctl:'f-site',  pop:'pop-site',  allWord:'All Sites',
+          /* canonical SITE_REG order, so the popover, the sidebar and the Site
+             Performance Summary all list the operating sites identically */
+          domain:()=>SITE_CODES.filter(c=>groupSites().indexOf(c)>=0),
+          label:v=>(SITE_REG.find(x=>x.code===v)||{}).name||v}
+};
+let MS_OPEN = null;
+
+/* §3.4 collapsed state — compact semantics, never a comma list in 152px */
+function msSync(){
+  Object.keys(MS).forEach(k=>{
+    const c=MS[k], ctl=document.getElementById(c.ctl); if(!ctl) return;
+    const v=ctl.querySelector('.ms-v'); if(v) v.textContent = selLabel(S[k], c.allWord, c.label);
+    ctl.setAttribute('data-nodata', c.domain().length ? 'false' : 'true');
   });
+  if(MS_OPEN) msPaint(MS_OPEN);
+}
+function msPaint(k){
+  const c=MS[k], pop=document.getElementById(c.pop), dom=c.domain();
+  const sel=S[k];
+  const row=(val,txt,isAll,on)=>'<div class="ms-o'+(isAll?' all':'')+'" role="option" '
+    + 'data-k="'+k+'" data-v="'+val+'" aria-selected="'+(on?'true':'false')+'">'
+    + '<span class="bx" aria-hidden="true"></span><span>'+txt+'</span></div>';
+  pop.innerHTML = row('ALL', c.allWord, true, selAll(sel))
+    + '<div class="ms-sep"></div>'
+    + dom.map(v=>row(v, c.label(v), false, !selAll(sel) && sel.indexOf(v)>=0)).join('');
+}
+function msPosition(k){
+  const c=MS[k], ctl=document.getElementById(c.ctl), pop=document.getElementById(c.pop);
+  const bar=document.getElementById('filter-bar');
+  const cr=ctl.getBoundingClientRect(), br=bar.getBoundingClientRect();
+  pop.style.minWidth=Math.round(cr.width)+'px';
+  pop.style.left=Math.round(cr.left-br.left)+'px';
+  pop.style.top =Math.round(cr.bottom-br.top+4)+'px';
+  const pr=pop.getBoundingClientRect();          /* §3.5 stay inside the canvas */
+  if(pr.right>1336) pop.style.left=Math.round(parseFloat(pop.style.left)-(pr.right-1336))+'px';
+  if(parseFloat(pop.style.left)<8) pop.style.left='8px';
+}
+function msClose(){
+  if(!MS_OPEN) return;
+  const c=MS[MS_OPEN];
+  document.getElementById(c.pop).hidden=true;
+  document.getElementById(c.ctl).setAttribute('aria-expanded','false');
+  MS_OPEN=null;                                  /* closing never loses a selection */
+}
+function msOpen(k){
+  if(MS_OPEN===k){ msClose(); return; }
+  msClose(); MS_OPEN=k;
+  const c=MS[k];
+  msPaint(k);
+  document.getElementById(c.pop).hidden=false;
+  document.getElementById(c.ctl).setAttribute('aria-expanded','true');
+  msPosition(k);
+}
+/* §3.9 the ONLY authorized cascade: Business Group -> Operating Site validity.
+   Uses the EXISTING governed mapping (GROUPS / groupSites / siteInGroup). */
+function msCascade(){
+  const valid=groupSites();
+  if(selAll(S.site)) return;
+  const keep=S.site.filter(c=>valid.indexOf(c)>=0);
+  S.site = keep.length ? selNorm(keep, valid) : ['ALL'];   /* normalize, never invalid */
+}
+/* §3.6 select internally -> normalize -> commit global state -> render */
+function msToggle(k, val){
+  const c=MS[k], dom=c.domain();
+  let next;
+  if(val==='ALL'){ next=['ALL']; }                          /* §3.3 A */
+  else if(selAll(S[k])){ next=selNorm([val], dom); }        /* §3.3 B */
+  else{
+    next = S[k].indexOf(val)>=0 ? S[k].filter(x=>x!==val) : S[k].concat([val]);
+    next = selNorm(next, dom);                              /* §3.3 C + D */
+  }
+  S[k]=next;
+  if(k==='group') msCascade();
+  render();                                                 /* §19 whole page recalculates */
+  if(MS_OPEN){ msPaint(MS_OPEN); msPosition(MS_OPEN); }     /* popover stays open */
+}
+
+function buildFilters(){
+  /* option domains rebuild on every commit; listeners bind once */
+  Object.keys(MS).forEach(k=>{ S[k]=selNorm(S[k], MS[k].domain()); });
+  msSync();
+  if(FILTERS_BOUND) return;
+  FILTERS_BOUND=true;
+
+  Object.keys(MS).forEach(k=>{
+    const c=MS[k];
+    document.getElementById(c.ctl).addEventListener('click',e=>{ e.stopPropagation(); msOpen(k); });
+    document.getElementById(c.ctl).addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); msOpen(k); }
+      else if(e.key==='Escape'){ msClose(); }
+    });
+    document.getElementById(c.pop).addEventListener('click',e=>{
+      e.stopPropagation();
+      const o=e.target.closest('.ms-o'); if(!o) return;
+      msToggle(o.dataset.k, o.dataset.v);
+    });
+  });
+  document.addEventListener('click',()=>msClose());                       /* click outside */
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') msClose(); });
+
+  /* §3.10 the sidebar remains a second Operating Site SELECTOR on the SAME
+     state — not a second scope authority. */
   document.querySelectorAll('#sidebar .site').forEach(el=>el.addEventListener('click',()=>{
     const c=el.dataset.site;
     if(c!=='ALL' && !siteInGroup(c)) return;     /* out-of-group site is not selectable */
-    S.site=c; document.getElementById('f-site').value=S.site; render();
+    S.site = (c==='ALL') ? ['ALL'] : selNorm([c], groupSites());
+    render();
   }));
-}
-
-/* §16 Operating Site option domain is a function of the active Business Group */
-function buildSiteOptions(){
-  const s=document.getElementById('f-site'), allowed=groupSites();
-  s.innerHTML='<option value="ALL">All Sites</option>'
-    + SITE_REG.filter(v=>allowed.indexOf(v.code)>=0)
-              .map(v=>'<option value="'+v.code+'">'+v.name+'</option>').join('');
-  s.value=S.site;
 }
 
 /* ---------- ingestion — LIVE pipeline ----------
@@ -4581,10 +4831,10 @@ window.addEventListener('resize',fit);
    EXPORTS — real outputs, active state, no fake buttons
    ========================================================================== */
 function scopeLabel(){
-  const p=[]; p.push(S.year==='ALL'?'All Year':S.year);
-  p.push(S.month==='ALL'?'All Month':MN[+S.month-1]);
-  p.push(activeGroup().label);
-  p.push(S.site==='ALL'?'All Sites':(SITE_REG.find(x=>x.code===S.site)||{}).name);
+  const p=[]; p.push(selLabelFull(S.year,'All Year'));
+  p.push(selLabelFull(S.month,'All Month',c=>MN[+c-1]));
+  p.push(selLabelFull(S.group,GROUP_BY.ALL.label,c=>(GROUP_BY[c]||{}).label||c));
+  p.push(selLabelFull(S.site,'All Sites',c=>(SITE_REG.find(x=>x.code===c)||{}).name||c));
   return p.join(' \u00b7 ');
 }
 /* ---------- XLSX: real OOXML SpreadsheetML package, EXISTING store-only ZIP ---
@@ -4790,7 +5040,7 @@ function brandFor(group, site){
 }
 function renderBrand(){
   const panel=document.getElementById('brand-panel'); if(!panel) return;
-  const codes=brandFor(S.group, S.site);
+  const codes=brandFor(gScalar(), sScalar());
   const html=codes.map((c,i)=>{
     const src=brandSrc(c), a=BRAND_ASSET[c];
     if(!src||!a) return '';
@@ -4799,7 +5049,7 @@ function renderBrand(){
   if(panel.innerHTML!==html) panel.innerHTML=html;      /* no needless reflow */
   panel.setAttribute('data-brand', codes.join('+'));    /* E6 measurable hook */
 }
-function brandLabels(){ return brandFor(S.group,S.site).map(c=>BRAND_ASSET[c].label); }
+function brandLabels(){ return brandFor(gScalar(),sScalar()).map(c=>BRAND_ASSET[c].label); }
 
 /* ============================================================================
    §13-§26  EXECUTIVE SUMMARY — DETERMINISTIC ONE-PAGE PDF
@@ -4928,7 +5178,7 @@ function execPDF(){
   let y=p.H-M;
 
   /* ---- HEADER (§17) — same dynamic brand authority as Page-1 ---- */
-  const codes=brandFor(S.group,S.site);
+  const codes=brandFor(gScalar(),sScalar());
   let lx=R;
   codes.slice().reverse().forEach(c=>{
     const j=jpegOf(brandSrc(c),22); if(!j) return;
@@ -4938,8 +5188,8 @@ function execPDF(){
   p.rgb(...C_INK).text(M,y-9,14,1,'Medical Incident Management Performance');
   p.rgb(...C_TEAL).text(M,y-24,10.5,1,'EXECUTIVE SUMMARY');
   y-=34;
-  const gLab=(GROUPS.find(g=>g.code===S.group)||{}).label||'All Groups';
-  const sLab=(S.site==='ALL')?'All Sites':((SITE_REG.find(s=>s.code===S.site)||{}).name||S.site);
+  const gLab=selLabelFull(S.group,GROUP_BY.ALL.label,c=>(GROUP_BY[c]||{}).label||c);
+  const sLab=selLabelFull(S.site,'All Sites',c=>(SITE_REG.find(x=>x.code===c)||{}).name||c);
   const per=v.anchor? rollingRefPeriodLabel(v.anchor) : DASH;
   const scope=[['Business Group',gLab],['Operating Site',sLab],
                ['Reporting period',per],['Data status',(INGEST.state||'IDLE')+(INGEST.recon?' \u00b7 RECONCILED':'')]];
