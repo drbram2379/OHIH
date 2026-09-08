@@ -361,6 +361,16 @@ body{display:block;overflow-x:hidden}
 #legend i{display:inline-block;width:22px;height:2px;border:0;border-radius:1px;
   margin-right:6px;vertical-align:middle}
 #chart{position:absolute;left:0;top:0;width:695px;height:211px;pointer-events:none}
+/* MIME PAGE-1.2 SS-2 — HOVER-ONLY DATA LABELS. The SVG itself stays
+   pointer-transparent so the KPI tab strip above it keeps receiving clicks; only
+   the point hit targets take pointer events, and they sit inside the plot
+   rectangle (y 63..171), clear of #tabs (top 4) and #legend (top 36).
+   Default state carries NO data-label text: the callout is revealed on hover /
+   keyboard focus only. Presentation only — no governed value is changed. */
+#chart .hit{pointer-events:auto;fill:transparent;stroke:none;cursor:default}
+#chart .tip{opacity:0;pointer-events:none}
+#chart .hit:hover + .tip,
+#chart .hit:focus + .tip{opacity:1}
 
 /* site table */
 #site-performance{left:200px;top:635px;width:697px;height:190px}
@@ -1344,10 +1354,13 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
       <section id="analytics-grid">
 
         <section id="trend-card" class="card">
-          <div class="c-title">TREND OVER TIME <span id="trend-sub">(PER 1 MILLION MAN-HOURS)</span></div>
+          <!-- MIME PAGE-1.2 SS-2 — governed title. The unit qualifier remains the
+               SS-8 adjudicated span (IM-CFR renders "(PER 100 EVENTS)"). -->
+          <div class="c-title">MEDICAL INCIDENT TREND <span id="trend-sub">(PER 1 MILLION MAN-HOURS)</span></div>
           <div id="tabs"></div>
           <div id="legend"></div>
-          <svg id="chart" viewBox="1 1 695 211" aria-label="12-month rolling trend"></svg>
+          <svg id="chart" viewBox="1 1 695 211"
+               aria-label="Medical incident trend by frozen calendar month position, one solid line per selected year"></svg>
         </section>
 
         <aside id="executive-rail">
@@ -1367,7 +1380,7 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
             <div class="c-title">PRIORITY ALERTS <span style="color:#6B7280">(Top 3)</span></div>
             <table id="atbl">
               <colgroup><col style="width:155px"><col style="width:35px"><col style="width:42px"><col style="width:84px"><col style="width:96px"></colgroup>
-              <thead><tr><th class="s" style="text-align:left;padding-left:14px">Site</th><th>KPI</th><th>Current</th><th>vs Stretch Target</th><th>Status</th></tr></thead>
+              <thead><tr><th class="s" style="text-align:left;padding-left:14px">Site</th><th>KPI</th><th>Current</th><th>vs Normal Target</th><th>Status</th></tr></thead>
               <tbody id="atbody"></tbody>
             </table>
             <button type="button" class="lnk" id="lnk-alerts" style="top:165px"
@@ -1386,15 +1399,18 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
         </aside>
 
         <section id="site-performance" class="card">
-          <div class="c-title">SITE PERFORMANCE SUMMARY <span id="tbl-sub">(PER 1 MILLION MAN-HOURS)</span></div>
+          <!-- MIME PAGE-1.2 SS-3 — the PRIMARY COMPARATOR is named in the section
+               title. No new target column is created, no KPI calculation changes
+               and the status authority is untouched. -->
+          <div class="c-title">SITE PERFORMANCE SUMMARY <span id="tbl-sub">(VS NORMAL TARGET &middot; PER 1 MILLION MAN-HOURS)</span></div>
           <table id="stbl">
             <colgroup><col style="width:158px"><col style="width:52px"><col style="width:44px"><col style="width:52px"><col style="width:47px"><col style="width:52px"><col style="width:47px"><col style="width:60px"><col style="width:55px"><col style="width:128px"></colgroup>
             <thead><tr>
               <th style="text-align:left;padding-left:13px">Site</th>
-              <th colspan="2">MRR<em>(vs Stretch Target)</em></th>
-              <th colspan="2">MER<em>(vs Stretch Target)</em></th>
-              <th colspan="2">IMR<em>(vs Stretch Target)</em></th>
-              <th colspan="2">IM-CFR<em>(vs Stretch Target)</em></th>
+              <th colspan="2">MRR<em>(vs Normal Target)</em></th>
+              <th colspan="2">MER<em>(vs Normal Target)</em></th>
+              <th colspan="2">IMR<em>(vs Normal Target)</em></th>
+              <th colspan="2">IM-CFR<em>(vs Normal Target)</em></th>
               <th>Overall<em style="font-size:9px;font-weight:700;color:var(--body)">Status</em></th>
             </tr></thead>
             <tbody id="stbody"></tbody>
@@ -1445,7 +1461,7 @@ dialog.mime-dialog::backdrop{background:rgba(17,18,11,.46)}
               <colgroup><col style="width:51px"><col style="width:48px"><col style="width:123px"><col style="width:59px"><col style="width:77px"><col style="width:160px"></colgroup>
               <thead><tr>
                 <th>SITE</th><th class="wrap">KPI<br>EXCEPTION</th><th>CURRENT</th>
-                <th class="wrap">STRETCH<br>TARGET</th><th>VARIANCE</th><th>DRIVER LEVEL</th>
+                <th class="wrap">NORMAL<br>TARGET</th><th>VARIANCE</th><th>DRIVER LEVEL</th>
               </tr></thead>
               <tbody id="p2c3body"></tbody>
             </table>
@@ -2742,8 +2758,11 @@ function mimBand(state, valid, actionRows, watchRows){
    NO DATA carries status NODATA and is excluded from the valid population; if
    no valid governed site status exists, MIM is NO DATA.                       */
 function mimRollup(v){
-  if(!v.anchor)
-    return {state:'NODATA', band:'No complete governed reporting period in scope.',
+  /* R2 §K — MIM keeps its ONE semantic, its ONE hierarchy and its ONE source
+     (the existing governed site status). Only the population it classifies is
+     corrected: the SELECTED ANALYTICAL SCOPE, not the reporting anchor. */
+  if(!(v.months && v.months.length))
+    return {state:'NODATA', band:'No governed reporting period in the selected analytical scope.',
             nAction:0, nWatch:0, nGood:0, nValid:0};
   const rows   = v.siteRows || [];
   const valid  = rows.filter(r=>r.status!=='NODATA');   /* governed statuses only */
@@ -2834,6 +2853,27 @@ function inYear(m){  return selHas(S.year,  m.slice(0,4)); }
 function inMonth(m){ return selHas(S.month, m.slice(5,7)); }
 function periodComplete(m, sites){ return sites.every(s => (MH.get(s+'|'+m)||0) > 0); }
 
+/* P1-ANALYTICAL-CLOSURE-R2 §B/§D — THE ONE TEMPORAL SCOPE RESOLVER.
+   scopeSites() already resolves the organizational half of the governed scope.
+   This is its temporal counterpart and it is NOT a new scope engine: it is the
+   EXISTING p3Months() resolver (Page-3 has consumed exactly this expression
+   since R3), lifted to the same level as scopeSites() so Page-1, Page-2,
+   Page-3, Page-4 and the exports all read ONE selected analytical population.
+   It uses the SAME global state S and the SAME predicates inYear/inMonth.
+
+        REPORTING ANCHOR  !=  ANALYTICAL SCOPE
+
+   The governed month population is MONTHS (every governed period committed by
+   normalize()), not EXP_MONTHS: EXP_MONTHS is the exposure calendar used to
+   resolve the reporting ANCHOR, while the analytical population must also
+   carry the governed IM-CFR event periods, which is what makes the pooled
+   Tier-1 IM-CFR agree with the governed enterprise authority.               */
+function scopeMonths(){
+  const out=[];
+  for(const m of MONTHS){ if(inYear(m) && inMonth(m)) out.push(m); }
+  return out;
+}
+
 /* Reporting Anchor: latest COMPLETE governed period inside the active scope.
    An incomplete period is never used as the enterprise anchor (R2 C-1).      */
 function resolveAnchor(){
@@ -2877,28 +2917,73 @@ function median(v){
   const h=Math.floor(a.length/2);
   return a.length%2 ? a[h] : (a[h-1]+a[h])/2;
 }
+/* R2 §F — SELECTED TEMPORAL OBSERVATIONS.
+   One observation per SELECTED governed period, each pooled over the SELECTED
+   organizational scope. Selected periods are never collapsed into one point
+   and a point never reaches outside the selected scope for its data. This is
+   the same rowsFor() -> aggregate() -> calc() chain series() uses; no second
+   aggregation engine exists.                                               */
+function observations(sites, months, k){
+  const pts=[];
+  for(const m of months){
+    const ag=aggregate(rowsFor(sites,[m]));
+    const z=zeroEventIMCFR(k, sites, [m], ag);        /* R3.1 §5 */
+    pts.push({month:m, value: z ? 0 : calc(k, ag), zeroEvent:z});
+  }
+  return pts;
+}
 function kpiBlock(sites, anchor, k){
-  if(!anchor) return {cur:null, base:null, delta:null, tdelta:null, status:'NODATA', pts:[], zeroEvent:false};
-  const pts=series(sites,anchor,k);
-  const cur=pts[pts.length-1].value, base=median(pts.map(p=>p.value));
-  const zeroEvent = pts[pts.length-1].zeroEvent === true;   /* R3.1 §5 provenance */
+  /* R2 §B/§E — THE SCORECARD IS THE SELECTED ANALYTICAL SCOPE.
+     `cur` was previously the last point of the trailing-12M rolling series,
+     i.e. it silently reverted to the REPORTING ANCHOR whenever a multi-period
+     scope was selected. It is now the POOLED result of the selected analytical
+     population, computed with the existing rowsFor()/aggregate()/calc()
+     authority. §C is satisfied structurally: aggregate() sums numerators and
+     denominators and calc() divides once, so no pre-calculated rate is ever
+     arithmetic-averaged. KPI definitions, numerator authority, denominator
+     authority and FEED are untouched.                                       */
+  const months = scopeMonths();
+  if(!months.length)
+    return {cur:null, base:null, delta:null, tdelta:null, status:'NODATA',
+            pts:[], zeroEvent:false, months:[], agg:null};
+  const agg = aggregate(rowsFor(sites, months));
+  const zeroEvent = zeroEventIMCFR(k, sites, months, agg);
+  const cur = zeroEvent ? 0 : calc(k, agg);
+  const pts = observations(sites, months, k);
+  /* `base` KEEPS its existing calculation — the median of the series points —
+     and keeps its existing role: the historical/analytical reference that
+     statusFor() does not read (approved status migration §3). It now
+     summarises the SELECTED periods rather than the twelve anchor-relative
+     windows, because the selected scope is the governed analytical population. */
+  const base = median(pts.map(p=>p.value));
   let delta=null;
   if(cur!==null && base!==null){
     delta = (k.deltaUnit==='pp') ? (cur-base) : (base===0 ? null : (cur-base)/base*100);
   }
-  /* GOVERNED MANAGEMENT COMPARATOR (§5). tdelta is the visible management
-     comparator and its SOURCE IS THE STRETCH TARGET read from the existing
-     MIME_TARGET_SSOT — never the 12M rolling median, never a page-local table.
-     The existing display convention is preserved exactly: percentage-point for
-     the pp-unit KPI (IM-CFR), relative percentage for the rate KPIs. `delta`
-     (vs base) is UNCHANGED and remains available to analytical consumers.   */
+  /* GOVERNED MANAGEMENT COMPARATOR (§5, as amended by R2 §M/§N).
+     The user has designated NORMAL as the primary displayed management target
+     globally. tdelta is a TARGET VISUALIZATION and is read from the existing
+     frozen MIME_TARGET_SSOT. TARGET VISUALIZATION != STATUS ENGINE: statusFor()
+     below is unchanged and still classifies against Stretch/Minimum. Target
+     VALUES are not changed; only which tier is displayed as the primary
+     management comparator. The display convention is preserved exactly:
+     percentage-point for the pp-unit KPI (IM-CFR), relative percentage for the
+     rate KPIs. `delta` (vs base) is UNCHANGED.                              */
   let tdelta=null;
   const _t = tgtOf(k.id);
-  if(cur!==null && _t && _t.stretch!==undefined){
-    tdelta = (k.deltaUnit==='pp') ? (cur - _t.stretch)
-           : (_t.stretch===0 ? null : (cur - _t.stretch)/_t.stretch*100);
+  if(cur!==null && _t && _t.normal!==undefined){
+    tdelta = (k.deltaUnit==='pp') ? (cur - _t.normal)
+           : (_t.normal===0 ? null : (cur - _t.normal)/_t.normal*100);
   }
-  return {cur, base, delta, tdelta, status:statusFor(cur,base,k.id), pts, zeroEvent};
+  return {cur, base, delta, tdelta, status:statusFor(cur,base,k.id), pts, zeroEvent,
+          months:months, agg:agg};
+}
+/* R2 §N — the primary management target test, for TARGET VISUALIZATION only.
+   It reads the frozen SSOT and never classifies status. */
+function aboveNormal(b, id){
+  const t=tgtOf(id);
+  if(!b || b.cur===null || !t || t.normal===undefined) return false;
+  return b.cur > t.normal;
 }
 
 /* ---------- formatting ---------- */
@@ -3053,16 +3138,35 @@ function p2Cell(b){
 
 function renderP2C1(){
   const v=VIEW;
-  const per = v.anchor ? mLong(v.anchor) : (v.resolve&&v.resolve.requested ? mLong(v.resolve.requested)+' (incomplete)' : DASH);
+  /* R2 §L — ANALYTICAL SCOPE != REPORTING ANCHOR.
+     The period item previously rendered the reporting ANCHOR, so a multi-period
+     selection was described by a single latest month. It now states the
+     SELECTED ANALYTICAL PERIOD POPULATION. The anchor is retained as metadata
+     on the same node — no new element, no geometry change.
+     The compact form is the EXISTING §3.4 collapsed-display authority
+     (selLabel), reused here because this strip is width-constrained; nothing
+     is clipped or truncated and the full enumeration stays in the metadata. */
+  const yFull = selLabelFull(S.year,'All Years');
+  const mFull = selLabelFull(S.month,'All Months',c=>MN[+c-1]);
+  const perFull = yFull+' \u00b7 '+mFull;
+  const per = (perFull.length<=34) ? perFull
+            : (selLabel(S.year,'All Years')+' \u00b7 '+selLabel(S.month,'All Months',c=>MN[+c-1]));
   const scope = selAll(S.site)
       ? (selAll(S.group) ? 'All Operating Sites' : activeGroupLabel())
       : selLabel(S.site,'All Operating Sites',c=>(SITE_REG.find(x=>x.code===c)||{}).name||c);
   const n=v.nSites;
   const it=[[ICO.scope,scope],[ICO.cal,per],[ICO.site,n+' site'+(n===1?'':'s')],
             [ICO.kpi,OHIH_KPI_LABEL]];
-  document.getElementById('p2c1-items').innerHTML =
+  const box=document.getElementById('p2c1-items');
+  box.innerHTML =
     it.map(([i,t])=>'<span class="it">'+i+'<span>'+t+'</span></span>')
       .join('<span class="sep">&bull;</span>');
+  box.title = 'Analytical scope: '+perFull+' \u00b7 '
+    + selLabelFull(S.group,GROUP_BY.ALL.label,c=>(GROUP_BY[c]||{}).label||c)+' \u00b7 '
+    + selLabelFull(S.site,'All Sites',c=>(SITE_REG.find(x=>x.code===c)||{}).name||c)
+    + ' \u2014 '+((v.months&&v.months.length)?v.months.length:0)+' governed period(s). '
+    + 'Reporting anchor: '+(v.anchor?mLong(v.anchor):DASH)
+    + ' (metadata only \u2014 it is not the analytical population).';
 }
 
 function renderP2C2(){
@@ -3121,13 +3225,13 @@ function renderP2C3(){
     + '</span>';
   if(!v.drivers.length){
     wrap.style.display='none'; empty.style.display='flex';
-    empty.innerHTML = v.anchor
+    empty.innerHTML = v.hasScope
       ? '<div class="hd"><span style="width:44px;height:44px;display:block">'+ICO.check+'</span>'
         + '<b>NO KPI EXCEPTIONS ACROSS ALL SITES</b></div>'
         + '<p>All governed KPI results are at or better than Stretch Target<br>'
         + 'No KPI exceptions are driving management attention.</p>'
       : '<div class="hd"><b style="color:var(--nodata)">NO GOVERNED REPORTING PERIOD</b></div>'
-        + '<p>No complete governed reporting period exists in the selected scope.<br>'
+        + '<p>No governed reporting period exists in the selected analytical scope.<br>'
         + 'No KPI exception can be stated.</p>';
     return;
   }
@@ -3143,7 +3247,7 @@ function renderP2C3(){
         + '<td class="kx'+(first?' pt':'')+(last?' pb':'')+'">'+k.tab+'</td>'
         + '<td class="cu'+(first?' pt':'')+(last?' pb':'')+'">'+fmt(k,x.cur)
           +(k.suffix?'':' / 1,000,000 MH')+'</td>'
-        + '<td class="ba'+(first?' pt':'')+(last?' pb':'')+'">'+fmtTgt(x.kpi,'stretch')+'</td>'
+        + '<td class="ba'+(first?' pt':'')+(last?' pb':'')+'">'+fmtTgt(x.kpi,'normal')+'</td>'
         + '<td class="va'+(first?' pt':'')+(last?' pb':'')+'" style="color:'+st.col+'">'
           +fmtDelta(k,x.tdelta)+'</td>'
         + '<td class="'+(first?'pt ':'')+(last?'pb':'')+'">'
@@ -3285,9 +3389,11 @@ function p3Ref(){
   };
 }
 
-/* the ONE global filter state resolves the month set; no Page-3 scope logic */
+/* the ONE global filter state resolves the month set; no Page-3 scope logic.
+   R2 §D — this now delegates to the single shared temporal resolver so Page-1
+   and Page-3 can never drift apart. The expression is unchanged.           */
 function p3Months(){
-  return MONTHS.filter(m => inYear(m) && inMonth(m));
+  return scopeMonths();
 }
 
 function p3Extend(v){
@@ -4030,8 +4136,12 @@ function setPage(n){
 let VIEW = null;
 
 function computeView(){
-  const sites=scopeSites(), A=resolveAnchor(), anchor=A.anchor;
-  const v={anchor, resolve:A, sites, k:{}, siteRows:[], alerts:[]};
+  /* R2 §B/§L — TWO DISTINCT GOVERNED QUANTITIES, resolved once, here:
+       sites + months = the SELECTED ANALYTICAL SCOPE (drives every number)
+       anchor         = the REPORTING ANCHOR (metadata; never the scope)     */
+  const sites=scopeSites(), months=scopeMonths(), A=resolveAnchor(), anchor=A.anchor;
+  const v={anchor, resolve:A, sites, months, hasScope:months.length>0,
+           k:{}, siteRows:[], alerts:[]};
   for(const id of KPI_ORDER) v.k[id]=kpiBlock(sites,anchor,KPI[id]);
   /* R3.3 §F — ONE GLOBAL SCOPE AUTHORITY.
      The site population is the SAME governed active scope the KPI engine
@@ -4081,6 +4191,10 @@ function computeView(){
     (ST_RANK[b.status]-ST_RANK[a.status]) || ((b.tdelta===null?-1e9:b.tdelta)-(a.tdelta===null?-1e9:a.tdelta))
   ).slice(0,3);
   v.above = KPI_ORDER.filter(id=>v.k[id].status==='WATCH'||v.k[id].status==='ACTION');
+  /* R2 §N — target visualization set, read from the frozen SSOT. It never
+     colours, ranks or classifies anything: statusFor() remains the only
+     classifier and v.above above remains the governed status set. */
+  v.aboveNormal = KPI_ORDER.filter(id=>aboveNormal(v.k[id], id));
   v.counts = {GOOD:0,WATCH:0,ACTION:0,NODATA:0};
   KPI_ORDER.forEach(id=>v.counts[v.k[id].status]++);
   v.sitesAbove = v.siteRows.filter(r=>r.status==='WATCH'||r.status==='ACTION').length;
@@ -4101,17 +4215,37 @@ function renderHero(){
   /* controlled wrap only: the engine emits the break, the browser never picks it */
   document.getElementById('hero-status-word').innerHTML = m.word || m.label;
   document.getElementById('hero-status-word').style.color = '';   /* state stylesheet owns it */
-  document.getElementById('hero-status-note').textContent = v.mim.band;
+  /* MIME PAGE-1.2 QA FINDING F-P12-01 — COUNT DEFINITION, DOCUMENTED.
+     Two DIFFERENT governed site counts exist and both are correct:
+       (a) ACTION-LEVEL SITE COUNT     = sites whose overall governed status is
+                                         ACTION REQUIRED. This is what the MIM
+                                         band states and it is unchanged.
+       (b) GOVERNED-EXCEPTION SITE COUNT = sites whose overall governed status is
+                                         WATCH *or* ACTION REQUIRED (VIEW.sitesAbove,
+                                         used by the PPTX "n of n operating site(s)
+                                         in scope carry a governed exception" line).
+     They coincide only when no site is at WATCH. No number is changed here and
+     mimRollup() is untouched: the distinction is DOCUMENTED on the same node. */
+  const _hn=document.getElementById('hero-status-note');
+  _hn.textContent = v.mim.band;
+  _hn.title = 'Action-level site count = '+v.mim.nAction+' of '+v.mim.nValid
+    + ' site(s) with a governed status, i.e. sites whose overall governed status is ACTION REQUIRED. '
+    + 'This is not the same governed quantity as the governed-exception site count ('
+    + v.sitesAbove+' of '+v.nSites+' operating site(s) in scope), which counts sites at WATCH or '
+    + 'ACTION REQUIRED. The two agree only when no site is at WATCH.';
 
   const head=document.getElementById('hero-head'), narr=document.getElementById('hero-narr');
   /* §6 the approved narrative must never be blank, in any state */
   narr.textContent = m.narr;
-  if(!v.anchor){
+  if(!v.hasScope){
     /* one line only: the frozen head box is 268px and the narrative is anchored
        at top:40, so a wrapping head would collide with it */
-    head.textContent = 'Reporting anchor unavailable';
+    head.textContent = 'No governed period in selected scope';
   }else{
-    head.textContent = v.above.length+' of '+KPI_ORDER.length+' KPIs above Stretch Target';
+    /* R2 §N — the headline names the PRIMARY MANAGEMENT TARGET (Normal). It is
+       a target comparison read from the frozen SSOT, not a status count; the
+       governed status counts remain on the tiles below, unchanged. */
+    head.textContent = v.aboveNormal.length+' of '+KPI_ORDER.length+' KPIs above Normal Target';
   }
   const tl=document.getElementById('hero-tiles');
   tl.innerHTML = [['GOOD','GOOD','t-good'],['WATCH','WATCH','t-watch'],
@@ -4158,12 +4292,78 @@ function renderTabs(){
   }));
 }
 
+/* RETIRED FOR THE PAGE-1 TREND AXIS (MIME PAGE-1.2 SS-2). niceMax() inflated the
+   requirement by 1.05 and then rounded it up a 1/2/2.5/5/10 ladder, which could
+   leave up to 100% dead headroom above the data. That headroom — not the data
+   and not the targets — is what compressed STRETCH / NORMAL / MINIMUM into a
+   few pixels of each other. It is retained as auditable change history; it is
+   not consumed by any page. */
 function niceMax(v){
   if(!(v>0)) return 1;
   const e=Math.pow(10,Math.floor(Math.log10(v))), f=v/e;
   const m = f<=1?1 : f<=2?2 : f<=2.5?2.5 : f<=5?5 : 10;
   return m*e;
 }
+
+/* ---------- MIME PAGE-1.2 SS-2 — TREND PRESENTATION ------------------------
+   PRESENTATION ONLY. This block renders the EXISTING governed observations
+   (kpiBlock -> observations -> rowsFor -> aggregate -> calc). It does not
+   aggregate, re-aggregate, average, classify, threshold or scope anything:
+
+     no new aggregation engine   no new trend engine   no new status engine
+     no new target engine        no new scope engine
+
+   Selected years are NEVER collapsed into one average. Each selected governed
+   period keeps its own observation and each selected year keeps its own line.
+
+   YEAR IDENTITY PALETTE. Year colour is IDENTITY ONLY and must never
+   communicate GOOD / WATCH / ACTION. These hues are deliberately chosen OUTSIDE
+   the target semantic palette (--good / --watch / --action), which remains the
+   single status colour authority, and outside the MIM state artwork colours. */
+const TREND_YEAR_HEX = ['#1F4E9C','#7A3E9D','#00707F','#4A5A6B','#B0439A','#5A4632'];
+function trendYearHex(yr, years){
+  const i = years.indexOf(yr);
+  return TREND_YEAR_HEX[(i<0?0:i) % TREND_YEAR_HEX.length];
+}
+
+/* SS-2 Y-AXIS. The maximum is DERIVED, never arbitrarily chosen:
+
+       axis top = smallest nice multiple that covers
+                  ( selected data range  U  governed target envelope )
+
+   The origin stays at zero, the scale stays linear and every selected
+   observation is still plotted, so the data is not distorted. Only the dead
+   headroom is removed, which is the one lever that increases the separation of
+   the three target lines without touching the target VALUES. */
+function trendStep(x){
+  if(!(x>0)) return 1;
+  const e=Math.pow(10,Math.floor(Math.log10(x))), f=x/e;
+  const L=[1,1.25,1.5,2,2.5,3,4,5,6,7.5,10];
+  for(const m of L){ if(f<=m+1e-12) return m*e; }
+  return 10*e;
+}
+function trendTop(need){
+  if(!(need>0)) return 1;
+  const s=trendStep(need/5);                    /* six gridlines, five divisions */
+  return Math.ceil(need/s - 1e-9)*s;
+}
+/* gridline precision: the smallest precision at which every axis value is stated
+   EXACTLY. A rounded axis label would misstate its own gridline (2.5 printed as
+   "3"), so distinctness alone is not sufficient. Axis labels are NOT data
+   labels and are retained. */
+function trendAxisDec(top){
+  for(let d=0; d<=4; d++){
+    let ok=true;
+    for(let t=0;t<=5;t++){
+      const val=top*t/5;
+      if(Math.abs(val-parseFloat(val.toFixed(d))) > 1e-9){ ok=false; break; }
+    }
+    if(ok) return d;
+  }
+  return 4;
+}
+function trendEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
 function renderTrend(){
   const v=VIEW, k=KPI[S.tab], b=v.k[S.tab];
   const svg=document.getElementById('chart');
@@ -4179,6 +4379,20 @@ function renderTrend(){
     svg.innerHTML=out; document.getElementById('legend').style.visibility='hidden'; return;
   }
   document.getElementById('legend').style.visibility='visible';
+
+  /* SS-2 — FROZEN MONTH POSITION. The x axis is the twelve calendar months and
+     month position is independent of year: the same month occupies the same
+     position for every selected year. A period that carries no governed
+     observation is a GAP: no point is fabricated for it. */
+  const grid=new Map();
+  for(const p of b.pts){
+    const yr=p.month.slice(0,4), mi=(+p.month.slice(5,7))-1;
+    if(mi<0||mi>11) continue;                        /* R1 §9 shape guard only */
+    if(!grid.has(yr)) grid.set(yr, new Array(12).fill(null));
+    grid.get(yr)[mi] = p.value;                      /* null stays NO DATA      */
+  }
+  const years=[...grid.keys()].sort();
+
   const vals=b.pts.map(p=>p.value).filter(x=>x!==null);
   /* P1-TG-01 §12/§13 — ONE target vocabulary for every KPI tab. The three lines
      are READ from the approved MIME_TARGET_SSOT. Nothing is derived, scaled,
@@ -4189,51 +4403,115 @@ function renderTrend(){
                {tier:'normal',  v:(_tg.normal ===undefined?null:_tg.normal ), tok:'var(--watch)' },
                {tier:'minimum', v:(_tg.minimum===undefined?null:_tg.minimum), tok:'var(--action)'}];
   const tMax = TGT.reduce((m,t)=>t.v===null?m:Math.max(m,t.v), 0);
-  const top = niceMax(Math.max(vals.length?Math.max(...vals):0, tMax)*1.05);
+  const top = trendTop(Math.max(vals.length?Math.max(...vals):0, tMax));
   const y = val => B - (val/top)*(B-T);
-  const x = i => L+26.5+i*53;
-  const dec = top<10?1:0;
+  /* twelve FROZEN x positions; the plot rectangle (L..R, T..B) is unchanged */
+  const X0 = L+26.5, X1 = R-12;
+  const step = (X1-X0)/11;
+  const x = i => X0+i*step;
+
+  const dec = trendAxisDec(top);
   for(let t=0;t<=5;t++){
     const val=top*t/5;
-    out+='<text x="31" y="'+(y(val)+3.2)+'" text-anchor="end" font-family="Inter,Arial" font-size="9" fill="#5B6166">'
+    out+='<text x="31" y="'+(y(val)+3.2).toFixed(1)+'" text-anchor="end" font-family="Inter,Arial" font-size="9" fill="#5B6166">'
        + val.toFixed(dec)+'</text>';
   }
   out+='<line x1="'+L+'" y1="'+B+'" x2="'+R+'" y2="'+B+'" stroke="#E6E8EC" stroke-width="1"/>';
   /* SS-2 FROZEN — MINIMUM red dotted 2px, NORMAL amber dotted 2px, STRETCH
      green dotted 2px. Solid lines and 2.5px are prohibited. The target VALUES,
-     the KPI series and the legend order are unchanged.                       */
+     the governed target colours and the legend order are unchanged.           */
   TGT.forEach(t=>{ if(t.v===null || t.v>top) return;
-    out+='<line x1="'+L+'" y1="'+y(t.v)+'" x2="'+R+'" y2="'+y(t.v)+'" '
+    out+='<line x1="'+L+'" y1="'+y(t.v).toFixed(1)+'" x2="'+R+'" y2="'+y(t.v).toFixed(1)+'" '
        + 'style="stroke:'+t.tok+';stroke-width:2;stroke-dasharray:2 4"/>'; });
-  const pth=b.pts.map((p,i)=>p.value===null?null:(i===0?'M':'L')+x(i)+' '+y(p.value)).filter(Boolean).join(' ')
-              .replace(/^L/,'M');
-  out+='<path d="'+pth+'" fill="none" stroke="'+k.hex+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
-  b.pts.forEach((p,i)=>{ if(p.value!==null)
-    out+='<circle cx="'+x(i)+'" cy="'+y(p.value)+'" r="3.6" fill="'+k.hex+'"/>'; });
-  b.pts.forEach((p,i)=>{
-    out+='<text x="'+x(i)+'" y="184" text-anchor="middle" font-family="Inter,Arial" font-size="9" fill="#4A5155">'
-       + mLabel(p.month)+'</text>'; });
-  if(b.cur!==null){
-    const lx=x(11), ly=y(b.cur);
-    const txt=fmt(k,b.cur), w=Math.max(38, txt.length*6.4+14);
-    out+='<g><rect x="'+(lx-w+16)+'" y="'+(ly-24)+'" width="'+w+'" height="18" rx="4" fill="#FFFFFF" stroke="#DDE0E3"/>'
-       + '<text x="'+(lx-w/2+16)+'" y="'+(ly-11.5)+'" text-anchor="middle" font-family="Inter,Arial" font-size="10" '
-       + 'font-weight="700" fill="'+k.hex+'">'+txt+'</text></g>';
-  }
+
+  /* YEAR SERIES — one SOLID line per selected year, broken at every period that
+     carries no governed observation. Nothing is connected across an unavailable
+     period and nothing is interpolated. */
+  years.forEach(yr=>{
+    const g=grid.get(yr), hex=trendYearHex(yr,years);
+    let d='', open=false;
+    for(let i=0;i<12;i++){
+      const val=g[i];
+      if(val===null){ open=false; continue; }
+      d += (open?'L':'M')+x(i).toFixed(1)+' '+y(val).toFixed(1)+' ';
+      open=true;
+    }
+    if(d.indexOf('L')>=0)
+      out+='<path d="'+d.trim()+'" fill="none" stroke="'+hex+'" stroke-width="2" '
+         + 'stroke-linejoin="round" stroke-linecap="round"/>';
+  });
+  const mr = years.length>3 ? 2.6 : 3.2;
+  years.forEach(yr=>{
+    const g=grid.get(yr), hex=trendYearHex(yr,years);
+    for(let i=0;i<12;i++){ if(g[i]===null) continue;
+      out+='<circle cx="'+x(i).toFixed(1)+'" cy="'+y(g[i]).toFixed(1)+'" r="'+mr+'" fill="'+hex+'"/>'; }
+  });
+
+  /* FROZEN month axis — all twelve positions are labelled, always. */
+  for(let i=0;i<12;i++)
+    out+='<text x="'+x(i).toFixed(1)+'" y="184" text-anchor="middle" font-family="Inter,Arial" '
+       + 'font-size="9" fill="#4A5155">'+MN[i].toUpperCase()+'</text>';
+
+  /* HOVER-ONLY DATA LABELS. Default state carries NO data-label text and no
+     point value is displayed; the callout for ONE point is revealed on hover or
+     keyboard focus. The hit target and its callout are emitted last so they
+     are never overpainted. */
+  years.forEach(yr=>{
+    const g=grid.get(yr), hex=trendYearHex(yr,years);
+    for(let i=0;i<12;i++){
+      const val=g[i]; if(val===null) continue;
+      const px=x(i), py=y(val);
+      const l1=yr+' \u00b7 '+MN[i].toUpperCase();
+      const l2=k.tab+' '+fmt(k,val);
+      const w=Math.max(txtW(l1,9,true), txtW(l2,10,true))+16, h=30;
+      let tx=px-w/2;
+      if(tx < L+2) tx = L+2;
+      if(tx+w > R-2) tx = R-2-w;
+      let ty=py-h-8;
+      if(ty < 50) ty = py+10;                    /* flip below the point        */
+      if(ty+h > 176) ty = 176-h;                 /* never reach the month labels */
+      out+='<circle class="hit" cx="'+px.toFixed(1)+'" cy="'+py.toFixed(1)+'" r="9" tabindex="0">'
+         + '<title>'+trendEsc(l1+' \u2014 '+l2)+'</title></circle>'
+         + '<g class="tip">'
+         + '<rect x="'+tx.toFixed(1)+'" y="'+ty.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h+'" rx="4" '
+         + 'fill="#FFFFFF" stroke="#DDE0E3"/>'
+         + '<text x="'+(tx+w/2).toFixed(1)+'" y="'+(ty+12).toFixed(1)+'" text-anchor="middle" '
+         + 'font-family="Inter,Arial" font-size="9" font-weight="700" fill="#4A5155">'+trendEsc(l1)+'</text>'
+         + '<text x="'+(tx+w/2).toFixed(1)+'" y="'+(ty+24).toFixed(1)+'" text-anchor="middle" '
+         + 'font-family="Inter,Arial" font-size="10" font-weight="700" fill="'+hex+'">'+trendEsc(l2)+'</text>'
+         + '</g>';
+    }
+  });
+
   svg.innerHTML=out;
-  document.getElementById('legend').innerHTML = TGT.filter(t=>t.v!==null).map(t=>
-      '<span><i style="background:'+t.tok+'"></i>'+t.tier.toUpperCase()+'</span>').join('');
+  /* Legend: the governed target tiers are unchanged and keep their governed
+     colours; the year swatches are IDENTITY ONLY and are appended after them.
+     No second status colour authority is introduced. */
+  document.getElementById('legend').innerHTML =
+      TGT.filter(t=>t.v!==null).map(t=>
+        '<span><i style="background:'+t.tok+'"></i>'+t.tier.toUpperCase()+'</span>').join('')
+    + years.map(yr=>
+        '<span><i style="background:'+trendYearHex(yr,years)+'"></i>'+yr+'</span>').join('');
 }
 function trendNote(){
   const v=VIEW;
   const id = S.tab;
   /* The three quantities are stated separately and never conflated (§4).     */
+  /* R2 §F/§L — the three quantities are stated separately and never conflated:
+     the ANALYTICAL SCOPE (what is pooled), the TEMPORAL OBSERVATIONS (what is
+     plotted) and the REPORTING ANCHOR (metadata only).                      */
+  const mo = (v.k[id] && v.k[id].months) ? v.k[id].months : [];
   let s = 'Rates per 1 million man-hours; IM-CFR per 100 dated illness-medevac events. '
-        + ROLLING_REF_LABEL+' '+rollingRefPeriodLabel(v.anchor)+'. '
-        + 'Target: '+tgtTriplet(id)+'. '
+        + 'Analytical scope: '+(mo.length
+            ? (mo.length+' selected period'+(mo.length===1?'':'s')+' \u00b7 '+mDash(mo[0])
+               +(mo.length>1?' \u2192 '+mDash(mo[mo.length-1]):''))
+            : DASH)+'. '
+        + 'Scorecard = pooled selected scope; trend = selected temporal observations. '
+        + 'Primary management target: Normal '+fmtTgt(id,'normal')+'. '
+        + 'Target tiers: '+tgtTriplet(id)+'. '
         + 'Status: GOOD \u2264 Stretch \u00b7 WATCH > Stretch to < Minimum \u00b7 '
         + 'ACTION REQUIRED \u2265 Minimum.';
-  if(v.anchor) s += ' Anchor '+mLong(v.anchor)+'.';
+  if(v.anchor) s += ' Reporting anchor '+mLong(v.anchor)+' (metadata \u2014 not the analytical scope).';
   if(v.resolve.suppressed) s += ' '+mLong(v.resolve.suppressed)+' incomplete \u2014 excluded.';
   return s;
 }
@@ -4260,7 +4538,7 @@ function renderTable(){
   /* P1-TG-02-CLOSEOUT-R1 §4.2 — the redundant explanatory note is REMOVED and is
      NOT replaced by another explanatory paragraph. SIMPLIFY THE NARRATIVE, NOT THE
      GOVERNED INFORMATION: the comparator identity stays in the table header
-     ('vs Stretch Target'), the current value, the delta and the Overall Status
+     ('vs Normal Target' — R2 §P), the current value, the delta and the Overall Status
      stay in the table itself, and the full status-band authority remains on the
      KPI cards, the trend metadata and Page-5. Nothing governed is lost. */
   document.getElementById('tbl-note').textContent = '';
@@ -4272,8 +4550,8 @@ function renderAlerts(){
   const v=VIEW, tb=document.getElementById('atbody');
   if(!v.alerts.length){
     tb.innerHTML='<tr><td class="s" colspan="5" style="color:#8A9096;font-size:8.8px">'
-      + (v.anchor ? 'No site is above its Stretch Target for the selected scope.'
-                  : 'No complete governed reporting period in scope.')+'</td></tr>';
+      + (v.hasScope ? 'No governed KPI exception in the selected analytical scope.'
+                    : 'No governed reporting period in the selected analytical scope.')+'</td></tr>';
     return;
   }
   tb.innerHTML = v.alerts.map(a=>{
@@ -4329,21 +4607,27 @@ function renderDecision(){
   cols.innerHTML = v.alerts.map((a,i)=>{
     const k=KPI[a.kpi], sx=ST[a.status];
     const j=v.siteRows.find(r=>r.code===a.code);
-    const nAbove=KPI_ORDER.filter(id=>j.k[id].status==='WATCH'||j.k[id].status==='ACTION').length;
+    /* R2 §N/§Q — the visible count is stated against the SAME comparator the
+       column displays (Normal Target). Governed status is unchanged and is
+       still what selected this site into Priority Alerts / Decision Required. */
+    const nAbove=KPI_ORDER.filter(id=>aboveNormal(j.k[id], id)).length;
     /* §5.4 FIRST — redundant narrative is shortened, governed information is not.
        'vs Stretch Target' was stated twice per column while the comparator is
        already named in the Site Performance table header (§4.3). The comparator
        is now labelled once. KPI identity, CURRENT, TARGET, the governed delta and
        the management implication are all retained, and the full unabridged
        governed sentence is retained as metadata on the same node. */
-    const full = k.tab+' '+fmt(k,a.cur)+' vs Stretch Target '+fmtTgt(a.kpi,'stretch')
-      + ' ('+fmtDelta(k,a.tdelta)+'). Above Stretch Target on '+nAbove
-      + ' of '+KPI_ORDER.length+' KPIs.';
+    /* R2 §Q — the displayed PRIMARY COMPARATOR is the Normal Target. The
+       governed status engine that selected this exception is untouched, and
+       nAbove below remains the governed status count, named as such. */
+    const full = k.tab+' '+fmt(k,a.cur)+' vs Normal Target '+fmtTgt(a.kpi,'normal')
+      + ' ('+fmtDelta(k,a.tdelta)+'). Above Normal Target on '+nAbove
+      + ' of '+KPI_ORDER.length+' KPIs at this site. Governed status: '+ST[a.status].label+'.';
     return '<div class="dcol" title="'+full.replace(/"/g,'&quot;')+'">'
       + '<div class="hd"><img src="'+ICONS['mini'+(i+1)]+'" alt="">'
       + '<b style="color:'+sx.color+'">'+a.code+'</b></div>'
       + '<p><span class="l">'+k.tab+' '+fmt(k,a.cur)+' ('+fmtDelta(k,a.tdelta)+')</span>'
-      + '<span class="l">Stretch '+fmtTgt(a.kpi,'stretch')+'</span>'
+      + '<span class="l">Normal '+fmtTgt(a.kpi,'normal')+'</span>'
       + '<span class="l">'+nAbove+' of '+KPI_ORDER.length+' KPIs above</span></p></div>';
   }).join('');
 }
@@ -4351,9 +4635,9 @@ function renderDecision(){
 function renderExec(){
   const v=VIEW;
   const e1=document.getElementById('ex1'), e2=document.getElementById('ex2'), e3=document.getElementById('ex3');
-  if(!v.anchor){
-    e1.textContent='No complete governed reporting period in the selected scope.';
-    e2.textContent='A period is used as the reporting anchor only when every in-scope site has a governed man-hour denominator.';
+  if(!v.hasScope){
+    e1.textContent='No governed reporting period falls inside the selected analytical scope.';
+    e2.textContent='The analytical scope is the selected Year / Month population; the reporting anchor is metadata and is not used as the analytical population.';
     e3.textContent='No enterprise KPI value can be stated for this filter combination.';
     return;
   }
@@ -4367,13 +4651,16 @@ function renderExec(){
   e1.textContent = movers.length
     ? movers.map(m=>{
         const k=KPI[m.id];
-        return k.tab+' '+(m.d>0?'increased ':(m.d<0?'decreased ':'unchanged '))
-             + Math.abs(m.d).toFixed(1)+(k.deltaUnit==='pp'?' pp':'%');
-      }).join('; ')+'.'
-    : 'No governed KPI movement can be measured in this scope.';
+        return k.tab+' '+Math.abs(m.d).toFixed(1)+(k.deltaUnit==='pp'?' pp':'%')
+             + (m.d<0?' below':(m.d>0?' above':' at'));
+      }).join('; ')+' the selected-period median.'
+    : 'No governed KPI dispersion can be measured in the selected analytical scope.';
   const lead = v.above.length ? KPI[v.above[0]] : KPI[movers.length?movers[0].id:'MRR'];
+  /* R2 §N — the Executive Message names the PRIMARY MANAGEMENT TARGET. This is
+     a target comparison read from the frozen SSOT, not a status statement. */
   e2.textContent = lead.tab+' is '
-    + (v.k[lead.id].status==='GOOD' ? 'at or below' : 'above')+' the Stretch Target for this scope.';
+    + (aboveNormal(v.k[lead.id], lead.id) ? 'above' : 'at or below')
+    + ' the Normal Target for the selected analytical scope.';
   /* P1-RC-01 §25 — the impact line is aligned to the SAME governed site-status
      state that now determines MIM. The enterprise KPI aggregate is retained as
      a factual analytical statement only (§20) and no longer implies the MIM
@@ -4501,6 +4788,7 @@ const DLG_B = document.getElementById('dlg-actions');
 function dlgScope(){
   const v=VIEW;
   return 'Scope: '+scopeLabel()+'  \u00b7  Reporting anchor: '+(v&&v.anchor?mLong(v.anchor):DASH)
+       + '  \u00b7  Primary comparator: Normal Target'
        + '  \u00b7  Status basis: Stretch / Minimum Target (governed Target SSOT)';
 }
 function activeExceptions(){ return (VIEW && VIEW.alertsAll) ? VIEW.alertsAll : []; }
@@ -4511,20 +4799,19 @@ function fillAlerts(){
   const body=document.getElementById('dlg-alerts-body');
   if(!rows.length){
     body.innerHTML = '<p class="mdlg-empty">'
-      + (v && v.anchor
-          ? 'No site is above its 12M rolling baseline for the selected scope. '
-            + 'There are no governed KPI exceptions to list.'
-          : 'No complete governed reporting period in scope. '
+      + (v && v.hasScope
+          ? 'There is no governed KPI exception in the selected analytical scope.'
+          : 'No governed reporting period falls inside the selected analytical scope. '
             + 'No governed KPI exception can be stated.')
       + '</p>';
     return;
   }
   body.innerHTML = '<table class="mdlg-t"><thead><tr><th>Site</th><th>KPI</th>'
-    + '<th class="n">Current</th><th class="n">Stretch Target</th><th class="n">Variance</th>'
+    + '<th class="n">Current</th><th class="n">Normal Target</th><th class="n">Variance</th>'
     + '<th>Governed status</th></tr></thead><tbody>'
     + rows.map(a=>{ const k=KPI[a.kpi], st=ST[a.status];
         return '<tr><td>'+a.site+'</td><td>'+k.tab+'</td>'
-          + '<td class="n">'+fmt(k,a.cur)+'</td><td class="n">'+fmtTgt(a.kpi,'stretch')+'</td>'
+          + '<td class="n">'+fmt(k,a.cur)+'</td><td class="n">'+fmtTgt(a.kpi,'normal')+'</td>'
           + '<td class="n">'+fmtDelta(k,a.tdelta)+'</td>'
           + '<td><span class="mdlg-st" style="color:'+st.color+'">'+st.label+'</span></td></tr>';
       }).join('')
@@ -4540,20 +4827,20 @@ function fillActions(){
   const body=document.getElementById('dlg-actions-body');
   if(!rows.length){
     body.innerHTML = '<p class="mdlg-empty">'
-      + (v && v.anchor
-          ? 'No escalation action is indicated from the selected scope\u2019s current governed '
-            + 'KPI results. No site is above its Stretch Target.'
-          : 'No complete governed reporting period in scope. No escalation action can be '
-            + 'indicated from the selected scope\u2019s current governed KPI results.')
+      + (v && v.hasScope
+          ? 'No escalation action is indicated from the selected analytical scope\u2019s governed '
+            + 'KPI results. There is no governed KPI exception.'
+          : 'No governed reporting period falls inside the selected analytical scope. No escalation '
+            + 'action can be indicated.')
       + '</p>';
     return;
   }
   body.innerHTML = '<table class="mdlg-t"><thead><tr><th>Site</th><th>KPI</th>'
-    + '<th class="n">Current vs Stretch Target</th><th>Governed status</th>'
+    + '<th class="n">Current vs Normal Target</th><th>Governed status</th>'
     + '<th>Recommended action</th></tr></thead><tbody>'
     + rows.map(a=>{ const k=KPI[a.kpi], st=ST[a.status];
         return '<tr><td>'+a.site+'</td><td>'+k.tab+'</td>'
-          + '<td class="n">'+fmt(k,a.cur)+' vs '+fmtTgt(a.kpi,'stretch')+' ('+fmtDelta(k,a.tdelta)+')</td>'
+          + '<td class="n">'+fmt(k,a.cur)+' vs '+fmtTgt(a.kpi,'normal')+' ('+fmtDelta(k,a.tdelta)+')</td>'
           + '<td><span class="mdlg-st" style="color:'+st.color+'">'+st.label+'</span></td>'
           + '<td class="act">'+RECO[a.kpi]+'</td></tr>';
       }).join('')
@@ -5190,9 +5477,18 @@ function execPDF(){
   y-=34;
   const gLab=selLabelFull(S.group,GROUP_BY.ALL.label,c=>(GROUP_BY[c]||{}).label||c);
   const sLab=selLabelFull(S.site,'All Sites',c=>(SITE_REG.find(x=>x.code===c)||{}).name||c);
-  const per=v.anchor? rollingRefPeriodLabel(v.anchor) : DASH;
+  /* R2 §L — the export states the SELECTED ANALYTICAL SCOPE. The reporting
+     anchor is carried alongside it as metadata and is never presented as the
+     analytical population. */
+  const mo=(v.months||[]);
+  const per = mo.length ? (selLabelFull(S.year,'All Years')+' \u00b7 '
+              +selLabelFull(S.month,'All Months',c=>MN[+c-1])
+              +'  ('+mo.length+' periods: '+mDash(mo[0])
+              +(mo.length>1?' \u2192 '+mDash(mo[mo.length-1]):'')+')') : DASH;
   const scope=[['Business Group',gLab],['Operating Site',sLab],
-               ['Reporting period',per],['Data status',(INGEST.state||'IDLE')+(INGEST.recon?' \u00b7 RECONCILED':'')]];
+               ['Analytical scope',per],
+               ['Reporting anchor',(v.anchor?mLong(v.anchor):DASH)+' (metadata)'],
+               ['Data status',(INGEST.state||'IDLE')+(INGEST.recon?' \u00b7 RECONCILED':'')]];
   p.rgb(...C_RULE).line(M,y,R,y,0.8); y-=13;
   scope.forEach((r,i)=>{
     const cx=M+(i%2)*(CW/2), cy=y-Math.floor(i/2)*12;
@@ -5218,16 +5514,16 @@ function execPDF(){
   y-=14;
   body(lead
     ? 'Highest-priority exception: '+KPI[lead.kpi].tab+' at '+lead.site+', currently '
-      +fmt(KPI[lead.kpi],lead.cur)+' against a Stretch Target of '+fmtTgt(lead.kpi,'stretch')
-      +' and a Minimum Target of '+fmtTgt(lead.kpi,'minimum')+'. '
+      +fmt(KPI[lead.kpi],lead.cur)+' against a Normal Target of '+fmtTgt(lead.kpi,'normal')
+      +' (primary management target; Minimum '+fmtTgt(lead.kpi,'minimum')+'). '
       +v.sitesAbove+' of '+v.nSites+' operating sites in scope carry a WATCH or ACTION REQUIRED status.'
-    : 'No governed KPI exception is present in the selected scope. All governed KPIs are at or below the Stretch Target.',2);
+    : 'No governed KPI exception is present in the selected analytical scope.',2);
   y-=6;
 
   /* ---- SECTION B — KPI TARGET POSITION (§19). No baseline column. ---- */
   H('B \u00b7 KPI TARGET POSITION');
   const col=[M, M+150, M+225, M+300, M+375, M+455];
-  const head=['KPI','Current','STRETCH','NORMAL','MINIMUM','Status'];
+  const head=['KPI','Current','MINIMUM','NORMAL (primary)','STRETCH','Status'];
   p.rgb(...C_RULE).rect(M,y-3,CW,13);
   head.forEach((h,i)=>p.rgb(...C_SUB).text(col[i],y,7.5,1,h));
   y-=15;
@@ -5235,9 +5531,9 @@ function execPDF(){
     const k=KPI[id], b=v.k[id];
     p.rgb(...C_INK).text(col[0],y,8,0,k.disp);
     p.rgb(...C_INK).text(col[1],y,8,1,fmt(k,b.cur));
-    p.rgb(...C_SUB).text(col[2],y,8,0,fmtTgt(id,'stretch'));
-    p.rgb(...C_SUB).text(col[3],y,8,0,fmtTgt(id,'normal'));
-    p.rgb(...C_SUB).text(col[4],y,8,0,fmtTgt(id,'minimum'));
+    p.rgb(...C_SUB).text(col[2],y,8,0,fmtTgt(id,'minimum'));
+    p.rgb(...C_INK).text(col[3],y,8,1,fmtTgt(id,'normal'));
+    p.rgb(...C_SUB).text(col[4],y,8,0,fmtTgt(id,'stretch'));
     p.rgb(...(C_ST[b.status]||C_ST.NODATA)).text(col[5],y,8,1,ST[b.status].label);
     y-=12;
   });
@@ -5253,7 +5549,7 @@ function execPDF(){
     p.rgb(...C_INK).text(M+56,y,8,1,a.site);
     p.rgb(...C_INK).text(M+170,y,8,0,k.tab);
     p.rgb(...C_INK).text(M+240,y,8,1,fmt(k,a.cur));
-    p.rgb(...C_SUB).text(M+300,y,8,0,'Minimum '+fmtTgt(a.kpi,'minimum'));
+    p.rgb(...C_SUB).text(M+300,y,8,0,'Normal '+fmtTgt(a.kpi,'normal'));
     p.rgb(...(C_ST[a.status]||C_ST.NODATA)).text(M+400,y,8,1,ST[a.status].label);
     y-=12;
   });
@@ -5267,11 +5563,11 @@ function execPDF(){
   const S7=[
     ['STRATEGY','HARD','Prioritise reduction of target-level medical incident exposure, with immediate focus on '
       +(actKPI.length? actKPI.join(', ')+' (at or above Minimum Target)'
-        : (wchKPI.length? wchKPI.join(', ')+' (above Stretch Target)' : 'sustaining all governed KPIs at or below Stretch Target'))+'.'],
+        : (wchKPI.length? wchKPI.join(', ')+' (WATCH under the governed classifier)' : 'sustaining all governed KPIs at GOOD'))+'.'],
     ['STRUCTURE','HARD','Accountability runs '+gLab+' \u2192 '+sLab+' \u2192 governed KPI. '
       +(sites.length? 'Management review is required at: '+sites.join(', ')+'.' : 'No site-level escalation is open in this scope.')],
     ['SYSTEMS','HARD','Governed chain in force: source \u2192 validation \u2192 reconciliation \u2192 KPI \u2192 target status \u2192 management action. '
-      +'Status is classified against the approved Stretch/Minimum targets.'],
+      +'Primary management comparator is the Normal Target; status is classified against the approved Stretch/Minimum thresholds.'],
     ['SHARED VALUES','SOFT','Management implication: shared focus should remain on prevention, early escalation and evidence-based occupational health decisions.'],
     ['STYLE','SOFT','Management implication: leadership attention should be directed to target-level exceptions and timely management review.'],
     ['STAFF','SOFT','Management implication: ensure responsible medical/OHIH stakeholders are assigned to review every ACTION REQUIRED and WATCH exception.'],
@@ -5291,8 +5587,8 @@ function execPDF(){
   H('E \u00b7 7S ALIGNMENT PRIORITY');
   const acts=[
     'Strategy \u2014 '+(actKPI.length? 'focus management action on '+actKPI.join(', ')+', now at or above Minimum Target.'
-      : (wchKPI.length? 'hold '+wchKPI.join(', ')+' under review until returned to Stretch Target.'
-        : 'sustain current governed performance at or below Stretch Target.')),
+      : (wchKPI.length? 'hold '+wchKPI.join(', ')+' under review until the governed status returns to GOOD.'
+        : 'sustain current governed performance at GOOD.')),
     'Systems \u2014 maintain target-based escalation and governed data reconciliation across the selected scope.',
     'Skills/Staff \u2014 ensure responsible stakeholders can interpret and act on target-level exceptions'
       +(sites.length? ' at '+sites.join(', ')+'.' : ' across the enterprise scope.')
@@ -5367,37 +5663,123 @@ function tb(id,x,y,w,h,runs,align){
      +'<a:latin typeface="Arial"/></a:rPr><a:t>'+esc(r.t)+'</a:t></a:r></a:p>').join('')
    +'</p:txBody></p:sp>';
 }
+/* ---------- PPTX SLIDE CONTENT — MIME EXECUTIVE SUMMARY (R2 §R/§S/§T) -------
+   The EXPORT MECHANISM IS UNCHANGED: the same hand-built store-only zip(), the
+   same OOXML package parts, the same tb() shape writer, the same single slide.
+   Only the SLIDE CONTENT is corrected, from a technical KPI dump to the
+   approved one-page McKinsey 7S management structure.
+
+   EVIDENCE RULE (§S/§12). Every statement below is derived from the ACTIVE
+   selected analytical scope and the governed VIEW: KPI results, governed
+   status, governed site exceptions, the frozen MIME_TARGET_SSOT and the
+   governed MIM roll-up. No HR, staffing, restructuring, organisational,
+   clinical or regulatory fact is asserted. The soft elements are explicitly
+   phrased as MANAGEMENT IMPLICATIONS of those results.                       */
+const PPT_TEAL='0E7C7B', PPT_INK='2B2F31', PPT_SUB='5A6166', PPT_RULE='6B7280';
+function pptStatusHex(st){
+  return st==='ACTION'?'B02A2A':(st==='WATCH'?'B07C0C':(st==='GOOD'?'1B7A4A':'8A9096'));
+}
+function ppt7S(v){
+  const actKPI=KPI_ORDER.filter(id=>v.k[id].status==='ACTION').map(id=>KPI[id].tab);
+  const wchKPI=KPI_ORDER.filter(id=>v.k[id].status==='WATCH').map(id=>KPI[id].tab);
+  const abvN  =(v.aboveNormal||[]).map(id=>KPI[id].tab);
+  const sites =v.alerts.map(a=>a.site).filter((s,i,a)=>a.indexOf(s)===i);
+  const gLab=selLabelFull(S.group,GROUP_BY.ALL.label,c=>(GROUP_BY[c]||{}).label||c);
+  const sLab=selLabelFull(S.site,'All Sites',c=>(SITE_REG.find(x=>x.code===c)||{}).name||c);
+  const nMo=(v.months||[]).length;
+  return {
+    actKPI, wchKPI, abvN, sites, gLab, sLab, nMo,
+    strategy: 'Reduce medical incident exposure against the Normal Target. '
+      + (abvN.length ? 'Above Normal Target in this scope: '+abvN.join(', ')+'.'
+                     : 'All governed KPIs are at or below Normal Target in this scope.'),
+    structure:'Accountability line in scope: '+gLab+' \u2192 '+sLab+'. '
+      + (sites.length ? 'Governed exceptions are open at: '+sites.join(', ')+'.'
+                      : 'No site-level governed exception is open.'),
+    systems:  'Governed chain in force: source \u2192 validation \u2192 reconciliation \u2192 pooled KPI '
+      + '\u2192 target status \u2192 management action, over '+nMo+' selected governed period(s).',
+    shared:   'Prevention, early escalation and evidence-based occupational health decisions '
+      + 'remain the shared basis for management action in this scope.',
+    style:    'Management implication: direct leadership attention to the governed exceptions '
+      + 'listed above and to timely management review of them.',
+    staff:    'Management implication: confirm a responsible OHIH/medical reviewer is assigned '
+      + 'to each governed exception in this scope.',
+    skills:   'Management implication: sustain capability to interpret pooled selected-scope KPI '
+      + 'results and to act on Normal Target exceptions.',
+    alignment:(actKPI.length
+        ? 'Priority: act on '+actKPI.join(', ')+' \u2014 governed status ACTION REQUIRED.'
+        : (wchKPI.length
+            ? 'Priority: hold '+wchKPI.join(', ')+' under management review \u2014 governed status WATCH.'
+            : 'Priority: sustain governed performance across the selected analytical scope.'))
+      + '  MIM STATUS: '+MIM[v.mim.state].label+' \u2014 '+v.mim.band
+  };
+}
 function pptx(){
   const v=VIEW; let id=2, shapes='';
-  shapes+=tb(id++,457200,274638,11277600,600000,[{t:'Medical Incident Management Performance',sz:2400,b:1,c:'111111'}]);
-  shapes+=tb(id++,457200,850000,11277600,400000,[{t:'Scope: '+scopeLabel(),sz:1100,c:'4F555A'},
-    {t:'Reporting anchor: '+(v.anchor?mLong(v.anchor):'\u2013')+'  |  '+FEED.prov.version+' \u00b7 RECONCILED',sz:1100,c:'4F555A'}]);
-  let x=457200; const cw=2700000;
-  for(const idk of KPI_ORDER){
-    const k=KPI[idk], b=v.k[idk];
-    shapes+=tb(id++,x,1700000,cw,1500000,[
-      {t:k.name,sz:900,b:1,c:k.hex.replace('#','')},
-      {t:fmt(k,b.cur),sz:2800,b:1,c:k.hex.replace('#','')},
-      {t:'vs Stretch Target '+fmtTgt(idk,'stretch'),sz:800,c:'4A5155'},
-      {t:fmtDelta(k,b.tdelta)+' vs Stretch Target \u00b7 '+ST[b.status].label,sz:800,b:1,
-       c:(b.status==='ACTION'?'C2262C':(b.status==='WATCH'?'D19A0B':'0F8A24'))}]);
-    x+=cw+80000;
+  const s7=ppt7S(v);
+  const mo=(v.months||[]);
+  const scopeTxt = scopeLabel();
+  const perTxt = mo.length ? (mo.length+' governed period(s): '+mDash(mo[0])
+                 +(mo.length>1?' \u2192 '+mDash(mo[mo.length-1]):'')) : DASH;
+
+  /* ---- TOP (§S) — title, selected scope, reporting anchor, MIM status ---- */
+  shapes+=tb(id++,457200,228600,11277600,520000,
+    [{t:'Medical Incident Management Performance',sz:2400,b:1,c:'111111'}]);
+  shapes+=tb(id++,457200,720000,7600000,560000,[
+    {t:'Selected analytical scope: '+scopeTxt,sz:1000,c:PPT_SUB},
+    {t:'Analytical population: '+perTxt,sz:1000,c:PPT_SUB},
+    {t:'Reporting anchor: '+(v.anchor?mLong(v.anchor):DASH)+'  (metadata \u2014 not the analytical scope)',sz:1000,c:PPT_SUB}]);
+  shapes+=tb(id++,8200000,720000,3534800,560000,[
+    {t:'MIM STATUS',sz:900,b:1,c:PPT_RULE},
+    {t:MIM[v.mim.state].label,sz:1600,b:1,c:pptStatusHex(v.mim.state)},
+    {t:v.mim.band,sz:800,c:PPT_SUB}],'r');
+
+  /* ---- KPI TARGET CONTEXT (§T) — KPI | CURRENT | MINIMUM | NORMAL | STRETCH | STATUS
+         Values are the CURRENT SELECTED-PERIOD results and the frozen SSOT
+         tiers. Nothing is recalculated here. NORMAL is the primary target. */
+  const CX=[457200,3000000,4400000,5800000,7450000,8850000];
+  const CWD=[2500000,1350000,1350000,1600000,1350000,2884800];
+  const hdr=['KPI','CURRENT','MINIMUM','NORMAL (primary)','STRETCH','GOVERNED STATUS'];
+  for(let c=0;c<6;c++){
+    const runs=[{t:hdr[c],sz:800,b:1,c:PPT_RULE}];
+    KPI_ORDER.forEach(idk=>{
+      const k=KPI[idk], b=v.k[idk];
+      if(c===0) runs.push({t:k.tab,sz:1000,b:1,c:k.hex.replace('#','')});
+      else if(c===1) runs.push({t:fmt(k,b.cur),sz:1000,b:1,c:PPT_INK});
+      else if(c===2) runs.push({t:fmtTgt(idk,'minimum'),sz:1000,c:PPT_SUB});
+      else if(c===3) runs.push({t:fmtTgt(idk,'normal'),sz:1000,b:1,c:PPT_TEAL});
+      else if(c===4) runs.push({t:fmtTgt(idk,'stretch'),sz:1000,c:PPT_SUB});
+      else runs.push({t:fmtDelta(k,b.tdelta)+' vs Normal \u00b7 '+ST[b.status].label,
+                      sz:900,b:1,c:pptStatusHex(b.status)});
+    });
+    shapes+=tb(id++,CX[c],1420000,CWD[c],1500000,runs);
   }
-  const alerts = v.alerts.length ? v.alerts.map(a=>({t:a.site+' \u2014 '+KPI[a.kpi].tab+' '+fmt(KPI[a.kpi],a.cur)
-      +' ('+fmtDelta(KPI[a.kpi],a.tdelta)+') \u00b7 '+ST[a.status].label, sz:1000, c:'2B2F31'}))
-    : [{t:'No site is above its Stretch Target for the selected scope.',sz:1000,c:'2B2F31'}];
-  shapes+=tb(id++,457200,3400000,11277600,1600000,[{t:'Priority alerts (Top 3)',sz:1300,b:1,c:'A32A2C'}].concat(alerts));
-  shapes+=tb(id++,457200,5100000,11277600,1200000,[
-    {t:'MIM STATUS: '+MIM[v.mim.state].label+' \u2014 '+v.mim.band,sz:1000,b:1,
-     c:(v.mim.state==='ACTION'?'8A0A00':(v.mim.state==='WATCH'?'BB7B01':(v.mim.state==='GOOD'?'033B3E':'4A4F54')))},
-    {t:'Owner-governed Page-1 executive roll-up \u2014 the worst governed site status in the '
-      +'active scope (ACTION REQUIRED > WATCH > GOOD > NO DATA). '
-      +'Not a statutory, IOGP, clinical or diagnostic classification.',sz:800,c:'6B7280'},
-    {t:'C-5 CLOSED: '+FEED.prov.c5,sz:800,c:'6B7280'},
-    {t:'IM-CFR Tier-1 population: '+FEED.prov.popC,sz:800,c:'6B7280'},
-    {t:FEED.prov.tier2,sz:800,c:'6B7280'}]
-    .concat(KPI_ORDER.some(id=>v.k[id].zeroEvent===true)
-            ? [{t:ZERO_EVENT_NOTE,sz:800,c:'6B7280'}] : []));
+
+  /* ---- 7S BODY (§S) — HARD | SHARED VALUES | SOFT ---- */
+  shapes+=tb(id++,457200,3080000,3600000,2350000,[
+    {t:'HARD ELEMENTS',sz:900,b:1,c:PPT_RULE},
+    {t:'STRATEGY',sz:1000,b:1,c:PPT_TEAL},   {t:s7.strategy,sz:900,c:PPT_INK},
+    {t:'STRUCTURE',sz:1000,b:1,c:PPT_TEAL},  {t:s7.structure,sz:900,c:PPT_INK},
+    {t:'SYSTEMS',sz:1000,b:1,c:PPT_TEAL},    {t:s7.systems,sz:900,c:PPT_INK}]);
+  shapes+=tb(id++,4300000,3080000,3500000,2350000,[
+    {t:'SHARED VALUES',sz:1000,b:1,c:PPT_TEAL},
+    {t:s7.shared,sz:900,c:PPT_INK},
+    {t:'Governed KPIs in scope: '+v.counts.GOOD+' GOOD \u00b7 '+v.counts.WATCH+' WATCH \u00b7 '
+      +v.counts.ACTION+' ACTION REQUIRED \u00b7 '+v.counts.NODATA+' NO DATA.',sz:900,c:PPT_SUB},
+    {t:v.sitesAbove+' of '+v.nSites+' operating site(s) in scope carry a governed exception.',sz:900,c:PPT_SUB}],'ctr');
+  shapes+=tb(id++,8000000,3080000,3700000,2350000,[
+    {t:'SOFT ELEMENTS',sz:900,b:1,c:PPT_RULE},
+    {t:'STYLE',sz:1000,b:1,c:PPT_TEAL},  {t:s7.style,sz:900,c:PPT_INK},
+    {t:'STAFF',sz:1000,b:1,c:PPT_TEAL},  {t:s7.staff,sz:900,c:PPT_INK},
+    {t:'SKILLS',sz:1000,b:1,c:PPT_TEAL}, {t:s7.skills,sz:900,c:PPT_INK}]);
+
+  /* ---- BOTTOM (§S) — alignment / management priority ---- */
+  shapes+=tb(id++,457200,5560000,11277600,900000,[
+    {t:'ALIGNMENT / MANAGEMENT PRIORITY',sz:1000,b:1,c:PPT_RULE},
+    {t:s7.alignment,sz:1000,b:1,c:PPT_INK},
+    {t:'Primary management target = Normal (frozen MIME_TARGET_SSOT). Governed status is classified '
+      +'against Stretch/Minimum by the single status authority. Executive performance roll-up \u2014 not a '
+      +'statutory, IOGP, clinical or diagnostic classification. 7S soft elements are management '
+      +'implications of the governed results, not established organisational facts.',sz:700,c:PPT_RULE}]);
   const slide='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
    +'<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
    +'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '
@@ -6061,7 +6443,7 @@ window.__MIME__ = {get view(){return VIEW;}, S, KPI, KPI_ORDER, KPI_P2, get inge
                    statusFor, fmt, fmtDelta, render, mLong, scopeLabel,
                    /* live source surface for acceptance testing */
                    GS, LIVE, get feed(){return FEED;}, refresh:ingest, reconcile,
-                   xlsx, xlName,
+                   xlsx, xlName, pptx, scopeMonths, aboveNormal, observations,
                    /* P1-TG-02 acceptance surface */
                    execPDF, pdfName, brandFor, renderBrand, brandLabels, BRAND_ASSET,
                    fixture:FEED_FIXTURE,
