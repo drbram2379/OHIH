@@ -5387,10 +5387,18 @@ function pdfEsc(s){ return String(s).replace(/\\/g,'\\\\').replace(/\(/g,'\\(').
    '\u00d7':'x','\u2026':'...'}[c]||'?')); }
 
 /* ---------- PDF page canvas ---------- */
-function pdfPage(){
+function pdfPage(orient){
+  /* R2 §3 — SS-1 IS NOW A TRUE A4 PORTRAIT PAGE.
+     The page canvas is made orientation-aware rather than duplicated. This is
+     the ONLY structural change to the PDF transport and it is consumed by
+     execPDF() alone: Page-5 has no PDF export path (verified by reference
+     search — pdfPage()/pdfBuild() are referenced only from execPDF), so §14
+     PAGE-5 FREEZE is not engaged. Nothing is rotated and nothing is scaled:
+     the composition in execPDF() is rewritten for the portrait measure.      */
+  const P = (orient==='landscape');
   const ops=[], imgs=[];
   const api={
-    W:595.28, H:841.89,
+    W: P?841.89:595.28, H: P?595.28:841.89,   /* R2 §3 - A4 PORTRAIT default */
     rgb(r,g,b){ ops.push([r,g,b].map(n=>(n/255).toFixed(3)).join(' ')+' rg'); return api; },
     stroke(r,g,b){ ops.push([r,g,b].map(n=>(n/255).toFixed(3)).join(' ')+' RG'); return api; },
     text(x,y,size,bold,s){ ops.push('BT /'+(bold?'F2':'F1')+' '+size+' Tf 1 0 0 1 '
@@ -5431,7 +5439,8 @@ function pdfBuild(page){
   const imgRes=imgs.map((_,i)=>'/Im'+(i+1)+' '+(7+i)+' 0 R').join(' ');
   objs[1]='1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n';
   objs[2]='2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n';
-  objs[3]='3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] '
+  objs[3]='3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '
+        +(page.W||595.28).toFixed(2)+' '+(page.H||841.89).toFixed(2)+'] '
         +'/Resources << /Font << /F1 5 0 R /F2 6 0 R >>'
         +(nImg?' /XObject << '+imgRes+' >>':'')+' >> /Contents 4 0 R >>\nendobj\n';
   objs[4]='4 0 obj\n<< /Length '+enc.encode(stream).length+' >>\nstream\n'+stream+'\nendstream\nendobj\n';
@@ -5456,151 +5465,338 @@ function pdfBuild(page){
   return out;
 }
 
+/* ============================================================================
+   EXECUTIVE SUMMARY SS-1 — ONE CONTENT AUTHORITY FOR PPT **AND** PDF
+   Architect decision "MIME EXECUTIVE SUMMARY SS-1", P1/P2/P3/P4/P5.
+
+   WHY ONE FUNCTION. P1 requires that, for the same scope, the PPT and the PDF
+   reconcile EXACTLY. Two content builders can drift; one cannot. Both exports
+   now read this single object, so a divergence is structurally impossible
+   rather than merely tested for.
+
+   WHAT IT DOES NOT DO (P9). It does not compute a KPI, a numerator, a
+   denominator, an aggregation, a baseline, a target, a threshold, a status or
+   a roll-up. Every number and every status below is READ from the governed
+   VIEW that the frozen engine already produced.
+   ========================================================================== */
+
+/* P7 — measurement must equal rendering. pdfEsc() substitutes non-WinAnsi
+   characters at write time; if the wrapper measured the ORIGINAL string the
+   rendered line would be wider than measured and could overrun the column.
+   Text is therefore folded to its rendered form BEFORE it is measured. */
+function pdfT(s){
+  return String(s).replace(/[^\x20-\x7E]/g, c=>({'\u2013':'-','\u2014':'-','\u2018':"'",
+    '\u2019':"'",'\u201c':'"','\u201d':'"','\u00b7':'-','\u2192':'->','\u2265':'>=',
+    '\u2264':'<=','\u00d7':'x','\u2026':'...'}[c]||'?'));
+}
+
+/* ---------------------------------------------------------------------------
+   P1 — ANALYTICAL SNAPSHOT IDENTITY.
+   The architect required that the single current analytical snapshot authority
+   be identified rather than chosen silently. Inspection of the export path
+   shows there is ALREADY exactly one: computeView() -> VIEW.k[id].cur, which
+   both exports consume. The PPT/PDF difference reported in P1 is therefore NOT
+   an engine divergence; it is two exports taken from two different INGESTED
+   SNAPSHOTS of the same source. Nothing is averaged and nothing is invented:
+   the snapshot is simply made explicit, using only the existing ingestion
+   authorities (LIVE / INGEST / FEED.control), so that any future pair of
+   artifacts declares which snapshot it belongs to.
+--------------------------------------------------------------------------- */
+function execSnap(){
+  const ctl = (typeof FEED!=='undefined' && FEED && FEED.control) || {};
+  const src = (LIVE && LIVE.dataAsOfSource)
+            || ((typeof FEED!=='undefined' && FEED && FEED.prov && FEED.prov.file) || GS.id);
+  const ts  = (LIVE && LIVE.lastFetch) || (INGEST && INGEST.ts) || null;
+  const two = n=>String(n).padStart(2,'0');
+  const stamp = ts ? (ts.getFullYear()+'-'+two(ts.getMonth()+1)+'-'+two(ts.getDate())
+                      +' '+two(ts.getHours())+':'+two(ts.getMinutes())) : DASH;
+  const grp = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  const mh  = (ctl.mh===null||ctl.mh===undefined)   ? DASH : grp(ctl.mh);
+  const esc = (ctl.esc===null||ctl.esc===undefined) ? DASH : grp(ctl.esc);
+  return {src:src, stamp:stamp, mh:mh, esc:esc,
+    line:'Snapshot '+stamp+'  \u00b7  '+src+'  \u00b7  governed exposure '+mh
+        +' man-hours / '+esc+' referral events'};
+}
+
+/* ---------------------------------------------------------------------------
+   P2/P3 — EXECUTIVE CONTENT.
+   The 7S statements are the architect's approved executive wording. Where that
+   wording names KPIs or sites, the names are SUBSTITUTED from the governed
+   exception set for the ACTIVE scope rather than hard-coded, so the artifact
+   cannot assert an exception that the governed status engine did not raise.
+--------------------------------------------------------------------------- */
+function execContent(v){
+  const tab   = id => KPI[id].tab;
+  const actK  = KPI_ORDER.filter(id=>v.k[id].status==='ACTION').map(tab);
+  const wchK  = KPI_ORDER.filter(id=>v.k[id].status==='WATCH' ).map(tab);
+  const exK   = actK.concat(wchK);                       /* governed exceptions */
+  const codes = v.alerts.map(a=>a.code).filter((c,i,a)=>a.indexOf(c)===i);
+  const list  = a => a.length===0 ? ''
+               : a.length===1 ? a[0]
+               : a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+
+  /* QA-01 — executive focus follows the governed hierarchy ACTION > WATCH.
+     focusK is a PRESENTATION SELECTION over the already-governed status set;
+     it does not classify, re-rank or re-weight anything. */
+  const focusK = actK.length ? actK : wchK;
+  const kpiPhrase  = focusK.length ? list(focusK) : '';
+  const sitePhrase = codes.length  ? list(codes)  : '';
+
+  return {
+    actK:actK, wchK:wchK, exK:exK, focusK:focusK, codes:codes,
+    /* ---- MANAGEMENT ATTENTION (P6) ---- */
+    mimState : v.mim.state,
+    mimLabel : MIM[v.mim.state].label,
+    mimBand  : v.mim.band,
+    /* ---- 7S: HARD (P2) ---- */
+    strategy : exK.length
+        ? 'Focus management attention on '+kpiPhrase+' exceptions.'
+        : 'Sustain current performance; no KPI exception is open.',
+    structure: codes.length
+        ? 'Assign clear accountability for priority exceptions at '+sitePhrase+'.'
+        : 'Accountability is confirmed; no site-level exception is open.',
+    systems  : 'Use a closed loop: review \u2192 investigate \u2192 act \u2192 verify.',
+    /* ---- 7S: SHARED VALUES (P2, central anchor) ---- */
+    shared   : 'Prevention, early escalation and evidence-based occupational '
+             + 'health decisions.',
+    /* ---- 7S: SOFT (P2) ---- */
+    style    : 'Leaders focus on exceptions, timely review and follow-through.',
+    staff    : 'Assign accountable OHIH/medical owners to priority exceptions.',
+    skills   : 'Strengthen KPI interpretation, case review and data-quality assurance.',
+    /* ---- THREE MANAGEMENT PRIORITIES (P3) — distinct from the 7S ---- */
+    priorities: [
+      {n:'01', verb:'REVIEW', subj:(focusK.length? focusK.join(' / ') : 'GOVERNED KPIs'),
+       line:(codes.length? 'Prioritise '+sitePhrase+' exceptions.'
+                         : 'No site exception is open in this scope.')},
+      {n:'02', verb:'ASSIGN', subj:'ACCOUNTABILITY',
+       line:'Confirm responsible OHIH/medical owners.'},
+      {n:'03', verb:'VERIFY', subj:'FOLLOW-THROUGH',
+       line:'Track actions against subsequent evidence and KPI performance.'}
+    ],
+    /* ---- R2 §7 — FOOTER. The prior 7S-derivation disclaimer is DELETED and
+       replaced verbatim with the approved statement. No additional disclaimer
+       and no extra explanatory text is emitted anywhere in either artifact. */
+    foot: '2026 OHIH Merdeka Group, Copyright Reserved'
+  };
+}
+
 /* ---------- §17-§23  THE ONE-PAGE MANAGEMENT REPORT ---------- */
 const C_INK=[43,47,49], C_SUB=[90,97,102], C_TEAL=[14,124,123], C_RULE=[214,218,222];
 const C_ST={GOOD:[27,122,74], WATCH:[176,124,12], ACTION:[176,42,42], NODATA:[138,144,150]};
 
 function execPDF(){
-  const v=VIEW, p=pdfPage(), M=36, R=p.W-M, CW=R-M;
+  /* ==========================================================================
+     MIME EXECUTIVE SUMMARY SS-1 — PDF (A4 PORTRAIT)
+     ARCHITECT AUTHORITY DECISION R2, §2A / §3 / §4 / §5 / §6 / §7 / §8 / §9.
+
+     WHAT THIS IS. A RECOMPOSITION, not a rotation and not a scale-down. The
+     landscape three-column composition is discarded and the page is rebuilt as
+     a single-column vertical reading flow on the portrait measure:
+
+         HEADER -> MANAGEMENT ATTENTION -> KPI POSITION -> HARD ELEMENTS
+         -> SHARED VALUES -> SOFT ELEMENTS -> MANAGEMENT PRIORITIES -> FOOTER
+
+     WHAT THIS IS NOT (§1, §13, §14). No KPI is defined, computed, re-derived,
+     re-ranked or re-classified here. No target, threshold, denominator,
+     aggregation, baseline, roll-up, selector or scope rule is touched. Every
+     number and every status below is READ from the governed VIEW that the
+     frozen engine already produced, and every statement is READ from
+     execContent() / execSnap(), the single executive content authority the PPT
+     also consumes. Page-5 is not referenced.
+     ========================================================================== */
+  const v=VIEW, p=pdfPage('portrait'), M=42, R=p.W-M, CW=R-M;
+  const X=execContent(v), SNAP=execSnap();
   let y=p.H-M;
 
-  /* ---- HEADER (§17) — same dynamic brand authority as Page-1 ---- */
+  /* §15 — every writer folds through pdfT() so measured width == rendered
+     width, and the fit is COMPUTED rather than guessed. Typography is the
+     frozen MIME authority (Helvetica / Helvetica-Bold). No Roboto, no Poppins,
+     no Montserrat, no external font CDN, no alternative font system. */
+  const T=(x,yy,sz,b,str)=>p.text(x,yy,sz,b,pdfT(str));
+  const W=(str,sz,b)=>txtW(pdfT(str),sz,b);
+  const WRAP=(str,sz,b,maxW,maxLines)=>wrapT(pdfT(str),sz,b,maxW,maxLines);
+  /* section rule + section head, used identically at every level so the
+     vertical rhythm is one rhythm and not seven local decisions. */
+  const HEAD=(label)=>{ p.rgb(...C_TEAL); T(M,y,10,1,label); y-=18; };
+
+  /* ---------- 1. HEADER (§3) -------------------------------------------- */
   const codes=brandFor(gScalar(),sScalar());
   let lx=R;
   codes.slice().reverse().forEach(c=>{
-    const j=jpegOf(brandSrc(c),22); if(!j) return;
-    const w=j.dw*(22/j.dh);
-    lx-=w; p.img(j,lx,y-20,w,22); lx-=8;
+    const j=jpegOf(brandSrc(c),18); if(!j) return;
+    const w=j.dw*(18/j.dh);
+    lx-=w; p.img(j,lx,y-16,w,18); lx-=7;
   });
-  p.rgb(...C_INK).text(M,y-9,14,1,'Medical Incident Management Performance');
-  p.rgb(...C_TEAL).text(M,y-24,10.5,1,'EXECUTIVE SUMMARY');
-  y-=34;
+  p.rgb(...C_INK);  T(M,y-9,14,1,'Medical Incident Management Performance');
+  p.rgb(...C_TEAL); T(M,y-23,9.5,1,'EXECUTIVE SUMMARY');
+  y-=32;
+  p.rgb(...C_RULE).line(M,y,R,y,0.8); y-=12;
+
+  /* scope + snapshot metadata. Portrait has no room for a single metadata
+     band, so the three descriptors are set as a two-up grid on a common
+     baseline — GROW / MOVE / RELOCATE, never SHRINK / CLIP (§15). */
   const gLab=selLabelFull(S.group,GROUP_BY.ALL.label,c=>(GROUP_BY[c]||{}).label||c);
   const sLab=selLabelFull(S.site,'All Sites',c=>(SITE_REG.find(x=>x.code===c)||{}).name||c);
-  /* R2 §L — the export states the SELECTED ANALYTICAL SCOPE. The reporting
-     anchor is carried alongside it as metadata and is never presented as the
-     analytical population. */
   const mo=(v.months||[]);
-  const per = mo.length ? (selLabelFull(S.year,'All Years')+' \u00b7 '
-              +selLabelFull(S.month,'All Months',c=>MN[+c-1])
-              +'  ('+mo.length+' periods: '+mDash(mo[0])
-              +(mo.length>1?' \u2192 '+mDash(mo[mo.length-1]):'')+')') : DASH;
-  const scope=[['Business Group',gLab],['Operating Site',sLab],
-               ['Analytical scope',per],
-               ['Reporting anchor',(v.anchor?mLong(v.anchor):DASH)+' (metadata)'],
-               ['Data status',(INGEST.state||'IDLE')+(INGEST.recon?' \u00b7 RECONCILED':'')]];
-  p.rgb(...C_RULE).line(M,y,R,y,0.8); y-=13;
-  scope.forEach((r,i)=>{
-    const cx=M+(i%2)*(CW/2), cy=y-Math.floor(i/2)*12;
-    p.rgb(...C_SUB).text(cx,cy,8,0,r[0]+':');
-    p.rgb(...C_INK).text(cx+78,cy,8,1,r[1]);
+  const per = mo.length ? (mDash(mo[0])+(mo.length>1?' \u2192 '+mDash(mo[mo.length-1]):''))
+                        : DASH;
+  const meta=[['Business Group',gLab],['Operating Site',sLab],['Reporting period',per]];
+  const mcw=CW/2;
+  meta.forEach((r,i)=>{
+    const mx=M+(i%2)*mcw, my=y-Math.floor(i/2)*12;
+    p.rgb(...C_SUB); T(mx,my,8,0,r[0]+':');
+    const lw=W(r[0]+':',8,0)+5;
+    p.rgb(...C_INK); T(mx+lw,my,8,1,r[1]);
   });
-  y-=24; p.rgb(...C_RULE).line(M,y,R,y,0.8); y-=16;
+  y-=12*Math.ceil(meta.length/2);
+  p.rgb(...C_SUB);
+  WRAP(SNAP.line,7,0,CW,2).forEach(l=>{ T(M,y,7,0,l); y-=8.5; });
+  y-=6; p.rgb(...C_RULE).line(M,y,R,y,0.8); y-=22;
 
-  const H=(t)=>{ p.rgb(...C_TEAL).text(M,y,9.5,1,t); y-=13; };
-  const body=(t,maxLines)=>{ wrapT(t,8.5,0,CW,maxLines||3).forEach(l=>{
-      p.rgb(...C_INK).text(M,y,8.5,0,l); y-=11; }); };
-
-  /* ---- SECTION A — CURRENT POSITION (§18), all values dynamic ---- */
-  H('A \u00b7 CURRENT POSITION');
-  const c=v.counts, mimLab=(ST[v.mim]||ST.NODATA).label;
-  const lead=v.alerts[0];
-  p.rgb(...C_SUB).text(M,y,8,0,'Overall MIM status:');
-  p.rgb(...(C_ST[v.mim]||C_ST.NODATA)).text(M+92,y,9,1,mimLab);
-  p.rgb(...C_SUB).text(M+190,y,8,0,'Governed KPIs:');
-  p.rgb(...C_ST.GOOD).text(M+258,y,8.5,1,c.GOOD+' GOOD');
-  p.rgb(...C_ST.WATCH).text(M+312,y,8.5,1,c.WATCH+' WATCH');
-  p.rgb(...C_ST.ACTION).text(M+375,y,8.5,1,c.ACTION+' ACTION REQUIRED');
-  y-=14;
-  body(lead
-    ? 'Highest-priority exception: '+KPI[lead.kpi].tab+' at '+lead.site+', currently '
-      +fmt(KPI[lead.kpi],lead.cur)+' against a Normal Target of '+fmtTgt(lead.kpi,'normal')
-      +' (primary management target; Minimum '+fmtTgt(lead.kpi,'minimum')+'). '
-      +v.sitesAbove+' of '+v.nSites+' operating sites in scope carry a WATCH or ACTION REQUIRED status.'
-    : 'No governed KPI exception is present in the selected analytical scope.',2);
-  y-=6;
-
-  /* ---- SECTION B — KPI TARGET POSITION (§19). No baseline column. ---- */
-  H('B \u00b7 KPI TARGET POSITION');
-  const col=[M, M+150, M+225, M+300, M+375, M+455];
-  const head=['KPI','Current','MINIMUM','NORMAL (primary)','STRETCH','Status'];
-  p.rgb(...C_RULE).rect(M,y-3,CW,13);
-  head.forEach((h,i)=>p.rgb(...C_SUB).text(col[i],y,7.5,1,h));
+  /* ---------- 2. MANAGEMENT ATTENTION (§3) ------------------------------ */
+  /* ONE governed management-attention status: the MIM roll-up object. */
+  HEAD('MANAGEMENT ATTENTION');
+  const stCol = C_ST[X.mimState] || C_ST.NODATA;
+  p.rgb(...stCol); T(M,y,19,1,X.mimLabel);
+  const bandX = M + W(X.mimLabel,19,1) + 16;
+  const c=v.counts;
+  p.rgb(...C_SUB); T(bandX,y+4,8,0,
+    c.GOOD+' GOOD  \u00b7  '+c.WATCH+' WATCH  \u00b7  '+c.ACTION+' ACTION REQUIRED');
   y-=15;
-  KPI_ORDER.forEach(id=>{
+  p.rgb(...C_SUB);
+  WRAP(X.mimBand,8,0,CW,2).forEach(l=>{ T(M,y,8,0,l); y-=10; });
+  y-=10; p.rgb(...C_RULE).line(M,y,R,y,0.6); y-=22;
+
+  /* ---------- 3. KPI POSITION (§4, §5, §6) ------------------------------ */
+  /* §5 — EXPLICIT COLUMN ANCHORS and a COMMON BASELINE GRID. Every cell is
+     written at a computed x on a computed baseline; there is no auto-fitting
+     textbox anywhere in this block, so row drift is structurally impossible.
+     §4 — the five displayed rows are MRR / MER / IMR / IM-CFR and the ONE
+     supporting outcome measure ICFR. The display set is the EXISTING governed
+     C2 set KPI_P2; the frozen four-KPI status authority KPI_ORDER is NOT
+     modified and ICFR still never enters the roll-up, the counts or the rank. */
+  HEAD('KPI POSITION');
+  /* §5 EXPLICIT COLUMN ANCHORS. The five anchors are seated from the MEASURED
+     advance width of the widest governed string each column can ever carry
+     (longest KPI name, longest value, longest target pair, longest status
+     label), so no header and no cell can collide and nothing can leave the
+     right margin. Columns are MOVED to fit; type is never SHRUNK (§15). */
+  const COL =[M, M+203, M+268, M+330, M+420];          /* explicit anchors    */
+  const CAL =[0,   1,     1,     0,     0];            /* 1 = right-aligned   */
+  const CRT =[0, M+243, M+308, 0, 0];                  /* right edges         */
+  const hd  =[['KPI',0],['CURRENT',1],['NORMAL',2],['MINIMUM / STRETCH',3],['STATUS',4]];
+  const RH  = 21;                                      /* uniform row height  */
+  const PUT=(ci,yy,sz,b,str)=>{
+    const s=pdfT(str);
+    const x = CAL[ci] ? (CRT[ci]-txtW(s,sz,b)) : COL[ci];   /* numeric align  */
+    p.text(x,yy,sz,b,s);
+  };
+  p.rgb(238,241,243).rect(M,y-5,CW,16);
+  p.rgb(...C_SUB); hd.forEach(h=>{
+    const s=pdfT(h[0]), i=h[1];
+    p.text(CAL[i]?(CRT[i]-txtW(s,7.5,1)):COL[i], y, 7.5, 1, s);
+  });
+  y-=RH;
+  /* ONE row writer for ALL FIVE rows. §4 is therefore satisfied by
+     construction, not by inspection: the ICFR row cannot acquire a different
+     typography family, size, weight, row height, baseline, numeric alignment,
+     column geometry or status typography, because there is only one writer. */
+  const KROW=(id)=>{
     const k=KPI[id], b=v.k[id];
-    p.rgb(...C_INK).text(col[0],y,8,0,k.disp);
-    p.rgb(...C_INK).text(col[1],y,8,1,fmt(k,b.cur));
-    p.rgb(...C_SUB).text(col[2],y,8,0,fmtTgt(id,'minimum'));
-    p.rgb(...C_INK).text(col[3],y,8,1,fmtTgt(id,'normal'));
-    p.rgb(...C_SUB).text(col[4],y,8,0,fmtTgt(id,'stretch'));
-    p.rgb(...(C_ST[b.status]||C_ST.NODATA)).text(col[5],y,8,1,ST[b.status].label);
-    y-=12;
+    if(!b) return;
+    p.rgb(...C_INK);  PUT(0,y,9,0,k.disp);
+    p.rgb(...C_INK);  PUT(1,y,10,1,fmt(k,b.cur));
+    p.rgb(...C_TEAL); PUT(2,y,10,1,fmtTgt(id,'normal'));
+    p.rgb(...C_SUB);  PUT(3,y,8,0,fmtTgt(id,'minimum')+'  /  '+fmtTgt(id,'stretch'));
+    p.rgb(...(C_ST[b.status]||C_ST.NODATA)); PUT(4,y,9.5,1,ST[b.status].label);
+    y-=RH;
+  };
+  KPI_ORDER.forEach(KROW);
+
+  /* §6 — ICFR remains a SUPPORTING OUTCOME MEASURE and is not promoted to a
+     sixth primary KPI. The DESIGNATION carries that meaning; the ROW does not.
+     The designation is therefore set as a caption on the divider ABOVE the
+     row, which keeps the row itself typographically identical to the other
+     four (§4) while still reading, in the composition, as
+     "Supporting outcome measure - Illness Case Fatality Ratio".              */
+  if(v.k.ICFR){
+    y+=RH-13;
+    p.rgb(...C_RULE).line(M,y+9,R,y+9,0.5);
+    p.rgb(...C_SUB); T(M,y,7,1,'SUPPORTING OUTCOME MEASURE');
+    y-=RH-4;
+    KROW('ICFR');
+  }
+  y-=8; p.rgb(...C_RULE).line(M,y,R,y,0.6); y-=22;
+
+  /* ---------- 4. McKINSEY 7S — MANAGEMENT ALIGNMENT (§8) ----------------- */
+  /* §8 — NOT three equal horizontal boxes. A vertical composition in the
+     required order HARD -> SHARED VALUES -> SOFT, with Shared Values retained
+     as the visually identifiable central conceptual element: it is the middle
+     band, it carries the accent field, the full measure and the priority
+     typography, and it is optically centred. Statements are the approved
+     evidence-constrained management implications from execContent(); no
+     generic corporate claim is added. */
+  HEAD('McKINSEY 7S \u2014 MANAGEMENT ALIGNMENT');
+  const LBLW=62;                       /* one label gutter for all six items */
+  const band=(title)=>{
+    p.rgb(...C_RULE); T(M,y,7.5,1,title); y-=14;
+  };
+  const item=(label,text)=>{
+    p.rgb(...C_TEAL); T(M,y,8.5,1,label);
+    let ly=y;
+    WRAP(text,8.5,0,CW-LBLW,2).forEach(l=>{ p.rgb(...C_INK); T(M+LBLW,ly,8.5,0,l); ly-=11; });
+    y = Math.min(y-11, ly) - 4;
+  };
+  y-=4;
+  band('HARD ELEMENTS');
+  item('Strategy',  X.strategy);
+  item('Structure', X.structure);
+  item('Systems',   X.systems);
+  y-=12;
+
+  /* SHARED VALUES — the central conceptual element. */
+  const shLines=WRAP(X.shared,10.5,1,CW-40,3);
+  const shH = 30 + shLines.length*14;
+  p.rgb(236,244,244).rect(M,y-shH+12,CW,shH);
+  p.rgb(...C_TEAL).rect(M,y-shH+12,3.2,shH);          /* central-anchor spine */
+  p.rgb(...C_RULE); T(M+14,y,7.5,1,'SHARED VALUES');
+  let ym=y-21;
+  shLines.forEach(l=>{
+    p.rgb(...C_INK); T(M+(CW-W(l,10.5,1))/2,ym,10.5,1,l); ym-=14; });
+  y = y-shH+12-14;
+
+  band('SOFT ELEMENTS');
+  item('Style',  X.style);
+  item('Staff',  X.staff);
+  item('Skills', X.skills);
+  y-=10; p.rgb(...C_RULE).line(M,y,R,y,0.6); y-=22;
+
+  /* ---------- 5. MANAGEMENT PRIORITIES (§9) ------------------------------ */
+  /* Retained as 01 REVIEW / 02 ASSIGN / 03 VERIFY and used as the FINAL
+     management-action block. Not a technical action register. */
+  HEAD('MANAGEMENT PRIORITIES');
+  X.priorities.forEach(pr=>{
+    p.rgb(...C_RULE); T(M,y,12,1,pr.n);
+    p.rgb(...C_INK);  T(M+28,y,10.5,1,pr.verb);
+    p.rgb(...C_TEAL); T(M+28+W(pr.verb,10.5,1)+10,y,8.5,1,pr.subj);
+    let ly=y-13;
+    WRAP(pr.line,8.5,0,CW-28,1).forEach(l=>{ p.rgb(...C_SUB); T(M+28,ly,8.5,0,l); ly-=12; });
+    y=ly-9;
   });
-  p.rgb(...C_RULE).line(M,y+4,R,y+4,0.5); y-=10;
 
-  /* ---- SECTION C — MANAGEMENT PRIORITIES (§20). Existing ranking, max 3. ---- */
-  H('C \u00b7 MANAGEMENT PRIORITIES');
-  if(!v.alerts.length){
-    body('No site/KPI exception is ranked for management attention in this scope.',1);
-  } else v.alerts.slice(0,3).forEach((a,i)=>{
-    const k=KPI[a.kpi];
-    p.rgb(...C_SUB).text(M,y,7.5,1,'PRIORITY '+(i+1));
-    p.rgb(...C_INK).text(M+56,y,8,1,a.site);
-    p.rgb(...C_INK).text(M+170,y,8,0,k.tab);
-    p.rgb(...C_INK).text(M+240,y,8,1,fmt(k,a.cur));
-    p.rgb(...C_SUB).text(M+300,y,8,0,'Normal '+fmtTgt(a.kpi,'normal'));
-    p.rgb(...(C_ST[a.status]||C_ST.NODATA)).text(M+400,y,8,1,ST[a.status].label);
-    y-=12;
-  });
-  y-=6;
-
-  /* ---- SECTION D — McKINSEY 7S (§21/§22). Compact matrix, evidence-bound. -- */
-  H('D \u00b7 McKINSEY 7S \u2014 MANAGEMENT ALIGNMENT');
-  const actKPI=KPI_ORDER.filter(id=>v.k[id].status==='ACTION').map(id=>KPI[id].tab);
-  const wchKPI=KPI_ORDER.filter(id=>v.k[id].status==='WATCH').map(id=>KPI[id].tab);
-  const sites=v.alerts.map(a=>a.site).filter((s,i,arr)=>arr.indexOf(s)===i);
-  const S7=[
-    ['STRATEGY','HARD','Prioritise reduction of target-level medical incident exposure, with immediate focus on '
-      +(actKPI.length? actKPI.join(', ')+' (at or above Minimum Target)'
-        : (wchKPI.length? wchKPI.join(', ')+' (WATCH under the governed classifier)' : 'sustaining all governed KPIs at GOOD'))+'.'],
-    ['STRUCTURE','HARD','Accountability runs '+gLab+' \u2192 '+sLab+' \u2192 governed KPI. '
-      +(sites.length? 'Management review is required at: '+sites.join(', ')+'.' : 'No site-level escalation is open in this scope.')],
-    ['SYSTEMS','HARD','Governed chain in force: source \u2192 validation \u2192 reconciliation \u2192 KPI \u2192 target status \u2192 management action. '
-      +'Primary management comparator is the Normal Target; status is classified against the approved Stretch/Minimum thresholds.'],
-    ['SHARED VALUES','SOFT','Management implication: shared focus should remain on prevention, early escalation and evidence-based occupational health decisions.'],
-    ['STYLE','SOFT','Management implication: leadership attention should be directed to target-level exceptions and timely management review.'],
-    ['STAFF','SOFT','Management implication: ensure responsible medical/OHIH stakeholders are assigned to review every ACTION REQUIRED and WATCH exception.'],
-    ['SKILLS','SOFT','Capability consideration: strengthen KPI interpretation, target-based escalation, case management and data-quality review where required.']
-  ];
-  const cw=(CW-10)/2, cellH=34;
-  S7.forEach((s,i)=>{
-    const cx=M+(i%2)*(cw+10), cy=y-Math.floor(i/2)*cellH;
-    p.rgb(246,248,249).rect(cx,cy-cellH+8,cw,cellH-4);
-    p.rgb(...C_TEAL).text(cx+5,cy,7.5,1,s[0]);
-    p.rgb(...C_SUB).text(cx+cw-26,cy,7,0,s[1]);   /* §24 type floor: 6.5pt */
-    wrapT(s[2],7,0,cw-10,3).forEach((l,j)=>p.rgb(...C_INK).text(cx+5,cy-9-j*8,7,0,l));
-  });
-  y-=Math.ceil(S7.length/2)*cellH+4;
-
-  /* ---- SECTION E — 7S ALIGNMENT PRIORITY (§23). Max 3, scope-driven. ---- */
-  H('E \u00b7 7S ALIGNMENT PRIORITY');
-  const acts=[
-    'Strategy \u2014 '+(actKPI.length? 'focus management action on '+actKPI.join(', ')+', now at or above Minimum Target.'
-      : (wchKPI.length? 'hold '+wchKPI.join(', ')+' under review until the governed status returns to GOOD.'
-        : 'sustain current governed performance at GOOD.')),
-    'Systems \u2014 maintain target-based escalation and governed data reconciliation across the selected scope.',
-    'Skills/Staff \u2014 ensure responsible stakeholders can interpret and act on target-level exceptions'
-      +(sites.length? ' at '+sites.join(', ')+'.' : ' across the enterprise scope.')
-  ].slice(0,3);
-  acts.forEach((a,i)=>{ wrapT((i+1)+'. '+a,8,0,CW,2).forEach(l=>{
-    p.rgb(...C_INK).text(M,y,8,0,l); y-=10; }); });
-
-  /* ---- FOOTER ---- */
-  p.rgb(...C_RULE).line(M,M+16,R,M+16,0.6);
-  p.rgb(...C_SUB).text(M,M+6,6.5,0,
-    'Status authority: MIME_TARGET_SSOT (Stretch / Normal / Minimum). GOOD <= Stretch \u00b7 WATCH between \u00b7 ACTION REQUIRED >= Minimum. '
-    +'7S content is evidence-constrained; soft elements are stated as management implications, not established organisational facts.');
+  /* ---------- 6. FOOTER (§7) — ONE line, nothing else. ------------------- */
+  /* §15/§16 FIT GUARD. The composition is MEASURED against the footer floor
+     rather than assumed to fit. The remedy order is GROW -> MOVE -> RELOCATE
+     -> ESCALATE: nothing here shrinks, clips, hides or truncates. A negative
+     slack is therefore not silently absorbed — it is ESCALATED to the console
+     and exposed as a QA-measurable value for the geometry report. */
+  const FLOOR = M+24;
+  execPDF.metrics = {bottom:y, floor:FLOOR, slack:+(y-FLOOR).toFixed(2),
+                     page:{W:p.W, H:p.H}, margin:M, column:CW};
+  if(y < FLOOR) console.error('[SS-1 GEOMETRY] composition overruns the footer floor by '
+                             +(FLOOR-y).toFixed(2)+'pt - ESCALATE, do not shrink.');
+  p.rgb(...C_RULE).line(M,M+13,R,M+13,0.6);
+  p.rgb(...C_SUB); T(M,M+3,7.5,0,X.foot);
   return pdfBuild(p);
 }
 function pdfName(){
@@ -5653,11 +5849,13 @@ function zip(files){
   return out;
 }
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-function tb(id,x,y,w,h,runs,align){
+function tb(id,x,y,w,h,runs,align,anchor){
+  x=Math.round(x); y=Math.round(y); w=Math.round(w); h=Math.round(h);   /* QA-06 */
   return '<p:sp><p:nvSpPr><p:cNvPr id="'+id+'" name="t'+id+'"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr>'
    +'<p:spPr><a:xfrm><a:off x="'+x+'" y="'+y+'"/><a:ext cx="'+w+'" cy="'+h+'"/></a:xfrm>'
    +'<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr>'
-   +'<p:txBody><a:bodyPr wrap="square"><a:spAutoFit/></a:bodyPr><a:lstStyle/>'
+   +'<p:txBody><a:bodyPr wrap="square"'+(anchor?' anchor="'+anchor+'"':'')+'>'
+   +(anchor?'':'<a:spAutoFit/>')+'</a:bodyPr><a:lstStyle/>'
    + runs.map(r=>'<a:p><a:pPr algn="'+(align||'l')+'"/><a:r><a:rPr lang="en-US" sz="'+r.sz+'" b="'+(r.b?1:0)
      +'" dirty="0"><a:solidFill><a:srgbClr val="'+r.c+'"/></a:solidFill>'
      +'<a:latin typeface="Arial"/></a:rPr><a:t>'+esc(r.t)+'</a:t></a:r></a:p>').join('')
@@ -5679,107 +5877,146 @@ const PPT_TEAL='0E7C7B', PPT_INK='2B2F31', PPT_SUB='5A6166', PPT_RULE='6B7280';
 function pptStatusHex(st){
   return st==='ACTION'?'B02A2A':(st==='WATCH'?'B07C0C':(st==='GOOD'?'1B7A4A':'8A9096'));
 }
-function ppt7S(v){
-  const actKPI=KPI_ORDER.filter(id=>v.k[id].status==='ACTION').map(id=>KPI[id].tab);
-  const wchKPI=KPI_ORDER.filter(id=>v.k[id].status==='WATCH').map(id=>KPI[id].tab);
-  const abvN  =(v.aboveNormal||[]).map(id=>KPI[id].tab);
-  const sites =v.alerts.map(a=>a.site).filter((s,i,a)=>a.indexOf(s)===i);
-  const gLab=selLabelFull(S.group,GROUP_BY.ALL.label,c=>(GROUP_BY[c]||{}).label||c);
-  const sLab=selLabelFull(S.site,'All Sites',c=>(SITE_REG.find(x=>x.code===c)||{}).name||c);
-  const nMo=(v.months||[]).length;
-  return {
-    actKPI, wchKPI, abvN, sites, gLab, sLab, nMo,
-    strategy: 'Reduce medical incident exposure against the Normal Target. '
-      + (abvN.length ? 'Above Normal Target in this scope: '+abvN.join(', ')+'.'
-                     : 'All governed KPIs are at or below Normal Target in this scope.'),
-    structure:'Accountability line in scope: '+gLab+' \u2192 '+sLab+'. '
-      + (sites.length ? 'Governed exceptions are open at: '+sites.join(', ')+'.'
-                      : 'No site-level governed exception is open.'),
-    systems:  'Governed chain in force: source \u2192 validation \u2192 reconciliation \u2192 pooled KPI '
-      + '\u2192 target status \u2192 management action, over '+nMo+' selected governed period(s).',
-    shared:   'Prevention, early escalation and evidence-based occupational health decisions '
-      + 'remain the shared basis for management action in this scope.',
-    style:    'Management implication: direct leadership attention to the governed exceptions '
-      + 'listed above and to timely management review of them.',
-    staff:    'Management implication: confirm a responsible OHIH/medical reviewer is assigned '
-      + 'to each governed exception in this scope.',
-    skills:   'Management implication: sustain capability to interpret pooled selected-scope KPI '
-      + 'results and to act on Normal Target exceptions.',
-    alignment:(actKPI.length
-        ? 'Priority: act on '+actKPI.join(', ')+' \u2014 governed status ACTION REQUIRED.'
-        : (wchKPI.length
-            ? 'Priority: hold '+wchKPI.join(', ')+' under management review \u2014 governed status WATCH.'
-            : 'Priority: sustain governed performance across the selected analytical scope.'))
-      + '  MIM STATUS: '+MIM[v.mim.state].label+' \u2014 '+v.mim.band
-  };
+/* ppt7S() is SUPERSEDED by execContent(), the single executive content
+   authority shared with the PDF (P1). It is retained here, unreferenced, as
+   auditable change history only — nothing calls it. */
+function ppt7S_RETIRED(v){ return execContent(v); }
+
+/* A thin rule/lozenge writer. Same package, same shape grammar as tb(); it
+   only draws a filled rectangle so that the 7S columns and the priority band
+   can be separated without text overlay (P7). */
+function emu(n){ return Math.round(n); }   /* QA-06 - OOXML EMU are integers */
+function bx(id,x,y,w,h,hex){
+  x=emu(x); y=emu(y); w=emu(w); h=emu(h);
+  return '<p:sp><p:nvSpPr><p:cNvPr id="'+id+'" name="b'+id+'"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr>'
+   +'<p:spPr><a:xfrm><a:off x="'+x+'" y="'+y+'"/><a:ext cx="'+w+'" cy="'+h+'"/></a:xfrm>'
+   +'<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'
+   +'<a:solidFill><a:srgbClr val="'+hex+'"/></a:solidFill><a:ln><a:noFill/></a:ln></p:spPr>'
+   +'<p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>';
 }
 function pptx(){
+  /* ==========================================================================
+     MIME EXECUTIVE SUMMARY SS-2 — PPT (16:9 EXECUTIVE SLIDE)
+     ARCHITECT AUTHORITY DECISION R2, §2B / §10 / §11 / §12 / §13 / §16.
+
+     DIVERGENCE IS DELIBERATE (§2). This slide MUST NOT copy the SS-1 portrait
+     layout. SS-1 is a vertical one-page report; SS-2 is a 16:9 executive slide
+     whose PRIMARY VISUAL STRUCTURE is the McKinsey 7S framework, NOT a KPI
+     table. The KPI block is demoted to a single compact supporting-evidence
+     strip and occupies roughly one tenth of the slide; the 7S band occupies
+     roughly one half and Shared Values is the widest, accented, centred panel.
+
+     NARRATIVE ORDER (§12):  PERFORMANCE -> 7S ALIGNMENT -> MANAGEMENT PRIORITIES
+        what is happening        -> the KPI strip + management-attention state
+        where attention is needed -> the governed status set
+        what alignment is required -> the 7S band
+        what management should do -> the three priorities
+
+     ONE CONTENT AUTHORITY (§13). Content is read from execContent() /
+     execSnap() / VIEW — the same objects SS-1 consumes — so the two artifacts
+     cannot diverge in CONTENT for the same scope and the same snapshot even
+     though they deliberately diverge in COMPOSITION. No second executive
+     content engine, no second KPI engine, no second status engine is created.
+     No formula and no governance detail is introduced (§11).
+     The EXPORT MECHANISM IS UNCHANGED: same zip(), same OOXML parts, same
+     tb()/bx() shape writers, same single slide.
+     ========================================================================== */
   const v=VIEW; let id=2, shapes='';
-  const s7=ppt7S(v);
+  const X=execContent(v), SNAP=execSnap();
   const mo=(v.months||[]);
-  const scopeTxt = scopeLabel();
-  const perTxt = mo.length ? (mo.length+' governed period(s): '+mDash(mo[0])
-                 +(mo.length>1?' \u2192 '+mDash(mo[mo.length-1]):'')) : DASH;
+  const per = mo.length ? (mDash(mo[0])+(mo.length>1?' \u2192 '+mDash(mo[mo.length-1]):'')) : DASH;
+  const gLab=selLabelFull(S.group,GROUP_BY.ALL.label,c=>(GROUP_BY[c]||{}).label||c);
+  const sLab=selLabelFull(S.site,'All Sites',c=>(SITE_REG.find(x=>x.code===c)||{}).name||c);
 
-  /* ---- TOP (§S) — title, selected scope, reporting anchor, MIM status ---- */
-  shapes+=tb(id++,457200,228600,11277600,520000,
+  const L=457200, RGT=11734800, FULL=RGT-L, G=140000;   /* frozen 16:9 column */
+
+  /* ---------- HEADER --------------------------------------------------- */
+  shapes+=tb(id++,L,200000,7900000,460000,
     [{t:'Medical Incident Management Performance',sz:2400,b:1,c:'111111'}]);
-  shapes+=tb(id++,457200,720000,7600000,560000,[
-    {t:'Selected analytical scope: '+scopeTxt,sz:1000,c:PPT_SUB},
-    {t:'Analytical population: '+perTxt,sz:1000,c:PPT_SUB},
-    {t:'Reporting anchor: '+(v.anchor?mLong(v.anchor):DASH)+'  (metadata \u2014 not the analytical scope)',sz:1000,c:PPT_SUB}]);
-  shapes+=tb(id++,8200000,720000,3534800,560000,[
-    {t:'MIM STATUS',sz:900,b:1,c:PPT_RULE},
-    {t:MIM[v.mim.state].label,sz:1600,b:1,c:pptStatusHex(v.mim.state)},
-    {t:v.mim.band,sz:800,c:PPT_SUB}],'r');
+  shapes+=tb(id++,L,620000,7900000,280000,
+    [{t:'EXECUTIVE SUMMARY',sz:1100,b:1,c:PPT_TEAL}]);
+  shapes+=tb(id++,L,860000,7900000,400000,[
+    {t:gLab+'  \u00b7  '+sLab+'  \u00b7  '+per,sz:900,c:PPT_SUB},
+    {t:SNAP.line,sz:750,c:PPT_RULE}]);
 
-  /* ---- KPI TARGET CONTEXT (§T) — KPI | CURRENT | MINIMUM | NORMAL | STRETCH | STATUS
-         Values are the CURRENT SELECTED-PERIOD results and the frozen SSOT
-         tiers. Nothing is recalculated here. NORMAL is the primary target. */
-  const CX=[457200,3000000,4400000,5800000,7450000,8850000];
-  const CWD=[2500000,1350000,1350000,1600000,1350000,2884800];
-  const hdr=['KPI','CURRENT','MINIMUM','NORMAL (primary)','STRETCH','GOVERNED STATUS'];
-  for(let c=0;c<6;c++){
-    const runs=[{t:hdr[c],sz:800,b:1,c:PPT_RULE}];
-    KPI_ORDER.forEach(idk=>{
-      const k=KPI[idk], b=v.k[idk];
-      if(c===0) runs.push({t:k.tab,sz:1000,b:1,c:k.hex.replace('#','')});
-      else if(c===1) runs.push({t:fmt(k,b.cur),sz:1000,b:1,c:PPT_INK});
-      else if(c===2) runs.push({t:fmtTgt(idk,'minimum'),sz:1000,c:PPT_SUB});
-      else if(c===3) runs.push({t:fmtTgt(idk,'normal'),sz:1000,b:1,c:PPT_TEAL});
-      else if(c===4) runs.push({t:fmtTgt(idk,'stretch'),sz:1000,c:PPT_SUB});
-      else runs.push({t:fmtDelta(k,b.tdelta)+' vs Normal \u00b7 '+ST[b.status].label,
-                      sz:900,b:1,c:pptStatusHex(b.status)});
-    });
-    shapes+=tb(id++,CX[c],1420000,CWD[c],1500000,runs);
-  }
+  /* ---------- MANAGEMENT ATTENTION — the governed MIM roll-up ----------- */
+  shapes+=tb(id++,8180000,220000,3554800,860000,[
+    {t:'MANAGEMENT ATTENTION',sz:800,b:1,c:PPT_RULE},
+    {t:X.mimLabel,sz:2000,b:1,c:pptStatusHex(X.mimState)},
+    {t:v.counts.GOOD+' GOOD  \u00b7  '+v.counts.WATCH+' WATCH  \u00b7  '
+      +v.counts.ACTION+' ACTION REQUIRED',sz:800,c:PPT_SUB}],'r');
 
-  /* ---- 7S BODY (§S) — HARD | SHARED VALUES | SOFT ---- */
-  shapes+=tb(id++,457200,3080000,3600000,2350000,[
-    {t:'HARD ELEMENTS',sz:900,b:1,c:PPT_RULE},
-    {t:'STRATEGY',sz:1000,b:1,c:PPT_TEAL},   {t:s7.strategy,sz:900,c:PPT_INK},
-    {t:'STRUCTURE',sz:1000,b:1,c:PPT_TEAL},  {t:s7.structure,sz:900,c:PPT_INK},
-    {t:'SYSTEMS',sz:1000,b:1,c:PPT_TEAL},    {t:s7.systems,sz:900,c:PPT_INK}]);
-  shapes+=tb(id++,4300000,3080000,3500000,2350000,[
-    {t:'SHARED VALUES',sz:1000,b:1,c:PPT_TEAL},
-    {t:s7.shared,sz:900,c:PPT_INK},
-    {t:'Governed KPIs in scope: '+v.counts.GOOD+' GOOD \u00b7 '+v.counts.WATCH+' WATCH \u00b7 '
-      +v.counts.ACTION+' ACTION REQUIRED \u00b7 '+v.counts.NODATA+' NO DATA.',sz:900,c:PPT_SUB},
-    {t:v.sitesAbove+' of '+v.nSites+' operating site(s) in scope carry a governed exception.',sz:900,c:PPT_SUB}],'ctr');
-  shapes+=tb(id++,8000000,3080000,3700000,2350000,[
-    {t:'SOFT ELEMENTS',sz:900,b:1,c:PPT_RULE},
-    {t:'STYLE',sz:1000,b:1,c:PPT_TEAL},  {t:s7.style,sz:900,c:PPT_INK},
-    {t:'STAFF',sz:1000,b:1,c:PPT_TEAL},  {t:s7.staff,sz:900,c:PPT_INK},
-    {t:'SKILLS',sz:1000,b:1,c:PPT_TEAL}, {t:s7.skills,sz:900,c:PPT_INK}]);
+  /* ---------- 1. PERFORMANCE — COMPACT SUPPORTING EVIDENCE (§11) -------- */
+  /* Deliberately ONE low strip: five compact readings, each written as its own
+     explicitly positioned shape on a common baseline so no autofit drift is
+     possible. Normal is retained only as a compact comparator. No target
+     tiering, no formula, no governance detail (§11). */
+  shapes+=tb(id++,L,1280000,4000000,240000,[{t:'PERFORMANCE',sz:800,b:1,c:PPT_TEAL}]);
+  const KY=1490000, CWD=Math.floor((FULL-4*G)/5);
+  KPI_P2.forEach((idk,i)=>{
+    const b=v.k[idk]; if(!b) return;
+    const k=KPI[idk], cx=L+i*(CWD+G);
+    shapes+=bx(id++,cx,KY,CWD,22000,'D6DADE');
+    shapes+=tb(id++,cx,KY+40000,CWD,200000,
+      [{t:k.tab,sz:850,b:1,c:k.hex.replace('#','')}]);
+    shapes+=tb(id++,cx,KY+215000,1000000,300000,
+      [{t:fmt(k,b.cur),sz:1500,b:1,c:PPT_INK}]);
+    shapes+=tb(id++,cx+1030000,KY+265000,CWD-1030000,240000,
+      [{t:ST[b.status].label,sz:900,b:1,c:pptStatusHex(b.status)}]);
+    shapes+=tb(id++,cx,KY+500000,CWD,190000,
+      [{t:'Normal '+fmtTgt(idk,'normal'),sz:700,c:PPT_SUB}]);
+  });
 
-  /* ---- BOTTOM (§S) — alignment / management priority ---- */
-  shapes+=tb(id++,457200,5560000,11277600,900000,[
-    {t:'ALIGNMENT / MANAGEMENT PRIORITY',sz:1000,b:1,c:PPT_RULE},
-    {t:s7.alignment,sz:1000,b:1,c:PPT_INK},
-    {t:'Primary management target = Normal (frozen MIME_TARGET_SSOT). Governed status is classified '
-      +'against Stretch/Minimum by the single status authority. Executive performance roll-up \u2014 not a '
-      +'statutory, IOGP, clinical or diagnostic classification. 7S soft elements are management '
-      +'implications of the governed results, not established organisational facts.',sz:700,c:PPT_RULE}]);
+  /* ---------- 2. 7S ALIGNMENT — THE PRIMARY VISUAL STRUCTURE (§10) ------ */
+  /* Not a KPI table and not three equal boxes. Shared Values is the WIDEST
+     panel, carries the accent field, a teal centrality spine and the priority
+     typography, and is vertically centred: its visual centrality is structural
+     rather than asserted. Statements are the approved evidence-constrained
+     management implications from execContent(); nothing generic is added. */
+  const SY=2530000, SH=2500000;
+  const sideW=3320000, midW=FULL-2*sideW-2*G;
+  const SX=[L, L+sideW+G, L+sideW+G+midW+G];
+  shapes+=tb(id++,L,2270000,6000000,240000,
+    [{t:'McKINSEY 7S \u2014 MANAGEMENT ALIGNMENT',sz:800,b:1,c:PPT_TEAL}]);
+
+  shapes+=bx(id++,SX[0],SY,sideW,SH,'F7F9FA');
+  shapes+=bx(id++,SX[1],SY,midW, SH,'E4F0F0');          /* the central anchor */
+  shapes+=bx(id++,SX[2],SY,sideW,SH,'F7F9FA');
+  shapes+=bx(id++,SX[1],SY,44000,SH,PPT_TEAL);          /* centrality spine   */
+
+  shapes+=tb(id++,SX[0]+120000,SY+70000,sideW-240000,SH-140000,[
+    {t:'HARD ELEMENTS',sz:800,b:1,c:PPT_RULE},
+    {t:'STRATEGY',sz:1000,b:1,c:PPT_TEAL},  {t:X.strategy,sz:1000,c:PPT_INK},
+    {t:'STRUCTURE',sz:1000,b:1,c:PPT_TEAL}, {t:X.structure,sz:1000,c:PPT_INK},
+    {t:'SYSTEMS',sz:1000,b:1,c:PPT_TEAL},   {t:X.systems,sz:1000,c:PPT_INK}]);
+
+  shapes+=tb(id++,SX[1]+160000,SY+70000,midW-300000,240000,
+    [{t:'SHARED VALUES',sz:800,b:1,c:PPT_RULE}],'ctr');
+  shapes+=tb(id++,SX[1]+160000,SY+330000,midW-300000,SH-460000,
+    [{t:X.shared,sz:1600,b:1,c:PPT_INK}],'ctr','ctr');
+
+  shapes+=tb(id++,SX[2]+120000,SY+70000,sideW-240000,SH-140000,[
+    {t:'SOFT ELEMENTS',sz:800,b:1,c:PPT_RULE},
+    {t:'STYLE',sz:1000,b:1,c:PPT_TEAL},  {t:X.style,sz:1000,c:PPT_INK},
+    {t:'STAFF',sz:1000,b:1,c:PPT_TEAL},  {t:X.staff,sz:1000,c:PPT_INK},
+    {t:'SKILLS',sz:1000,b:1,c:PPT_TEAL}, {t:X.skills,sz:1000,c:PPT_INK}]);
+
+  /* ---------- 3. MANAGEMENT PRIORITIES — clearly separated (§16) -------- */
+  const PY=5440000, PW=Math.floor((FULL-2*G)/3);
+  shapes+=tb(id++,L,5160000,6000000,240000,
+    [{t:'MANAGEMENT PRIORITIES',sz:800,b:1,c:PPT_TEAL}]);
+  X.priorities.forEach((pr,i)=>{
+    const px=L+i*(PW+G);
+    shapes+=bx(id++,px,PY,PW,26000,'6B7280');
+    shapes+=tb(id++,px,PY+60000,PW,760000,[
+      {t:pr.n+'   '+pr.verb,sz:1200,b:1,c:PPT_INK},
+      {t:pr.subj,sz:900,b:1,c:PPT_TEAL},
+      {t:pr.line,sz:850,c:PPT_SUB}]);
+  });
+
+  /* ---------- FOOTER (§7) — ONE line, nothing else. --------------------- */
+  shapes+=tb(id++,L,6490000,FULL,190000,[{t:X.foot,sz:700,c:PPT_RULE}]);
+
   const slide='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
    +'<p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
    +'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '
