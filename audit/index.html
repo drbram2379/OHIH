@@ -990,6 +990,14 @@ table.sim-t{width:100%;border-collapse:collapse}
 .ghost small{display:block;color:var(--ink-2);font-size:12px}
 @media (max-width:1100px){.meet-grid{grid-template-columns:1fr}}
 @media (max-width:560px){.meet-kind,.meet-doms{grid-template-columns:1fr}.seg label{padding:8px 11px}}
+/* v7.4 · 2026 HRA and MERP evidence panel (Audit meetings) */
+.hm-panel{margin-top:18px}
+.hm-tbl td{vertical-align:top;font-size:12.5px;line-height:1.4}.hm-tbl td.num{white-space:nowrap}
+.hm-tbl th{white-space:nowrap}
+.hm-dq{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:#fff}
+.hm-dq summary{cursor:pointer;font-size:13px}
+.hm-dq ul{margin:8px 0 0 18px;padding:0;font-size:12.5px;color:var(--ink-2);line-height:1.5}
+.hm-dq .table-wrap{margin-top:8px}
 
 </style>
 </head>
@@ -4710,7 +4718,7 @@ function reportXML(R) {
   const dRange = R.dates.length ? `${fmtDate(R.dates[0])} – ${fmtDate(R.dates[R.dates.length - 1])}` : '—';
   const pct = v => Math.round(v * 100) + '%';
   const opWord = {unmodified:'Conclusion', qualified:'Qualified Conclusion', adverse:'Adverse Conclusion', disclaimer:'Disclaimer of Conclusion'}[R.op.k];
-  const S = settings();
+  const S = settings(), HB = hmBoard(R.sites);   // v7.4: 2026 HRA and MERP evidence for the sites in scope
   let x = '';
   /* ===== COVER ===== */
   x += rP([{raw:rBackground('rIdCover', 1001, 'Cover')}], {before:1250, after:0});
@@ -4721,7 +4729,7 @@ function reportXML(R) {
   x += rP([{t:`For the Board of Directors, General Managers and Shareholders · ${scopeLabel()} · Confidential`, sz:8.5, color:'6A604F'}], {after:0, indR:5400, sect:SECT('rIdHdrEmpty', 'rIdFtrEmpty')});
   /* ===== CONTENTS + DOCUMENT CONTROL ===== */
   /* fixed page allocation per chapter (each chapter starts on a new page and is sized to fit) */
-  const kamPages = kamList(R).length >= 3 ? 2 : 1;
+  const kamPages = kamList(R).length >= 3 || HB.any ? 2 : 1;   // v7.4: the 2026 corroboration table sits on the second KAM page
   const alloc = [['1','Internal Auditor’s Report to the Board',1],['2','Audit Engagement, Criteria and Method',1],['3','Key Audit Matters',kamPages],['4','Organisational Alignment · McKinsey 7S',2],['5','Performance by Audit, Site and Clause',1],['6','Significant Deficiencies and Corrective Action Status',1],['7','Strategic Recommendations and Roadmap',1],['8','Responsibilities, Other Matters and Sign-off',1],['','Glossary',1],['A','Appendix A · Section Scores and 7S Elements',1]];
   let pgNo = 1; const toc = alloc.map(([n, t, len]) => { const r = [n, t, pgNo]; pgNo += len; return r; });
   R.bodyPages = alloc.slice(0, 8).reduce((a, r) => a + r[2], 0);
@@ -4779,7 +4787,7 @@ function reportXML(R) {
   [`Endorse the Stabilise phase: all ${R.nc.maj} open critical findings closed by ${fmtDate(ph[0].to)}, tracked monthly.`,
    top ? `Sponsor the realignment of ${top.s.name} (${fmt(top.v)} → 3.5), owned by ${s7Text(m, top.s.key).owner}.` : null,
    R.simFail.length ? 'Require failed emergency scenarios to be repeated within 90 days.' : 'Keep emergency drills in every applicable site’s annual plan.',
-   'Adopt the 7S profile and the MERP total as quarterly leading KPIs.'].filter(Boolean).forEach(t => { x += numbered(t); });
+   HB.n ? 'Adopt the 7S profile, the MERP total and MERRAT readiness as quarterly KPIs; require signed, reconciled HRA and MERP reports.' : 'Adopt the 7S profile and the MERP total as quarterly leading KPIs.'].filter(Boolean).forEach(t => { x += numbered(t); });
 
   /* ===== 2 · ENGAGEMENT (ISO 19011 §6.5.1 a–k) ===== */
   x += chapter(2, 'Audit Engagement, Criteria and Method');
@@ -4792,7 +4800,7 @@ function reportXML(R) {
     ['c) Audit client', 'Board of Directors, PT Merdeka Copper Gold Tbk group.'],
     ['d) Audit team · auditees', `Team: ${team}. Auditee representatives: ${auditees}.`],
     ['e) Dates and locations', `${dRange}; on site at each operation (clinics, work areas, kitchens, laboratories, emergency facilities).`],
-    ['f) Criteria', `Procedure MDA-SUS-OHS-PRO; checklists FFW v2.2, MERP v2.2, IH v1.2, FS v2.2 (revised 24 Sep 2026); Form Penilaian Gabungan Simulasi Emergency (${SIM.scenarios.length} scenarios); ISO 45001:2018; PP 88/2019; Permenaker 5/2018, 13/2025, 11/2023, 8/2010; Kepmen ESDM 1827/2018; Kepmenaker 187/1999; PP 86/2019; Permenkes 2/2023.`],
+    ['f) Criteria', `Procedure MDA-SUS-OHS-PRO; checklists FFW v2.2, MERP v2.2, IH v1.2, FS v2.2 (revised 24 Sep 2026); Form Penilaian Gabungan Simulasi Emergency (${SIM.scenarios.length} scenarios); ISO 45001:2018; PP 88/2019; Permenaker 5/2018, 13/2025, 11/2023, 8/2010; Kepmen ESDM 1827/2018; Kepmenaker 187/1999; PP 86/2019; Permenkes 2/2023.${HB.any ? ' Corroborating: 2026 HRA registers and MERP reports (Chapter 3).' : ''}`],
     ['g–h) Findings and conclusions', 'Chapters 1, 3, 5 and 6; complete registers in the app and the Excel export.'],
     ['i) Degree of fulfilment', `Integrated score ${fmt(m.overall)} of 4.0; ${pct(R.assessed ? R.good / R.assessed : 0)} of assessed items fully conform (score 4).`],
     ['j) Diverging opinions', 'Objections raised at closing meetings are recorded in the audit minutes; unresolved ones are listed in Chapter 8.'],
@@ -4813,7 +4821,7 @@ function reportXML(R) {
   x += chapter(3, 'Key Audit Matters');
   x += body('Key audit matters are those that, in our professional judgement, were of most significance in this audit — one for each audit, each diagnosed with that discipline’s own framework. They were addressed in forming our conclusion; we do not give a separate conclusion on them.', {after:100});
   const kams = kamList(R);
-  kams.forEach((k0, i) => { const k = {...k0, why:cut(k0.why, 300), found:cut(k0.found, 420), resp:cut(k0.resp, 220), act:cut(k0.act, 260)};
+  kams.forEach((k0, i) => { const k = {...k0, why:cut(hmKamWhy(k0.dk, R.sites) || k0.why, 300), found:cut(k0.found, 420), resp:cut(k0.resp, 220), act:cut(k0.act, 260)};
     if (i === 2) x += rP([{t:'Chapter 3 · continued'}], {style:'Kicker', pageBreak:true});   // two key audit matters per page
     x += H2(`KAM ${i + 1} · ${k.title}`);
     x += small(`Criteria: ${k.clause}  ·  Framework: ${k.s7}`);
@@ -4824,6 +4832,14 @@ function reportXML(R) {
       [{t:'Management action required', b:true, fill:'F4EFE3'}, {t:k.act, b:true, color:'3A2A12'}]
     ], {head:false, sz:8.5, gap:40});
   });
+  /* v7.4 · corroborating evidence from the 2026 HRA registers and MERP reports (ISA 500 ¶8) */
+  if (HB.any) {
+    if (kams.length <= 2) x += rP([{t:'Chapter 3 · continued'}], {style:'Kicker', pageBreak:true});
+    x += H2('Corroborating evidence · 2026 HRA and MERP assessments');
+    x += body(`The 2026 HRA registers and MERP reports (${HM.src.merp.split(' · ')[0]}) point the same way${HB.n ? `: readiness ${hmRange(HB.ercMin, HB.ercMax)}${HB.fell === HB.n ? ', down on 2024 at every assessed site' : ''}; ${HB.E} Extreme and ${HB.H} High health risks` : ''}. They are corroborating evidence only (tests in Chapter 8).${HB.prop.length ? ' SCM had no 2026 HRA or MERP.' : ''}`, {after:60});
+    x += rTable([800, 1250, 2150, 2838, 2600], [['Site', 'MERRAT 2024 → 2026', 'HRA · Extreme / High · actions', 'Measured, not in the register', 'Main reliability issue'], ...hmBoardRows(R.sites)], {sz:7.5, gap:20});
+    x += small(`Source: site HRA registers and ${HM.src.merp.split(' · ')[0]} reports 2026; desk review ${fmtDate(HM.asOf)}. MERRAT bands (%): < 60 · 60–70 · 70–80 · 80–90 · ≥ 90.`);
+  }
 
   /* ===== 4 · 7S ===== */
   x += chapter(4, 'Organisational Alignment · McKinsey 7S');
@@ -4938,7 +4954,10 @@ function reportXML(R) {
   x += H2('Other matters');
   [R.coverage < 1 ? `Coverage: ${R.audits.length} of ${R.sites.length * 4} planned site audits are included; the remaining audits are scheduled in the audit programme.` : 'Coverage: all planned site audits in scope are included.',
    `Data source: OHIH Audit app records as at ${fmtDate(today)}${syncOn() ? ', synchronised with the shared Google Sheets back end' : ''}.${R.demo ? ' Demo data is present; not for distribution.' : ''}`,
-   'Unresolved diverging opinions from closing meetings: none recorded in the audit records.'].forEach(t => { x += bullet(t); });
+   'Unresolved diverging opinions from closing meetings: none recorded in the audit records.',
+   HB.any ? `Reliance on others' work: the 2026 HRA and MERP reports are corroborating evidence only${HB.n ? ' (tests below)' : ''}.${HB.prop.length ? ' The SCM baseline is a proposal, not an assessment.' : ''}` : null].filter(Boolean).forEach(t => { x += bullet(t); });
+  if (HB.n) { x += H2('Reliability of the 2026 HRA and MERP reports (ISA 500 ¶8)');
+    x += rTable([3000, 1250, 5388], [['Test', 'Not met at', 'What we found'], ...hmForensicRows(R.sites).map(r => [{t:r[0], b:true}, {t:r[1], jc:'center'}, r[2]])], {sz:7.5, gap:20}); }
   x += H2('Sign-off');
   x += rTable([2700, 2600, 2338, 2000], [
     ['Role', 'Name', 'Signature', 'Date'],
@@ -4952,12 +4971,13 @@ function reportXML(R) {
   x += chapter('', 'Glossary', 'Glossary');
   x += rTable([2500, 7138], [['Term', 'Meaning'], ...[
     ['7S (McKinsey)', 'Model of seven interdependent organisational elements: Strategy, Structure, Systems (hard); Shared Values, Style, Staff, Skills (soft).'],
-    ['Assurance chain (FFW)', 'Fitness-for-work model: design, MCU, daily fitness gate, surveillance, risk programmes, population follow-up, return to work.'],
+    ['Assurance chain (FFW)', 'FFW model: MCU, daily fitness gate, surveillance, risk programmes, follow-up, return to work.'],
     ['CAR', 'Corrective Action Register: each finding with root cause, action, PIC, target date and status.'],
-    ['Chain of survival (MERP)', 'Emergency-response model scored by its weakest link: plan, alarm, first response, on-site care, transport, handover, drills.'],
+    ['Chain of survival (MERP)', 'MERP model scored by its weakest link: plan, alarm, first response, care, transport, handover, drills.'],
     ['Critical item (★)', 'Drill action whose failure can kill or injure the casualty or rescuer; must score 3 or 4 to pass.'],
     ['Emergency simulation', 'Observed drill of a mining emergency scenario, scored on the combined assessment form.'],
     ['FFW · MERP · IH · FS', 'Fitness for Work · Medical Emergency Response Plan · Industrial Hygiene · Food Safety.'],
+    ['HRA · ROM register', 'Health risk assessment by similar exposure group (SEG); ROM = the Group risk and opportunity register.'],
     ['Hierarchy of controls (IH)', 'Elimination and engineering controls before administrative controls and PPE; PPE is the last line (NIOSH).'],
     ['Hard / soft elements', 'Plans, structures and procedures versus leadership, people, capability and values.'],
     ['Integrated score', 'Mean of the four audit scores for a site or the group, on the 1–4 scale.'],
@@ -4965,6 +4985,7 @@ function reportXML(R) {
     ['ISO 19011 · ISO 45001', 'Guidelines for auditing management systems · requirements for OH&S management systems.'],
     ['KAM', 'Key audit matter: a matter of most significance in the audit, explained with the audit response.'],
     ['KTT', 'Kepala Teknik Tambang: the mine’s legally responsible technical head.'],
+    ['MERRAT · ERC', 'Medical emergency response readiness tool (26 questions); ERC = overall emergency response capability, %.'],
     ['MERP total', 'MERP checklist score combined with the emergency simulation score, with the critical-item cap.'],
     ['MHRE', 'Medical high-risk employee requiring structured monitoring.'],
     ['NAB', 'Nilai Ambang Batas: Indonesian occupational exposure limit (Permenaker 5/2018).'],
@@ -4972,7 +4993,7 @@ function reportXML(R) {
     ['OFI', 'Opportunity for improvement (score 3).'],
     ['P2K3', 'Joint OHS committee required by Indonesian regulation.'],
     ['PRP → HACCP (FS)', 'Prerequisite programmes (premises, hygiene, water, pests) must hold before the HACCP plan can control hazards (ISO 22000).'],
-    ['Risk thread', 'One hazard followed through several audits (e.g. heat: IH monitoring, FFW programme, MERP heat-stroke care); it breaks at its weakest part.'],
+    ['Risk thread', 'One hazard followed through several audits (e.g. heat: IH, FFW, MERP); it breaks at its weakest part.'],
     ['Shared Values', 'The central 7S element: the health-first culture that anchors the other six.'],
     ['Significant deficiency', 'A deficiency important enough to merit the attention of those charged with governance (ISA 265).'],
     ['TCWG', 'Those charged with governance: the Board of Directors and its committees.'],
@@ -5976,8 +5997,12 @@ function meetTeam(sc) {
 function drillPick(siteKey) {
   const last = {};
   auditsOf(siteKey, 'all', 'merp', 'all').forEach(a => { const sm = simSummary(a); sm.drilled.forEach(t => { if (!last[t.sc] || a.date > last[t.sc]) last[t.sc] = a.date; }); });
-  const cands = SIM.scenarios.filter(S => !(SIM_NA_DEFAULT[S.key] || {})[siteKey]).sort((x, y) => (last[x.key] || '').localeCompare(last[y.key] || '') || x.no - y.no);
-  return cands[0] ? {S:cands[0], last:last[cands[0].key] || null} : null;
+  const na = S => (SIM_NA_DEFAULT[S.key] || {})[siteKey];
+  /* v7.4: the scenario the 2026 MERP gaps point to, unless it was drilled at this site in the last 12 months */
+  const hd = typeof hmDrill === 'function' ? hmDrill(siteKey) : null, recent = addDays(todayISO(), -365);
+  if (hd) for (const k of hd.keys) { const S = SIMK[k]; if (S && !na(S) && !(last[k] && last[k] >= recent)) return {S, last:last[k] || null, by:'hra', why:hd.why}; }
+  const cands = SIM.scenarios.filter(S => !na(S)).sort((x, y) => (last[x.key] || '').localeCompare(last[y.key] || '') || x.no - y.no);
+  return cands[0] ? {S:cands[0], last:last[cands[0].key] || null, by:'rotation'} : null;
 }
 /* N/A items to agree at the opening meeting (procedure 4.3.2) */
 function naProposals(sc, doms) {
@@ -6005,7 +6030,7 @@ function openingModel(sel = UI.meet) {
   const drl = DRL.filter(x => doms.includes(x[0]));
   return {kind:'opening', sc, doms, rows, sr, team, date, venue:sel.venue || '', first, last:lastRow, period:starts.length ? [rows.find(r => r.start).travelIn, lastRow.travelOut] : null,
     items, evid, nItems, prior, hasPrior, na, drills, drl, interviews:5 * doms.length * sc.sites.length, outscope:(sel.outscope || '').split('\n').map(x => x.trim()).filter(Boolean),
-    demo:demoView()};
+    hm:hmScope(sc), demo:demoView()};
 }
 
 /* ---------- 6. Closing model (latest integrated-programme audits in the scope) ---------- */
@@ -6048,7 +6073,7 @@ function closingModel(sel = UI.meet) {
     const meetDate = visitRows.length ? visitRows.map(r => r.close).sort().pop() : (dates[dates.length - 1] || todayISO());
     return {kind:'closing', sc, sr, team, rows, doms, m, sums, meetDate, fs, open, overdue, audits, dates, siteInt, sims, simDone, simFail, good, assessed, applicable, coverage, low, maj, op,
       kams, threads, recs, up, evTicks, urgent, report, nc:{maj, min:cnt(open, 2), ofi:cnt(open, 3)}, demo:audits.some(a => a.demo),
-      prevScope:hasPriorIntegrated(sc, doms, dates[0])};
+      prevScope:hasPriorIntegrated(sc, doms, dates[0]), hm:hmScope(sc)};
   });
 }
 /* what-if: overall score if the open findings were raised to 3 (adequate) — checklist items only; drills unchanged */
@@ -6102,9 +6127,11 @@ function pageMeetings() {
       <div class="panel-head"><div><h2>Storyline · ${deck.length} content slide${deck.length === 1 ? '' : 's'}</h2><p class="sub">Read the action titles in order: they are the story (answer first, one message per slide). Cover, glossary and back cover are added.</p></div></div>
       ${deck.length ? `<ol class="ghost">${deck.map((d, i) => `<li><span class="gsec">${esc(d.sec)}</span><b>${esc(d.title)}</b>${d.sub ? `<small>${esc(d.sub)}</small>` : ''}</li>`).join('')}</ol>` : '<p class="fine">Nothing to show yet.</p>'}
     </section>
-  </div>`;
+  </div>
+  ${hmPanel(sc)}`;
 }
 function meetAction(A, el) {
+  if (A === 'hm-csv') return hmAction(A);
   if (A !== 'meet-dl') return false;
   exportMeetingDeck(UI.meet.kind); return true;
 }
@@ -6229,7 +6256,7 @@ function openingDeck(M) {
         ['35–40', 'Evidence pack status, data requests', 'Site OHIH Doctor'], ['40–45', 'Questions · attendance list (FRM-060)', 'All']].map((r, i) => i ? r.map((c, j) => ({t:c, align:j ? 'l' : 'ctr', sz:j === 2 ? 9.5 : 10})) : r), {rowH:0.4});
       mHead(s, 0.5, 5.2, 12, 'Decisions needed today');
       const naN = M.na.length, dr = M.drills.map(d => d.pick ? `${d.s.code} ${d.pick.S.key}` : '').filter(Boolean);
-      const dec = [['N/A items', `${plural(naN, 'item')} proposed in the checklists for agreement (4.3.2)`], ...(merp ? [['Drill scenario', dr.length ? `Suggested by rotation: ${dr.join(' · ')}` : 'Agree one scenario per site']] : []),
+      const dec = [['N/A items', `${plural(naN, 'item')} proposed in the checklists for agreement (4.3.2)`], ...(merp ? [['Drill scenario', dr.length ? `Suggested by ${M.drills.some(d => d.pick && d.pick.by === 'hra') ? 'the 2026 MERP gaps' : 'rotation'}: ${dr.join(' · ')}` : 'Agree one scenario per site']] : []),
         ['Auditee per audit', 'Name the site counterpart for each audit and day'], ['Closing meeting', one && r0 && r0.close ? `${fmtDate(r0.close)} · time and attendees` : 'Date, time and attendees per site']];
       const dw = (MZ.W - 0.15 * (dec.length - 1)) / dec.length;
       dec.forEach(([h, t], i) => { const x = 0.5 + i * (dw + 0.15); mCard(s, x, 5.55, dw, 1.2, {line:'D9C9A3'}); s.box(x, 5.55, 0.08, 1.2, {fill:PC.gold}); s.text(x + 0.2, 5.63, dw - 0.3, 0.28, mf(h, {sz:11.5, b:true, color:PC.brown})); mPara(s, x + 0.2, 5.93, dw - 0.3, 0.76, [t], {sz:10.5}); });
@@ -6298,6 +6325,9 @@ function openingDeck(M) {
         return [{t:DOM[p.dk].code, b:true}, rs.length ? fdS(rs.map(r => r.a.date).sort().pop()) : '—', cellV(v), {t:String(rs.reduce((a, r) => a + r.open, 0)), align:'ctr'}]; })].slice(0, 5), {rowH:0.2, headH:0.24, sz:9});
       else mPara(s, 7.1, 5.74, 5.7, 0.9, ['No earlier integrated audit is recorded for this scope in the app: this audit sets the baseline for the follow-up and the next annual audit.'], {sz:10.5});
     }});
+  /* 4b · 2026 HRA and MERP baseline (v7.4) */
+  const hmS = hmOpenSlides(M);
+  if (hmS.baseline) out.push(hmS.baseline);
   /* 5 · in-scope pillars (MECE) */
   const all4 = M.doms.length === 4;
   out.push({secNo:2, sec:OPEN_SECS[1], title:all4 ? `Four pillars cover worker health end to end — fit before work, protected at work, rescued when harmed, safe food and water — at ${plural(sc.sites.length, 'site')}` : `${M.doms.length} of the four OHIH pillars are in scope — ${M.doms.map(dk => DOM[dk].short).join(', ')} — at ${plural(sc.sites.length, 'site')}`,
@@ -6378,6 +6408,8 @@ function openingDeck(M) {
         ...M.doms.map(dk => [{t:`${DOM[dk].code} · ${DOM[dk].short}`, b:true}, {t:String(M.items[dk] * sc.sites.length), align:'ctr'}, {t:String(CHK[dk].SECTIONS.length), align:'ctr'}, {t:String(M.evid[dk] * sc.sites.length), align:'ctr'}, {t:String(5 * sc.sites.length), align:'ctr'}, {t:sc.sites.map(x => x.code).join(', '), sz:9.5}])],
         {rowH:Math.min(0.32, 1.3 / M.doms.length), headH:0.3, sz:10});
     }});
+  /* 8b · risk-based sampling from the 2026 evidence (v7.4) */
+  if (hmS.focus) out.push(hmS.focus);
   /* 9 · phased roadmap */
   const rep = one ? r0 && r0.report : M.last && M.last.report;
   out.push({secNo:4, sec:OPEN_SECS[3], title:one ? (r0 && r0.start ? `Findings reach management within 19 days: fieldwork ${fdR(r0.start, r0.close)}, closing meeting ${fdS(r0.close)}, report by ${fmtDate(r0.report)}` : 'The visit follows the procedure clock: notice 14 days before, closing on Day 6, report within 14 days')
@@ -6502,10 +6534,10 @@ function closingDeck(M) {
       const found = [weakD ? `${DOM[weakD.dk].code} is the weakest audit at ${fmt(weakD.avg)}${weakSec ? `; its lowest section is ${weakSec.sec.no} ${weakSec.sec.name} (${fmt(weakSec.v)})` : ''}.` : '',
         pr.length ? `Root causes sit in ${pr.map(p => `${p.s.name} (${fmt(p.v)})`).join(' and ')}: ${s7GapText(m.group.gap).split(':')[0].toLowerCase()}.` : '',
         M.urgent.length ? `${plural(M.urgent.length, 'critical finding')} open${M.urgent.filter(isOverdue).length ? `, ${M.urgent.filter(isOverdue).length} already overdue` : ''}; the most urgent: ${fLabel(M.urgent[0], 80)} (${SITE[M.urgent[0].a.site].code}).` : 'No critical finding is open.'].filter(Boolean);
-      const blocks = [['What we found', found], ['Why it matters', [weakD ? KAM_DOMAIN[weakD.dk].why.split('. ').slice(0, 2).join('. ').replace(/\.?$/, '.') : '', wf ? `These controls protect ${wfTxt} workers (${sr.kpi[0][2] || SR_DOC[sr.doc]}).` : ''].filter(Boolean)],
+      const blocks = [['What we found', found], ['Why it matters', [weakD ? KAM_DOMAIN[weakD.dk].why.split('. ').slice(0, 2).join('. ').replace(/\.?$/, '.') : '', wf ? `These controls protect ${wfTxt} workers${sr.kpi[0][2] ? `: ${sr.kpi[0][2]}` : ` (${SR_DOC[sr.doc]})`}.` : '', hmWhyLine(M)].filter(Boolean)],
         ['What we recommend', M.recs.slice(0, 3).map(r => `${r.title} — owner: ${r.owner}`)]];
       let y = 1.45;
-      blocks.forEach(([h, items], i) => { const hh = i === 1 ? 1.2 : 1.85; mCard(s, x0, y, w, hh, {fill:i === 2 ? 'FBF4E4' : 'FFFFFF'}); s.text(x0 + 0.15, y + 0.08, w - 0.3, 0.28, mf(h, {sz:12, b:true, color:i === 2 ? PC.brown : PC.ink}));
+      blocks.forEach(([h, items], i) => { const hh = i === 1 ? 1.5 : 1.7; mCard(s, x0, y, w, hh, {fill:i === 2 ? 'FBF4E4' : 'FFFFFF'}); s.text(x0 + 0.15, y + 0.08, w - 0.3, 0.28, mf(h, {sz:12, b:true, color:i === 2 ? PC.brown : PC.ink}));
         mPara(s, x0 + 0.15, y + 0.4, w - 0.3, hh - 0.46, items.map(t => bul(t)), {sz:11}); y += hh + 0.12; });
     }});
   /* 3 · current state */
@@ -6548,6 +6580,9 @@ function closingDeck(M) {
       mHead(s, 6.7, 4.55, 6.1, 'Good practices to replicate (score 4)');
       mPara(s, 6.7, 4.9, 6.1, 1.85, goodPick.length ? goodPick.map(g => bul({runs:[{t:`${g.s.code} · ${DOM[g.dk].code} ${g.it.id} `, b:true, color:PC.b[4]}, {t:cut(g.it.q, 78)}, ...(g.gap != null ? [{t:`  (others ${fmt(g.others)})`, color:PC.mute}] : [])]})) : ['No item scored 4 yet.'], {sz:10.5});
     }});
+  /* 4b · triangulation with the 2026 HRA and MERP reports (v7.4) */
+  const tri = hmCloseTriangulation(M);
+  if (tri) out.push(tri);
   /* 5 · root cause (MECE, 7S) */
   const groups = [['Management system', 'Hard elements', ['strategy', 'structure', 'systems']], ['Leadership & culture', 'Soft · anchor', ['style', 'values']], ['People & capability', 'Soft elements', ['staff', 'skills']]];
   const gv = k => m.group.v[k], gAvg = ks => mean(ks.map(gv));
@@ -6583,13 +6618,15 @@ function closingDeck(M) {
     out.push({secNo:2, sec:CLOSE_SECS[1], title:`${pass} of ${plural(M.simDone.length, 'site drill')} passed${withCrit ? `; ★ critical actions failed in ${withCrit}` : ''} — ${pass === M.simDone.length && M.simDone.length ? 'response capability is demonstrated' : 'response capability is not yet proven in practice'}`,
       src:'Form Penilaian Gabungan Simulasi Emergency Medis Area Tambang: one scenario per MERP audit; pass = every ★ item ≥ 3 and total ≥ 80% of the maximum; MERP total = 70% checklist + 30% drill, capped at 2.99 when a ★ item failed.',
       draw:s => {
-        mTable(s, 0.5, 1.45, [2.2, 3.1, 1.0, 0.8, 1.1], [['Site', 'Drill scenario', '% of max', '★ failed', 'Result'], ...M.sims.map(t => [{t:`${t.site.name} (${t.site.code})`, b:true, sz:9.5}, {t:`${t.sc} · ${cut(t.S.title, 40)}`, sz:9.5},
+        mTable(s, 0.5, 1.45, [2.0, 2.6, 0.9, 0.75, 1.05, 0.9], [['Site', 'Drill scenario', '% of max', '★ failed', 'Result', 'MERRAT 2026'], ...M.sims.map(t => [{t:`${t.site.name} (${t.site.code})`, b:true, sz:9.5}, {t:`${t.sc} · ${cut(t.S.title, 32)}`, sz:9.5},
           {t:t.scored ? pctTxt(t.pct) : '—', align:'ctr'}, {t:t.scored ? String(t.critFail.length) : '—', align:'ctr', b:t.critFail.length > 0, color:t.critFail.length ? PC.b[1] : PC.ink},
-          {t:t.complete ? (t.result === 'pass' ? 'LULUS' : 'TIDAK LULUS') : 'incomplete', align:'ctr', b:true, fill:t.result === 'pass' ? PC.bg[4] : t.complete ? PC.bg[1] : null, color:t.result === 'pass' ? PC.bi[4] : t.complete ? PC.bi[1] : PC.mute}])], {rowH:Math.min(0.5, 3.9 / Math.max(1, M.sims.length)), sz:10});
+          {t:t.complete ? (t.result === 'pass' ? 'LULUS' : 'TIDAK LULUS') : 'incomplete', align:'ctr', b:true, fill:t.result === 'pass' ? PC.bg[4] : t.complete ? PC.bg[1] : null, color:t.result === 'pass' ? PC.bi[4] : t.complete ? PC.bi[1] : PC.mute}, (x => x && !x.proposal ? hmErcCell(x.merp.erc[1], {sz:9.5}) : {t:x ? 'none' : '—', align:'ctr', color:PC.faint, sz:9.5})(hmOf(t.site.key))])], {rowH:Math.min(0.5, 3.9 / Math.max(1, M.sims.length)), sz:10});
         mHead(s, 8.95, 1.45, 3.9, 'Most-failed ★ critical actions');
         const cnt = {}; M.simDone.forEach(t => t.critFail.forEach(it => { const k = it.q; cnt[k] = (cnt[k] || 0) + 1; }));
         const top = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 5);
-        mPara(s, 8.95, 1.82, 3.88, 3.3, top.length ? top.map(([q, n]) => bul({runs:[{t:`${n}× `, b:true, color:PC.b[1]}, {t:cut(q, 80)}]})) : ['No ★ action failed.'], {sz:10.5});
+        mPara(s, 8.95, 1.82, 3.88, M.hm && M.hm.n ? 2.3 : 3.3, top.length ? top.map(([q, n]) => bul({runs:[{t:`${n}× `, b:true, color:PC.b[1]}, {t:cut(q, 80)}]})) : ['No ★ action failed.'], {sz:10.5});
+        if (M.hm && M.hm.n) { mHead(s, 8.95, 4.3, 3.88, 'MERRAT 2026 · the same weak links', {sz:11.5});
+          mPara(s, 8.95, 4.64, 3.88, 2.1, (M.hm.n > 1 ? HM.common.gaps.slice(0, 4).map(g => `${g[0]} (${g[1]})`) : M.hm.ev[0].x.merp.gaps.slice(0, 3)).map(g => bul(g)), {sz:10}); }
         const cy2 = Math.min(5.45, 1.45 + 0.34 + M.sims.length * Math.min(0.5, 3.9 / Math.max(1, M.sims.length)) + 0.35);
         mCard(s, 0.5, cy2, 8.2, 1.28, {fill:PC.tint});
         mPara(s, 0.7, cy2 + 0.1, 7.8, 1.1, [bul('Every failed scenario is re-drilled within 90 days after targeted training; ★ failures are NC-Maj with a 30-day deadline (ERT Leader and Site OHIH Doctor).'), bul('Rotate the scenario at the next audit so every applicable scenario is exercised over the programme cycle.')], {sz:11});
@@ -6604,9 +6641,10 @@ function closingDeck(M) {
       rows.push([{t:M.doms.length > 1 ? 'Integrated' : 'Overall', b:true}, cellV(m.overall), cellV(Math.max(3, m.overall || 0)), cellV(Math.max(3.5, m.overall || 0)), {t:'All four pillars adequate or better at every site; the 7S elements within 0.5 of each other.', sz:9.5}]);
       const trh = Math.min(0.7, 3.55 / rows.length);
       mTable(s, 0.5, 1.45, [2.3, 0.95, 1.1, 1.1, 6.88], [['Audit', 'Today', `By ${fdS(t180)}`, 'Next annual', 'What good looks like'], ...rows], {rowH:trh, sz:10.5});
-      const ky = 1.45 + 0.34 + rows.length * trh + 0.3, kw = (MZ.W - 0.15 * 2) / 3;
-      [[`0 open NC-Maj`, `by ${fmtDate(d30)}`, `today ${M.nc.maj}`], ['≥ 90% on time', 'corrective actions closed by target', `today ${M.overdue.length} overdue`], ['Shared Values ≥ 3.0', '7S spread < 0.5', `today ${fmt(m.group.v.values)} · spread ${m.group.spread == null ? '—' : m.group.spread.toFixed(2)}`]]
-        .forEach(([v, l, sub], i) => mKpi(s, 0.5 + i * (kw + 0.15), Math.min(ky, 5.45), kw, 1.25, v, l, sub, 0));
+      const tiles = [[`0 open NC-Maj`, `by ${fmtDate(d30)}`, `today ${M.nc.maj}`], ['≥ 90% on time', 'corrective actions closed by target', `today ${M.overdue.length} overdue`], ['Shared Values ≥ 3.0', '7S spread < 0.5', `today ${fmt(m.group.v.values)} · spread ${m.group.spread == null ? '—' : m.group.spread.toFixed(2)}`],
+        ...(M.hm && M.hm.n && M.doms.includes('merp') ? [['MERRAT ≥ 80%', 'Acceptable at the next reassessment', `2026: ${hmRange(M.hm.ercMin, M.hm.ercMax)}`]] : [])];
+      const ky = 1.45 + 0.34 + rows.length * trh + 0.3, kw = (MZ.W - 0.15 * (tiles.length - 1)) / tiles.length;
+      tiles.forEach(([v, l, sub], i) => mKpi(s, 0.5 + i * (kw + 0.15), Math.min(ky, 5.45), kw, 1.25, v, l, sub, 0));
     }});
   /* 9 · core recommendations */
   out.push({secNo:3, sec:CLOSE_SECS[2], title:`${plural(M.recs.length, 'initiative')} address the root causes; each has an owner and a 30-, 60- or 90-day deadline`,
@@ -6714,6 +6752,7 @@ function closingDeck(M) {
         const fz = grid ? 8 : 9;
         mTable(s, x, y, [qw - 1.75, 0.8, 0.95], [[{t:`${DOM[dk].code} · section`, sz:fz + 0.5}, {t:one ? 'Score' : 'Scope', sz:fz + 0.5}, {t:one ? 'Open' : 'Lowest', sz:fz + 0.5}], ...rows.map(r => r.map(c => ({...c, sz:fz})))], {rowH:RH, headH:RH, sz:fz}); });
     }});
+  if (out.length > 15) { const k = out.findIndex(x => /^Method:/.test(x.title)); if (k >= 0) out.splice(k, 1); }
   return out.slice(0, 15);
 }
 const STREAM_LOOK = [
@@ -6743,7 +6782,7 @@ function meetRisks(M) {
     mit:'Close-out only with field-verified evidence (4.5.2); leaders walk the critical actions monthly.', owner:'Corporate OH Manager'});
   out.push({name:'OHIH capacity', L:share > 0.3 ? 3 : share > 0.1 ? 2 : 1, I:2, why:`${Math.round(share * 100)}% of open actions are already overdue; few OHIH staff carry many actions.`,
     mit:'Prioritise by score; temporary support from corporate OHIH; resource the plan in the site budget.', owner:'GM Risk & Sustainability'});
-  if (M.doms.includes('ih')) { const ih = M.sums.find(q => q.dk === 'ih'); out.push({name:'Evidence gaps', L:ih && ih.avg != null && ih.avg < 3 ? 3 : 2, I:2, why:`IH scores ${fmt(ih && ih.avg)}; the sustainability reports disclose no workplace-exposure data.`,
+  if (M.doms.includes('ih')) { const ih = M.sums.find(q => q.dk === 'ih'); out.push({name:'Evidence gaps', L:ih && ih.avg != null && ih.avg < 3 ? 3 : 2, I:2, why:M.hm && M.hm.n ? `IH scores ${fmt(ih && ih.avg)}; the 2026 HRA registers are qualitative and miss the measured exceedances.` : `IH scores ${fmt(ih && ih.avg)}; the sustainability reports disclose no workplace-exposure data.`,
     mit:'KAN-accredited sampling to plan; results and close-out evidence kept in one record (Merdeka Sehat / APP_FEED).', owner:'IH Officer'}); }
   return out.sort((a, b) => (b.L * b.I) - (a.L * a.I)).slice(0, 5);
 }
@@ -6757,6 +6796,7 @@ const MEET_GLOSSARY = [
   ['FFW', 'Fitness for Work and medical check-up (MCU) programme'], ['MHRE', 'Medical high-risk employee'], ['FFT', 'Daily fit-for-task check'],
   ['MERP · ERT', 'Medical Emergency Response Plan · Emergency Response Team'], ['★ item', 'Critical drill action: must score 3 or 4 to pass'],
   ['IH · HRA · SEG', 'Industrial hygiene · health risk assessment · similar exposure group'], ['NAB · TLV', 'Exposure limits: Permenaker 5/2018 · ACGIH'],
+  ['MERRAT · ERC', 'Medical emergency readiness tool (26 questions) · overall emergency response capability, %'], ['ROM · ALARP', 'Group risk and opportunity register · as low as reasonably practicable'],
   ['KAN', 'National accreditation body for laboratories'], ['HACCP', 'Hazard analysis and critical control points (food safety)'],
   ['SMKP · SMK3', 'Mining and general OHS management systems (Indonesia)'], ['TRIFR · LTIFR', 'Recordable / lost-time injuries per 1,000,000 hours worked'],
   ['McKinsey 7S', 'Strategy, Structure, Systems, Style, Staff, Skills, Shared Values'], ['MECE', 'Mutually exclusive, collectively exhaustive grouping'],
@@ -6782,11 +6822,337 @@ function renderMeetingDeck(M, specs) {
   /* glossary */
   const g = new PxSlide(); meetFrame(g, {title:'Glossary', src:''}, M, specs.length + 2);
   const half = Math.ceil(MEET_GLOSSARY.length / 2);
-  [MEET_GLOSSARY.slice(0, half), MEET_GLOSSARY.slice(half)].forEach((part, i) => mTable(g, 0.5 + i * 6.26, 1.2, [1.75, 4.32], [['Term', 'Meaning'], ...part.map(([t, d]) => [{t, b:true}, {t:d, sz:9.5}])], {rowH:0.54, sz:10}));
+  [MEET_GLOSSARY.slice(0, half), MEET_GLOSSARY.slice(half)].forEach((part, i) => mTable(g, 0.5 + i * 6.26, 1.2, [1.75, 4.32], [['Term', 'Meaning'], ...part.map(([t, d]) => [{t, b:true}, {t:d, sz:9.5}])], {rowH:Math.min(0.54, 5.3 / half), sz:10}));
   slides.push({xml:g.xml(), layout:3});
   /* back cover (three companies' addresses in the layout) */
   const b = new PxSlide(); slides.push({xml:b.xml(), layout:16});
   return slides;
+}
+
+/* =====================================================================
+   2026 HRA AND MERP EVIDENCE (v7.4)
+   Forensic desk review of the 2026 site HRA registers (BSI, BTR, MTI, PGM) and the 2026 MERP
+   reassessment and walkthrough HRA reports (PT Pertamedika IHC), plus a proposed SCM baseline built
+   with the same method (SCM had no 2026 HRA or MERP). Single source: hra_merp.json, injected at build.
+   The evidence corroborates the audit (ISA 500 ¶8: work of a management's expert, evaluated before use);
+   it never changes a checklist score.
+   ===================================================================== */
+const HM = {"version":"7.4","asOf":"2026-09-28","note":"Desk review of the 2026 site HRA registers and the 2026 MERP reassessment and walkthrough HRA reports (PT Pertamedika IHC). Counts are recomputed from the registers; line references point to the report files as received (Markdown conversions; conversion artefacts are not counted as findings). SCM has no 2026 HRA or MERP: its entry is a proposed baseline built with the same method and must be verified in the field.","src":{"merp":"PT Pertamedika IHC · MERP reassessment and walkthrough HRA reports 2026","hra":"Site HRA registers 2026 (ROM register at BSI and BTR; HRA form at MTI and PGM)"},"bands":[[60,"Unacceptable"],[70,"Intolerable"],[80,"Tolerable"],[90,"Acceptable"],[101,"Excellent"]],"matrix":{"note":"Modal (majority) rating of each likelihood × consequence cell across the four 2026 registers; Likely × Major is split 9 High (BTR) vs 9 Extreme (BSI, PGM) and is set to Extreme as the precautionary choice. The Group should confirm one ROM matrix.","cells":{"Rare|Minor":"Low","Rare|Moderate":"Medium","Unlikely|Minor":"Low","Unlikely|Moderate":"Medium","Unlikely|Major":"High","Possible|Minor":"Medium","Possible|Moderate":"High","Possible|Major":"High","Possible|Catastrophic":"Extreme","Likely|Minor":"Medium","Likely|Moderate":"High","Likely|Major":"Extreme"},"conflicts":[["Possible × Major","BSI: High 3, Extreme 3 · BTR: High 11 · MTI: High 1, Extreme 1 · PGM: High 3"],["Possible × Moderate","BSI: High 12, Medium 2 · BTR: Medium 10, High 2 · MTI: High 20, Moderate 1 · PGM: High 13, Moderate 1"],["Likely × Major","BSI: Extreme 5 · BTR: High 9 · PGM: Extreme 4"],["Likely × Minor","PGM: Moderate 4 (initial) but High 2 (residual kitchen and laundry)"],["Shift-work cardiovascular risk","Extreme at BSI (2 rows) and PGM (2 rows); Rare × Moderate = Moderate at MTI (3 rows)"]]},"sites":{"BSI_BWX":{"merp":{"doc":"MERP reassessment and walkthrough HRA, PT BSI 2026","field":"28 Apr – 3 May 2026","issued":"May 2026 (sign-off page dated 27 Jun 2026)","erc":[82,76.2],"dom":{"proc":[87,80],"people":[63,63],"plant":[90,60]},"label":"Tolerable","weakest":"Plant/Tool 60%","gaps":["MERP not integrated with the HRA; no medical severity matrix","Drills skip heat stroke, cyanide, cardiac/AED, medevac and mass casualty; no drill with hospitals","No staffing study or PJK3 DPKK certificate; ERT and first-aider list without certificate expiry","Emergency trolley on open check (no seal); no shower or eyewash test records","The report recommends adding cyanide and heat-stroke kits to the trolley; no cyanide antidote named"],"medevac":"Nearest referral hospital 38.8 km (about 1 h 07); PCI and burns only at RSUD Blambangan, 71 km (about 1 h 45); none of the 7 hospitals has a helipad","staff":"2 site doctors, 1 medical director and 7 paramedics","drill":["S3","S5"],"drillWhy":"The heap leach (400–1,000 ppm cyanide) sits above the nursery and B3 area with no mitigation, and no cyanide drill or antidote is on record","ref":"L919–950 scores · L2013–2046 gaps · L2211–2248 cyanide · L2822–2828 hospitals · L2656–2659 blank approvals"},"hra":{"form":"ROM register BSI-0001…0056","rows":58,"init":{"E":9,"H":20,"M":21,"L":8},"resid":null,"types":{"Physical":18,"Chemical":13,"Ergonomic":20,"Psychosocial":5,"Biological":2},"due":"15 Jul – 10 Aug 2026","pastDue":58,"open":48,"prog":10,"closed":0,"tracked":true,"extreme":["Shift work, pit and HLO heavy-equipment operators (hypertension, CAD, stroke) · 2 rows","HCN and chemicals, B3 waste warehouse","Noise, vibration and heat, OPP agglomerator and CCR (soundproof room leaking)","Dust and chemicals, OPP (pneumoconiosis)","Remote work, underground exploration drillers (psychosocial)","Chemicals, nursery (HCN from the heap leach)","Chemicals, ADR laboratory","Chemicals, gold room"],"residHigh":[]},"wt":["Whole-body vibration above the time-adjusted NAB for 6 of 6 operators (dozer 2.43 m/s², limit 1.42 for 3 h)","Area noise above 85 dBA at 12 points (core saw 102.5 dBA)","Gold room WBGT 33.2 °C; mercury above 0.025 mg/m³ at 7 points site-wide (PLS/ILS ponds 0.06)","Bacteria 4,854 and fungi 4,994 cfu/m³ in underground drill cuddy 06","REBA high risk for 6 of 17 tasks (welder, grinder, core handler, RO operator)"],"dq":{"hra":["58 of 58 actions past due as at 28 Sep 2026; 48 still Open, none closed","The same cell is rated differently: Possible × Major = High in 3 rows, Extreme in 3","Duplicate IDs BSI-0046 and BSI-0047; due dates in three formats, 11 of them '10-Au-2026' (as received)","BSI-0019 (pneumoconiosis) copies the noise-room repair as its mitigation","Measured exceedances (mercury, WBV, ozone, UV) are not in the register"],"merp":["Procedure raw score 220/250 = 88%, reported as 80%; the 76.2% total uses 88%, so the total or the Procedure trend is wrong","ERC gap shown as 5.8% with no minus sign although the score fell; approval block (Medical Coordinator, HSE Manager, KTT) blank","Respirable dust judged against 0.025 mg/m³ (the report's own table: 3 mg/m³); CO₂ limit 1,000 vs 5,000 ppm","Worker names published next to exposure results (UU 27/2022 PDP)"]},"focus":[["ih",5,"HCN over the nursery and B3 area: no HCN monitoring or early warning"],["merp",4,"Cyanide antidote and heat-stroke kit on the trolley"],["ffw",4,"Shift-work cardiovascular risk (Extreme) on the MHRE list and in surveillance"],["ih",6,"WBV above NAB for 6 of 6 operators; area noise up to 102.5 dBA"],["merp",13,"Drill programme covers the Extreme scenarios; one external drill a year"],["ih",3,"HRA register: overdue actions, matrix consistency, measured data"]],"short":{"wt":"WBV above NAB for 6 of 6 operators; noise 102.5 dBA","dq":"Procedure 220/250 reported as 80% (it is 88%)"}},"Wetar_Copper":{"merp":{"doc":"MERP reassessment and walkthrough HRA, PT BTR-BKP 2026","field":"4 – 12 May 2026 (sampling text: 4–13 May)","issued":"May 2026","erc":[84,79],"dom":{"proc":[90,71],"people":[83,76],"plant":[70,100]},"label":"Tolerable","weakest":"Procedure 71%","gaps":["No response-time standard or KPI; first-aider coverage within 4 minutes not measured","HRA not integrated into the MERP; heat-illness, chemical and decontamination SOPs incomplete","No periodic drill with external parties or the medevac provider","No evidence that eyewash stations and safety showers are maintained; ambulance checks omit the vehicle","Antidotes listed only as a requirement; the report recommends adding heat-stroke and chemical kits to the trolley"],"medevac":"All referral hospitals are in NTT: about 8 h by sea to Atapupu, then road or air to Kupang; 18–24 h more if activated after 12:00","staff":"Doctor, paramedic and ERT counts not stated","drill":["S2","S1"],"drillWhy":"Marine and jetty works carry a drowning risk, the sea medevac takes about 8 hours, and no drill with external parties is on record","ref":"L971–1005 scores · L1984–2012 gaps · L2781–2904 medevac · L2645–2648 blank approvals"},"hra":{"form":"ROM register BTR-0001…0038","rows":38,"init":{"E":0,"H":24,"M":14,"L":0},"resid":null,"types":{"Physical":12,"Chemical":12,"Ergonomic":14},"due":"30 Jun – 10 Aug 2026","pastDue":38,"open":37,"prog":1,"closed":0,"tracked":true,"extreme":[],"high":["Noise and heat for 12 work groups (NIHL, heat stroke)","Chemicals and dust for 12 work groups (respiratory, skin)"],"residHigh":[]},"wt":["Personal noise dose 642% (93.1 dBA) for an OHC operator and 638% at the stripping plant; 110.5% for a dozer operator","Hand-arm vibration 11.24 m/s² for a mechanic (NAB 5 m/s²)","Lighting below 300 lux in the clinic emergency room (188), emergency clinic (249) and mining first-aid post (156)","REBA high for welder, grinder, kitchen staff and RO operator (4 of 13 tasks)","Severe stress on 'responsibility for others': 4 of 5 managers and 7 of 14 supervisors"],"dq":{"hra":["38 of 38 actions past due as at 28 Sep 2026; 37 still Open","Likely × Major rated High here but Extreme at BSI and PGM; Possible × Moderate rated Medium 10 times, High twice","Templated: 11 of 12 work groups carry the same three hazards with identical text","BTR-0001 typed Ergonomic with sub-type Chemical; typos ('Oprator', 'Maintence', 'Stroge')","Measured exceedances (noise dose 642%, HAV 11.24 m/s²) are not in the register"],"merp":["Plant/Tool scored 100% while the report lists 5 facility gaps; 100% labelled Acceptable (own band: Excellent)","Unexplained weighting decides the band: weighted 79% (Tolerable) vs unweighted 82.3% (Acceptable)","Template carry-over: HCN rows at an acid heap leach, underground-driller and magazine rows, 'PT BKR' six times","Psychosocial counts impossible for n = 14; approvals blank; roadmap timeline empty; worker names published"]},"focus":[["merp",5,"Medevac chain: sea leg, activation after 12:00, response-time standard"],["merp",12,"Hospitals in NTT and a medevac-provider agreement"],["ih",6,"Hearing conservation for doses up to 642%; HAV for mechanics"],["ffw",4,"Audiometry and HAV surveillance for the exposed work groups"],["merp",6,"Clinic and first-aid-post lighting (156–249 lux)"],["ih",3,"HRA register: matrix, templated rows, overdue actions"]],"short":{"wt":"Noise dose 642%; HAV 11.24 m/s² (NAB 5)","dq":"Plant/Tool 100% despite 5 listed facility gaps"}},"MTI_Morowali":{"merp":{"doc":"MERP assessment and walkthrough HRA, PT MTI 2026","field":"25 – 30 May 2026","issued":"Jul 2026","erc":[81,72],"dom":{"proc":[86,76],"people":[48,63],"plant":[100,70]},"label":"Tolerable","weakest":"People 63% (Intolerable)","gaps":["No signed MoU with any hospital, ambulance or medevac provider; no external drill","Medevac within 4 h not evidenced; golden period for MERP levels 1–3 not defined","Some doctors' ACLS/ATLS and paramedics' BTCLS certificates expired or not evidenced","Ambulance compliance (Kepmenkes 143/2001) and maintenance records missing","No first-aider response-time measurement (4 minutes) and no risk-based first-aider deployment"],"medevac":"RSUD Morowali 63.8 km (about 2 h; no PCI or orthopaedics); Kendari tertiary hospitals 6–7 h by road or at least 4 h 20 via air","staff":"Clinic, doctor and ambulance counts not stated","drill":["S5","S1"],"drillWhy":"Cardiac care needs PCI 6–7 h away: the drill tests the 4-hour medevac and hospital agreements that are not yet evidenced","ref":"L970–1017 scores · L2046–2065 gaps · L2722–2848 hospitals · L2447–2452 second score set · L2616–2626 blank approvals"},"hra":{"form":"HRA form, 55 rows (initial and residual)","rows":55,"init":{"E":1,"H":27,"M":22,"L":5},"resid":{"E":0,"H":7,"M":10,"L":38},"types":{"Physical":26,"Chemical":13,"Ergonomic":11,"Psychosocial":4,"Biological":1},"due":null,"pastDue":null,"tracked":false,"alarpYes":10,"extreme":["Laboratory acids HCl, HNO₃, H₂SO₄, HClO₄ and SO₂ (fume hoods need repair)"],"residHigh":["Heat for ROM pad, ceramic filter, panel maintenance, roaster, chloride and CCP operators (unchanged after controls)","H₂SO₄ exposure, dry absorption"]},"wt":["SO₂ 19.7 ppm against a STEL of 0.25 ppm, and H₂S 3 ppm, at WBS 4711","Arsenic, lead and copper above NAB during roaster and flue-dust cleaning","Heat: ISBB 35.7 °C at the settlement chamber during flue-dust cleaning","Noise 101.9 dBA at the SO₂ blower; personal dose up to 455.2% at the chloride plant","4 laboratory fume hoods not working"],"dq":{"hra":["No PIC, due-date or status columns: actions cannot be tracked","Residual 'effect' entered as Low or Rare (not consequence terms) in 10 rows; row 41 residual likelihood above initial","Shift-work cardiovascular risk rated Rare × Moderate (Extreme at BSI and PGM)","The Extreme laboratory risk drops to Low on exhaust controls while 4 fume hoods are broken","'Operator Blast Furnace' at the CCP; 'H₂SO5/H₂SO6' and 'Unikely' typos","Measured SO₂, arsenic and 35.7 °C heat are not in the register"],"merp":["Two score sets in one report: Plant 70% vs 90% and ERC 72% vs 76%","People 63% labelled both Intolerable and Tolerable; three different domains named top priority","Exposure data are 2025 measurements with many values missing; no CCP results","Gold-site text carried over (heap leach pad, cyanide exposure kit); approvals blank"]},"focus":[["ih",5,"SO₂ and acid-mist control at the acid and chloride plants; arsenic during cleaning"],["merp",8,"Decontamination, eyewash and shower, acid-burn protocol"],["merp",12,"MoU with hospitals and a medevac provider; evidence of the 4-hour chain"],["ffw",7,"Heat-stress programme for roaster, chloride and CCP operators"],["merp",2,"ACLS, ATLS and BTCLS currency of the clinicians"],["ih",3,"HRA register: PIC and due dates, residual-risk logic, measured data"]],"short":{"wt":"SO₂ 19.7 ppm (STEL 0.25); As, Pb, Cu above NAB","dq":"Two score sets: Plant 70% vs 90%, ERC 72% vs 76%"}},"Pani_Gold":{"merp":{"doc":"MERP reassessment and walkthrough HRA, Pani Gold Mine 2026 (Rev)","field":"31 May – 3 Jun 2026","issued":"Jun 2026","erc":[87,72],"dom":{"proc":[91,72],"people":[63,63],"plant":[100,80]},"label":"Tolerable","weakest":"People 63% (Intolerable)","gaps":["No Kemenaker-certified first aider; first aiders not mapped to risk","Some ACLS, ATLS, BCLS and BTLS certificates expired","Only a small share of scenarios drilled; no external drill; no evidence of medevac within 4 h","MERP dated 2024; the ERP was available as a title only","The report recommends adding cyanide, heat-stroke and chemical kits to the trolley; snakebite control recorded as 'NA'"],"medevac":"RSUD Bumi Panua 15.6 km (34 min; type C, no CT); RSUD Aloe Saboe (type B) 190 km, 3–4 h; air medevac 14 h 40 or more","staff":"Doctor and paramedic counts not stated","drill":["S4","S3"],"drillWhy":"Shift-work cardiovascular risk is Extreme twice and the nearest hospitals have no CT; cyanide comes next (HCN never measured)","ref":"L982–1035 scores · L2122–2141 gaps · L3119–3282 hospitals and medevac · L2883–2893 blank approvals"},"hra":{"form":"HRA form, 54 rows (initial and residual)","rows":54,"init":{"E":4,"H":25,"M":20,"L":5},"resid":{"E":0,"H":4,"M":16,"L":34},"types":{"Physical":20,"Chemical":10,"Ergonomic":14,"Psychosocial":6,"Biological":4},"due":null,"pastDue":null,"tracked":false,"alarpYes":11,"extreme":["Shift work, Baganite pit and TSF heavy-equipment operators (hypertension, CAD, stroke) · 2 rows","Pesticides and herbicides, nursery","Dust and chemicals, OPP crushing and ADR control room (pneumoconiosis)"],"residHigh":["Pesticides, nursery","Dust and chemicals, OPP crushing control room","Heat, kitchen","Heat, laundry"]},"wt":["Personal noise dose 182% (core cutter) and 128.8% (mobile crusher crew)","Whole-body vibration: 15 findings in 2025 (7 in 2024); DZ 102 above the 1-hour NAB","Heat: ISBB 32.2 °C (OPP) and 32.1 °C (ADR) against the 28–30 °C used","Silica 0.027 mg/m³ against 0.025 at the ADR earthwork area; both clinics below 300 lux","REBA high for 8 of 19 tasks (driller, welder, RO operator, kitchen, laundry)"],"dq":{"hra":["No PIC, due-date or status columns","ALARP 'Yes' on two rows still rated High (nursery pesticides, crushing dust)","Residual 'effect' entered as Low or Rare in 16 rows; row 37 residual likelihood above initial","Likely × Minor = Moderate initially but High in the residual kitchen and laundry rows","HCN pipe work drops to Low on a dosimeter, yet HCN has never been measured"],"merp":["Plant 80% labelled Excellent (own band: Acceptable)","Air medevac scenario 7 totals 15 h 40 as written; its legs add up to 16 h 50","Wetar logistics in the PGM schedule; the 2024 baseline predates mining (Oct 2025)","A supervisor's mental-health screening is reported with level, department and tenure (re-identifiable); approvals blank"]},"focus":[["ffw",4,"Shift-work cardiovascular risk (Extreme twice): MHRE list and blood-pressure control"],["merp",7,"Stroke and cardiac protocols with no CT within 1 hour"],["ih",5,"Cyanide: HCN monitoring at the heap leach (never measured)"],["merp",4,"Antivenom, cyanide kit and heat-stroke kit"],["merp",2,"Kemenaker first-aider certification and mapping"],["fs",3,"Kitchen and laundry heat; food-handler health checks"]],"short":{"wt":"Noise dose 182%; WBV 15 findings; ISBB 32.2 °C","dq":"Plant 80% labelled Excellent; medevac sum wrong"}},"SCM_Konawe":{"proposal":true,"status":"No 2026 HRA register and no 2026 MERP (MERRAT) assessment on record","profile":["Nickel laterite open pit on a 21,100 ha concession: limonite and saprolite ore","21.7 M wmt ore mined in 2025 (15.0 M in 2024); saprolite feeds the RKEF smelters in IMIP","Feed preparation plant under construction for a limonite slurry pipeline to the HPAL plant in IMIP","626 MBM employees plus contractors; 1 clinic with 35 health workers","1 contractor fatality in 2025 (hauling traffic); drug abuse the most concerning community issue in Konawe (Group SHBA)"],"profileSrc":"MBMA and MDKA Sustainability Reports 2025","method":"Same HRA form (work group × hazard × ICD-10 × likelihood × consequence) and the MERRAT domains, rated with the modal matrix of the four 2026 registers. Desk-based and precautionary until verified in the field and by measurement.","rows":[["Haul-road dump-truck drivers","Psychosocial","Shift work and fatigue","Fatigue crash; hypertension, CAD (I10, I25)","Likely","Major","ffw",5,"Fatigue and FFT records; MHRE follow-up"],["Haul-road dump-truck drivers","Physical","Whole-body vibration","Back pain, disc disorders (M54.5, M51)","Likely","Moderate","ih",6,"WBV measurement (ISO 2631-1)"],["Pit heavy-equipment operators","Chemical","Laterite dust (nickel compounds, silica)","Pneumoconiosis, COPD (J62.8, J44.9)","Possible","Moderate","ih",4,"Respirable dust, silica, Ni and Cr"],["Pit heavy-equipment operators","Physical","Noise","Noise-induced hearing loss (H83.3)","Possible","Moderate","ih",6,"Personal noise dose; audiometry"],["Outdoor pit and construction crews","Physical","Heat and UV","Heat stroke (T67.0)","Likely","Moderate","ffw",7,"WBGT by workload"],["Workshop welders, mechanics and tyremen","Chemical","Welding fume (Mn, Cr)","Metal fume fever, respiratory irritation (T56.8, J68.0)","Possible","Moderate","ih",4,"Welding-fume sampling"],["Workshop welders, mechanics and tyremen","Physical","Noise and hand-arm vibration","NIHL, vibration syndrome (H83.3, T75.2)","Likely","Moderate","ih",6,"Noise dose; HAV measurement"],["Fuel station crew","Chemical","Hydrocarbon vapour (benzene)","Solvent toxicity, dermatitis (T52.1, L24)","Possible","Moderate","ih",4,"Benzene and BTEX sampling"],["Remote exploration and geotech drillers","Biological","Snakebite and vector-borne disease","Envenomation, malaria (T63.0, B54)","Possible","Major","merp",4,"Antivenom stock; vector survey"],["Remote exploration and geotech drillers","Psychosocial","Remote work","Burnout, depression (Z73.0, F32)","Possible","Moderate","ffw",8,"SDS-30 or ISO 45003 survey"],["Sample preparation laboratory","Chemical","Ore dust and acids","Respiratory disorder, chemical burns (J98.9, T54)","Possible","Major","ih",4,"Dust and acid mist; asbestos screen of serpentinised saprolite (PLM/TEM)"],["Nursery and reclamation workers","Chemical","Pesticides and herbicides","Intoxication (T60)","Possible","Major","ih",5,"Product list; cholinesterase if organophosphates are used"],["Clinic health workers","Biological","Blood-borne and airborne infection","Hepatitis B, tuberculosis (B16, A15)","Possible","Moderate","ih",7,"Vaccination and needlestick records"],["Camp kitchen and laundry","Physical","Heat","Heat exhaustion (T67.5)","Likely","Moderate","fs",3,"WBGT; food-handler health checks"],["All personnel","Psychosocial","Drugs and alcohol (community risk)","Impairment, substance use (F10–F19)","Possible","Major","ffw",6,"D&A testing records"],["Office and control-room staff","Ergonomic","Office work","Back pain, eye strain (M54.5, H53.1)","Possible","Minor","ih",8,"ROSA assessment"]],"scen":[["S1","Head and multiple trauma on the haul road","The 2025 fatality; 45% more ore hauled",true],["S5","Cardiac emergency","Shift work and medical high-risk employees; AED coverage along the haul road",false],["—","Heat stroke","Pit and plant-construction crews",false],["—","Snakebite","Remote exploration camps; antivenom stock",false],["—","Fuel fire and burns","Fuel station",false],["—","Drowning","Sumps and sediment ponds",false]],"merrat":["Medevac time study from the pit to the referral hospitals (to be measured, not assumed)","Signed agreements with the referral hospitals and a medevac provider","First-aider coverage within 4 minutes along the haul road","Trolley kits for trauma, heat stroke and snakebite; defibrillators on the haul road","Score the 26 MERRAT questions at this audit to set the 2026 baseline"],"drill":["S1","S5"],"drillWhy":"The 2025 hauling fatality and 45% more ore hauled make road trauma the scenario to test first","focus":[["ih",3,"No 2026 HRA: build the register with the proposed work groups and verify it in the field"],["ffw",5,"Fatigue management for haul-road drivers after the 2025 fatality"],["merp",5,"Medevac from Routa: time study, ambulance and hospital agreements"],["ih",4,"Laterite dust: respirable dust, silica and nickel; screen for naturally occurring asbestos"],["ffw",6,"Drug and alcohol testing (community risk)"],["merp",13,"No 2026 MERRAT: score it at this audit; drill S1 road trauma"]]}},"common":{"gaps":[["MERP not integrated with the HRA","4 of 4"],["No drill with the hospitals or the medevac provider","4 of 4"],["No measured response or medevac times against a standard","4 of 4"],["Heat-stroke and chemical (or cyanide) kits recommended for the trolley","4 of 4"],["No referral hospital with a helipad","3 of 4"]],"dq":["All four MERP reports are unsigned by the site approvers (Medical Coordinator, HSE Manager, KTT)","The team leader also signs as reviewer: there is no independent review","The 250/100/100 point weighting (Procedure 56%) is printed but never explained, and it decides the band","Priority method described as Impact × Urgency but applied as Impact × Effort","UU 36/2009 cited though repealed by UU 17/2023; Permenaker 5/2018 missing from the legal basis","Worker names published next to exposure or health data (UU 27/2022 PDP)","The HRA registers are qualitative: none holds the measured results, and the matrices differ between sites","BSI and BTR: 96 of 96 register actions past due; the MTI and PGM forms have no PIC or due date"]}};
+const HM_DOM = [['proc', 'Procedure'], ['people', 'People'], ['plant', 'Plant/Tool']];
+const HM_RISK_TONE = {Extreme:1, High:2, Medium:3, Moderate:3, Low:4};
+const hmOf = key => (HM.sites || {})[key] || null;
+const hmPct = p => p == null ? '—' : `${Math.round(p * 10) / 10}%`;
+const hmBand = p => p == null ? '' : (HM.bands.find(b => p < b[0]) || HM.bands[HM.bands.length - 1])[1];
+const hmTone = p => p == null ? 0 : p < 70 ? 1 : p < 80 ? 2 : p < 90 ? 3 : 4;
+const hmRate = (L, C) => HM.matrix.cells[`${L}|${C}`] || 'Not rated';
+const hmSec = (dk, no) => { const s = CHK[dk] && CHK[dk].SECTIONS.find(x => x.no === no); return s ? s.name : ''; };
+const hmRange = (a, b) => a == null ? '—' : a === b ? hmPct(a) : `${Math.round(a * 10) / 10}–${hmPct(b)}`;
+/* the proposed SCM register, rated with the modal matrix of the four 2026 registers */
+function hmScmRows() {
+  const x = hmOf('SCM_Konawe'); if (!x) return [];
+  return x.rows.map(r => ({seg:r[0], type:r[1], hz:r[2], eff:r[3], L:r[4], C:r[5], R:hmRate(r[4], r[5]), dk:r[6], sec:r[7], meas:r[8]}));
+}
+function hmCount(list) { const c = {E:0, H:0, M:0, L:0}; list.forEach(r => { const k = {Extreme:'E', High:'H', Medium:'M', Moderate:'M', Low:'L'}[r.R]; if (k) c[k]++; }); return c; }
+/* the drill scenario the 2026 evidence points to (first choice, then the alternative) */
+function hmDrill(key) { const x = hmOf(key); if (!x) return null; const d = x.proposal ? x : x.merp; return {keys:d.drill || [], why:d.drillWhy || ''}; }
+/* everything the decks and the report need for a scope */
+function hmScope(sc) {
+  const rows = sc.sites.map(s => ({s, x:hmOf(s.key)})).filter(r => r.x);
+  const ev = rows.filter(r => !r.x.proposal), prop = rows.filter(r => r.x.proposal);
+  const erc = ev.map(r => r.x.merp.erc[1]), sum = f => ev.reduce((a, r) => a + (f(r.x) || 0), 0);
+  const tracked = ev.filter(r => r.x.hra.tracked);
+  const quota = rows.length === 1 ? 6 : rows.length === 2 ? 3 : rows.length === 3 ? 2 : 1;
+  const focus = rows.flatMap(r => r.x.focus.slice(0, quota).map(f => ({s:r.s, dk:f[0], sec:f[1], t:f[2]})));
+  if (ev.length >= 2) [['merp', 1, `MERP not integrated with the HRA at ${ev.length === 4 ? 'any of the four assessed sites' : 'the assessed sites'}`], ['merp', 13, 'No drill with the referral hospitals or the medevac provider']]
+    .slice(0, rows.length > 3 ? 2 : 1).forEach(f => focus.push({s:null, dk:f[0], sec:f[1], t:f[2]}));
+  const scm = prop.length ? hmCount(hmScmRows()) : null;
+  return {rows, ev, prop, any:rows.length > 0, n:ev.length, one:rows.length === 1, scm,
+    ercMin:erc.length ? Math.min(...erc) : null, ercMax:erc.length ? Math.max(...erc) : null, fell:ev.filter(r => r.x.merp.erc[1] < r.x.merp.erc[0]).length,
+    E:sum(x => x.hra.init.E), H:sum(x => x.hra.init.H), regRows:sum(x => x.hra.rows),
+    pastDue:tracked.reduce((a, r) => a + (r.x.hra.pastDue || 0), 0), trackedRows:tracked.reduce((a, r) => a + r.x.hra.rows, 0),
+    untracked:ev.filter(r => !r.x.hra.tracked).map(r => r.s.code), dqN:ev.reduce((a, r) => a + r.x.dq.hra.length + r.x.dq.merp.length, 0), focus};
+}
+const hmRiskCell = (lvl, o = {}) => ({t:lvl, b:true, align:'ctr', fill:PC.bg[HM_RISK_TONE[lvl] || 0], color:PC.bi[HM_RISK_TONE[lvl] || 0], ...o});
+const hmErcCell = (p, o = {}) => ({t:hmPct(p), b:true, align:'ctr', fill:PC.bg[hmTone(p)], color:PC.bi[hmTone(p)], ...o});
+const hmSrc = H => `${HM.src.merp}; ${HM.src.hra}; desk review as at ${fmtDate(HM.asOf)}${H.prop.length ? '; SCM profile: MBMA and MDKA Sustainability Reports 2025' : ''}.`;
+const HM_SCEN_EN = {S1:'head and multiple trauma', S2:'drowning', S3:'cyanide poisoning', S4:'stroke', S5:'cardiac emergency'};
+const hmLc = s => String(s || '').replace(/^([A-Z])(?=[a-z])/, c => c.toLowerCase());
+const hmActTxt = x => x.hra.tracked ? `${x.hra.pastDue} of ${x.hra.rows} past due` : 'No owner or due date';
+
+/* =====================================================================
+   OPENING MEETING · 2026 baseline (context) and risk-based sampling (method)
+   ===================================================================== */
+function hmOpenSlides(M) {
+  const H = M.hm; if (!H || !H.any) return {baseline:null, focus:null};
+  if (H.one && H.prop.length) return scmOpenSlides(M, H);
+  return {baseline:H.one ? hmBaselineOne(M, H) : hmBaselineMulti(M, H), focus:hmFocusSlide(M, H)};
+}
+function hmBaselineOne(M, H) {
+  const r = H.ev[0], x = r.x, g = x.merp, code = r.s.code, init = x.hra.init;
+  const risks = init.E ? `${init.E} Extreme and ${init.H} High health risks` : `${init.H} High health risks (none rated Extreme)`;
+  return {secNo:2, sec:OPEN_SECS[1], title:`${code} starts from a weak 2026 baseline: MERP readiness ${hmPct(g.erc[1])} (${hmPct(g.erc[0])} in 2024, ${g.label}) and ${risks}${x.hra.tracked ? `, all ${x.hra.pastDue} register actions past due` : ', with no owner or due date on any action'}`,
+    src:`${g.doc} (field ${g.field}; ${g.ref}); ${x.hra.form}. Desk review as at ${fmtDate(HM.asOf)}; MERRAT bands < 60 · 60–70 · 70–80 · 80–90 · ≥ 90%.`,
+    draw:s => {
+      mHead(s, 0.5, 1.45, 6.0, 'MERP readiness · MERRAT 2026 against 2024');
+      const dRows = HM_DOM.map(([k, l]) => { const [a, b] = g.dom[k], d = b - a; return [{t:l, b:true}, hmErcCell(a, {b:false}), hmErcCell(b), {t:`${d > 0 ? '+' : ''}${Math.round(d * 10) / 10}`, align:'ctr', b:true, color:d < 0 ? PC.b[1] : d > 0 ? PC.b[4] : PC.mute}, {t:hmBand(b), align:'ctr', sz:9.5}]; });
+      const e = g.erc, de = e[1] - e[0];
+      dRows.push([{t:'Readiness (ERC)', b:true}, hmErcCell(e[0], {b:false}), hmErcCell(e[1]), {t:`${de > 0 ? '+' : ''}${Math.round(de * 10) / 10}`, align:'ctr', b:true, color:de < 0 ? PC.b[1] : PC.b[4]}, {t:g.label, align:'ctr', b:true, sz:9.5}]);
+      mTable(s, 0.5, 1.82, [1.9, 0.95, 0.95, 0.95, 1.25], [['Domain', '2024', '2026', 'Change', 'Band'], ...dRows], {rowH:0.36, sz:10});
+      mPara(s, 0.5, 3.66, 6.0, 0.46, [{runs:[{t:'Check · ', b:true, color:PC.b[1]}, {t:x.dq.merp[0]}]}], {sz:9, min:8.5});
+      mHead(s, 0.5, 4.18, 6.0, 'Emergency chain · what the report found');
+      mPara(s, 0.5, 4.52, 6.0, 1.3, [bul(g.medevac), bul(g.gaps[0]), bul(g.gaps[1])], {sz:10.5});
+      mHead(s, 6.85, 1.45, 5.98, `Health risk register · ${x.hra.rows} rows (${x.hra.form.split(',')[0].split(' BSI')[0].split(' BTR')[0]})`);
+      const tw = (5.98 - 0.1 * 3) / 4;
+      [['E', 'Extreme', 1], ['H', 'High', 2], ['M', 'Medium', 3], ['L', 'Low', 4]].forEach(([k, l, t], i) => mKpi(s, 6.85 + i * (tw + 0.1), 1.82, tw, 0.98, String(init[k] || 0), l, x.hra.resid ? `${x.hra.resid[k] || 0} residual` : '', init[k] ? t : 0));
+      s.text(6.85, 2.86, 5.98, 0.28, mf(x.hra.tracked ? `${x.hra.pastDue} of ${x.hra.rows} actions past due (due ${x.hra.due}); ${x.hra.open} still Open` : `No owner, due date or status column: actions cannot be tracked${x.hra.alarpYes ? ` · ALARP claimed on ${x.hra.alarpYes} rows` : ''}`, {sz:10, b:true, color:PC.b[1]}));
+      const top = x.hra.extreme.length ? ['Extreme', x.hra.extreme] : x.hra.residHigh.length ? ['Still High after controls', x.hra.residHigh] : ['Highest rated', x.hra.high || []];
+      mHead(s, 6.85, 3.22, 5.98, top[0], {sz:11.5});
+      mPara(s, 6.85, 3.52, 5.98, 1.22, top[1].slice(0, 5).map(t => bul(cut(t, 98))), {sz:10});
+      mHead(s, 6.85, 4.78, 5.98, 'Measured in the walkthrough, not in the register', {sz:11.5});
+      mPara(s, 6.85, 5.08, 5.98, 0.84, x.wt.slice(0, 2).map(t => bul(cut(t, 118))), {sz:10});
+      mCard(s, 0.5, 5.98, 12.33, 0.76, {fill:'FBF4E4', line:'E8D6A8'});
+      mPara(s, 0.65, 6.03, 12.03, 0.68, [{runs:[{t:'So what for this audit · ', b:true, color:PC.brown}, {t:`we test first ${x.focus.slice(0, 3).map(f => `${DOM[f[0]].code} ${f[1]} (${hmLc(f[2].split(':')[0])})`).join(', ')}; drill ${SIMK[g.drill[0]] ? `${g.drill[0]} ${SIMK[g.drill[0]].title}` : 'to agree today'}, because ${hmLc(g.drillWhy)}.`}]}], {sz:10.5, min:9});
+    }};
+}
+function hmBaselineMulti(M, H) {
+  const code = M.sc.level === 'group' ? 'Group' : M.sc.code;
+  const fellTxt = H.n === 1 ? `${H.fell ? 'fell to' : 'is'} ${hmPct(H.ercMax)} at ${H.ev[0].s.code}` : `fell at ${H.fell} of ${H.n} assessed sites to ${hmRange(H.ercMin, H.ercMax)}`;
+  return {secNo:2, sec:OPEN_SECS[1], title:`The 2026 assessments set the ${code} agenda: MERP readiness ${fellTxt}, ${plural(H.E, 'Extreme health risk')} ${H.E === 1 ? 'is' : 'are'} open${H.prop.length ? ' and SCM has no 2026 HRA or MERP' : ''}`,
+    src:hmSrc(H) + ' Readiness = MERRAT Emergency Response Capability (ERC); actions as at the desk review.',
+    draw:s => {
+      const n = H.rows.length, rh = Math.min(0.56, 2.95 / n);
+      mTable(s, 0.5, 1.45, [2.05, 1.45, 1.72, 1.62, 1.72, 3.77], [['Site', 'MERRAT 2024 → 2026', 'Weakest domain', 'HRA · Extreme / High', 'Register actions', 'Worst measured exceedance'],
+        ...H.rows.map(({s:st, x}) => x.proposal ? [{t:`${st.name} (${st.code})`, b:true, sz:9.5}, {t:'No 2026 MERRAT', align:'ctr', color:PC.b[1], b:true, sz:9.5}, {t:'—', align:'ctr', color:PC.faint}, {t:`Proposed ${H.scm.E} / ${H.scm.H}`, align:'ctr', sz:9.5}, {t:'No 2026 register', align:'ctr', color:PC.b[1], b:true, sz:9.5}, {t:'Not measured: this audit sets the baseline', sz:9, color:PC.mute}]
+          : [{t:`${st.name} (${st.code})`, b:true, sz:9.5}, {t:`${hmPct(x.merp.erc[0])} → ${hmPct(x.merp.erc[1])}`, align:'ctr', b:true, fill:PC.bg[hmTone(x.merp.erc[1])], color:PC.bi[hmTone(x.merp.erc[1])]}, {t:x.merp.weakest, sz:9, align:'ctr'},
+            {t:`${x.hra.init.E} / ${x.hra.init.H} of ${x.hra.rows}`, align:'ctr', sz:9.5}, {t:hmActTxt(x), align:'ctr', b:true, sz:9, color:x.hra.tracked ? PC.b[1] : PC.b[2]}, {t:cut(x.wt[0], 124), sz:9}])], {rowH:rh, sz:9.5});
+      const y0 = 1.45 + 0.34 + n * rh + 0.28, bh = 6.75 - y0 - 0.36;
+      if (n <= 2) {   /* two sites: three columns with the site facts instead of the four-site patterns */
+        const cw = 3.99, xs = [0.5, 4.67, 8.84], pre = (r, t) => ({runs:[...(H.n > 1 ? [{t:`${r.s.code} · `, b:true, color:PC.brown}] : []), {t}], bullet:true});
+        mHead(s, xs[0], y0, cw, `${H.n > 1 ? '' : H.ev[0].s.code + ' '}MERP gaps (2026 report)`, {sz:11.5});
+        mPara(s, xs[0], y0 + 0.34, cw, bh, H.ev.flatMap(r => r.x.merp.gaps.slice(0, H.n > 1 ? 3 : 5).map(t => pre(r, t))), {sz:10});
+        mHead(s, xs[1], y0, cw, 'Measured, not in the register', {sz:11.5});
+        mPara(s, xs[1], y0 + 0.34, cw, bh, H.ev.flatMap(r => r.x.wt.slice(0, H.n > 1 ? 3 : 5).map(t => pre(r, t))), {sz:10});
+        if (H.prop.length) { mHead(s, xs[2], y0, cw, `${H.prop[0].s.code} · proposed baseline`, {sz:11.5});
+          mPara(s, xs[2], y0 + 0.34, cw, bh, hmScmRows().filter(r => r.R === 'Extreme' || r.R === 'High').slice(0, 6).map(r => bul({runs:[{t:`${r.R} · `, b:true, color:PC.bi[HM_RISK_TONE[r.R]]}, {t:r.hz}]})), {sz:10}); }
+        else { mHead(s, xs[2], y0, cw, 'How far the reports can be relied on', {sz:11.5});
+          mPara(s, xs[2], y0 + 0.34, cw, bh, H.ev.flatMap(r => [r.x.dq.merp[0], r.x.dq.hra[0]].map(t => pre(r, cut(t, 110)))), {sz:10}); }
+        return;
+      }
+      mHead(s, 0.5, y0, 6.0, H.n >= 2 ? 'Common gaps across the four assessed sites' : `${H.ev[0] ? H.ev[0].s.code : ''} MERP gaps`, {sz:11.5});
+      mPara(s, 0.5, y0 + 0.34, 6.0, bh, H.n >= 2 ? HM.common.gaps.map(g => bul({runs:[{t:g[0]}, {t:` (${g[1]})`, b:true, color:PC.brown}]})) : (H.ev[0] ? H.ev[0].x.merp.gaps.slice(0, 4).map(t => bul(t)) : []), {sz:10});
+      mHead(s, 6.83, y0, 6.0, 'How far the 2026 reports can be relied on', {sz:11.5});
+      mPara(s, 6.83, y0 + 0.34, 6.0, bh, HM.common.dq.slice(0, 5).map(t => bul(t)), {sz:10});
+    }};
+}
+const HM_RELIANCE = ['Signed and approved by the site (KTT, HSE Manager, Medical Coordinator)', 'Scores reproduce from the raw points and the stated weights', 'One risk matrix, applied consistently', 'Every action has an owner, a due date and a status',
+  'Measured results carried into the register', 'Personal data removed (UU 27/2022 PDP)'];
+function hmFocusSlide(M, H) {
+  const multi = !H.one, list = H.focus.filter(f => M.doms.includes(f.dk)).slice(0, 8), n = list.length;
+  if (!n) return null;
+  return {secNo:3, sec:OPEN_SECS[2], title:`Sampling follows the 2026 evidence: ${n} focus area${n === 1 ? ' is' : 's are'} tested in the field first, and six reliance checks decide how far we can use the HRA and MERP reports`,
+    src:`${hmSrc(H)} Reliance on a management's expert: ISA 500 ¶8; IIA Global Internal Audit Standards (2024) 9.5. Procedure 4.1.4 (evidence pack ≥ 48 h before).`,
+    draw:s => {
+      const drills = M.doms.includes('merp') ? M.drills.filter(d => d.pick) : [];
+      const rh = Math.min(0.58, (drills.length ? 3.9 : 5.05) / n);
+      const cols = multi ? [0.75, 2.75, 4.25] : [3.0, 4.75];
+      mTable(s, 0.5, 1.45, cols, [[...(multi ? ['Site'] : []), 'Audit · checklist section', 'What the 2026 evidence says we must verify'],
+        ...list.map(f => [...(multi ? [{t:f.s ? f.s.code : 'All', b:true, align:'ctr'}] : []), {paras:[{runs:[{t:`${DOM[f.dk].code} ${f.sec} · `, b:true, color:PX.col(DOM[f.dk].accent)}, {t:cut(hmSec(f.dk, f.sec), 48)}]}], sz:9.5}, {t:f.t, sz:10}])], {rowH:rh, sz:10});
+      if (drills.length) { const y = 1.45 + 0.34 + n * rh + 0.2, h = 6.75 - y;
+        mCard(s, 0.5, y, 7.75, h, {fill:PC.tint, line:'D9C9A3'});
+        s.text(0.65, y + 0.07, 7.45, 0.28, mf(`Drill${drills.length > 1 ? 's' : ''} for the MERP audit · chosen from the 2026 gaps`, {sz:11.5, b:true, color:PC.brown}));
+        mPara(s, 0.65, y + 0.38, 7.45, h - 0.44, drills.length === 1 ? [{runs:[{t:`${drills[0].pick.S.key} ${drills[0].pick.S.title} (${HM_SCEN_EN[drills[0].pick.S.key] || ''}): `, b:true}, {t:drills[0].pick.why || 'rotation between audits'}]}]
+          : [{runs:drills.flatMap((d, i) => [{t:`${i ? '  ·  ' : ''}${d.s.code} `, b:true}, {t:`${d.pick.S.key} ${HM_SCEN_EN[d.pick.S.key] || d.pick.S.title}`}])}], {sz:10}); }
+      mCard(s, 8.5, 1.45, 4.33, 2.55, {fill:'FFFFFF'});
+      s.text(8.65, 1.52, 4.05, 0.3, mf('Reliance checks on each report', {sz:12, b:true, color:PC.ink}));
+      mPara(s, 8.65, 1.86, 4.05, 2.08, HM_RELIANCE.map((t, i) => ({runs:[{t:`${i + 1}  `, b:true, color:PC.gold}, {t}]})), {sz:10});
+      mCard(s, 8.5, 4.15, 4.33, 2.6, {fill:PC.tint, line:'D9C9A3'});
+      s.text(8.65, 4.22, 4.05, 0.3, mf('Also in the evidence pack (≥ 48 h)', {sz:12, b:true, color:PC.brown}));
+      mPara(s, 8.65, 4.56, 4.05, 2.1, [bul('Signed MERP report and the MERRAT score sheets'), bul('HRA register with owner, due date and closure evidence per action'), bul('IH laboratory reports 2025–2026 with accreditation and raw data'), bul('Medevac time log and hospital agreements')], {sz:10});
+    }};
+}
+/* SCM: no 2026 HRA or MERP — the method is applied as a proposed baseline */
+function scmOpenSlides(M, H) {
+  const x = H.prop[0].x, rows = hmScmRows(), c = H.scm, code = H.prop[0].s.code;
+  const baseline = {secNo:2, sec:OPEN_SECS[1], title:`${code} has no 2026 HRA or MERP assessment, so this audit applies the same method: ${rows.length} proposed hazards (${c.E} Extreme, ${c.H} High) and ${x.scen.length} emergency scenarios to verify in the field`,
+    src:`${x.profileSrc} (site profile); method of the 2026 HRA forms and the MERRAT tool used at BSI, BTR, MTI and PGM; desk review as at ${fmtDate(HM.asOf)}. Proposal only: not an assessment.`,
+    draw:s => {
+      mHead(s, 0.5, 1.45, 6.0, `${code} today · ${x.profileSrc}`);
+      mPara(s, 0.5, 1.82, 6.0, 1.4, x.profile.map(t => bul(t)), {sz:10.5});
+      mCard(s, 0.5, 3.35, 6.0, 0.72, {fill:'FDF1EE', line:'F0B8AE'});
+      mPara(s, 0.65, 3.4, 5.7, 0.64, [{runs:[{t:'Gap · ', b:true, color:PC.b[1]}, {t:`${x.status}. The audit records it and sets the baseline (IH 3 · MERP 1).`}]}], {sz:10.5});
+      mCard(s, 0.5, 4.2, 6.0, 1.0, {fill:PC.tint, line:'D9C9A3'});
+      mPara(s, 0.65, 4.25, 5.7, 0.92, [{runs:[{t:'Method applied · ', b:true, color:PC.brown}, {t:x.method}]}], {sz:10});
+      const kw = (6.0 - 0.1 * 3) / 4;
+      [[String(rows.length), 'hazards', `${new Set(rows.map(r => r.seg)).size} work groups`, 0], [String(c.E), 'Extreme', 'desk rating', c.E ? 1 : 0], [String(c.H), 'High', 'desk rating', c.H ? 2 : 0], [String(c.M + c.L), 'Medium or Low', 'desk rating', 0]]
+        .forEach(([v, l, sub, tn], i) => mKpi(s, 0.5 + i * (kw + 0.1), 5.38, kw, 1.3, v, l, sub, tn));
+      mHead(s, 6.85, 1.45, 5.98, 'Emergency scenarios proposed for the MERP audit');
+      mTable(s, 6.85, 1.82, [0.62, 2.1, 3.26], [['Drill', 'Scenario', 'Why at SCM'], ...x.scen.map(r => [{t:r[0], b:true, align:'ctr', fill:r[3] ? PC.bg[2] : null}, {t:r[1], b:r[3], sz:9.5}, {t:r[2], sz:9.5}])], {rowH:0.4, sz:9.5});
+      mHead(s, 6.85, 4.78, 5.98, 'MERRAT checks to score at this audit', {sz:11.5});
+      mPara(s, 6.85, 5.1, 5.98, 1.65, x.merrat.map(t => bul(t)), {sz:10});
+    }};
+  const focus = {secNo:3, sec:OPEN_SECS[2], title:`The proposed ${code} baseline lists ${rows.length} work-group hazards to verify — ${c.E} Extreme and ${c.H} High on desk review — each tied to a checklist section and a measurement`,
+    src:`Proposal only, desk-based and precautionary: rated with the modal matrix of the four 2026 registers; ICD-10 health effects on the Audit meetings page (CSV download in the HRA-form columns). Each row is confirmed in the field and by measurement, then entered in the HRA form with an owner and a due date.`,
+    draw:s => {
+      const segs = [...new Set(rows.map(r => r.seg))].map(g => ({g, rs:rows.filter(r => r.seg === g)})), rh = Math.min(0.4, 4.75 / segs.length);
+      mTable(s, 0.5, 1.45, [2.55, 5.3, 1.1, 3.38], [['Work group (SEG)', 'Hazards · initial risk on desk review (likelihood × consequence)', 'Audit', 'Confirm by'],
+        ...segs.map(({g, rs}) => [{t:g, b:true, sz:9.5}, {paras:[{runs:rs.flatMap((r, i) => [{t:`${i ? '  ·  ' : ''}${r.hz} `}, {t:r.R, b:true, color:PC.bi[HM_RISK_TONE[r.R] || 0]}, {t:` (${r.L} × ${r.C})`, color:PC.mute}])}], sz:9.5},
+          {t:[...new Set(rs.map(r => `${DOM[r.dk].code} ${r.sec}`))].join(', '), align:'ctr', sz:9.5}, {t:cut(rs.map(r => r.meas).join('; '), 96), sz:9}])], {rowH:rh, headH:0.32, sz:9.5});
+    }};
+  return {baseline, focus};
+}
+
+/* =====================================================================
+   CLOSING MEETING · triangulation of the audit with the 2026 evidence
+   ===================================================================== */
+function hmVerdicts(M) {
+  const H = M.hm;
+  return H.rows.map(r => {
+    const si = M.siteInt.find(z => z.s.key === r.s.key), P = dk => si && si.per[dk] && si.per[dk].st.scored ? si.per[dk].st : null;
+    const mSt = P('merp'), iSt = P('ih'), mv = mSt ? mSt.overall : null, i3 = iSt && iSt.sec[3] ? iSt.sec[3].avg : null;
+    const erc = r.x.proposal ? null : r.x.merp.erc[1];
+    const mVer = r.x.proposal ? (mv == null ? 'Not audited' : 'Baseline') : mv == null ? 'Not audited' : (r2(mv) < 3) === (erc < 80) ? 'Agrees' : r2(mv) >= 3 ? 'Audit higher' : 'Audit lower';
+    const iVer = i3 == null ? 'Not audited' : r2(i3) < 3 ? 'Agrees' : 'Audit higher';   // every register in scope fails the reliance tests (or is missing)
+    return {...r, mv, i3, erc, mVer, iVer};
+  });
+}
+const HM_VER = {'Agrees':[0, '✓ Agrees'], 'Audit higher':[1, 'Audit higher'], 'Audit lower':[2, 'Audit lower'], 'Baseline':[3, 'Sets baseline'], 'Not audited':[0, '—']};
+const hmVerCell = v => { const [t, l] = HM_VER[v]; return {t:l, align:'ctr', b:v !== 'Not audited', sz:9.5, fill:t ? PC.bg[t] : null, color:t ? PC.bi[t] : v === 'Agrees' ? PC.ink : PC.faint}; };
+function hmCloseTriangulation(M) {
+  const H = M.hm; if (!H || !H.any || !(M.doms.includes('merp') || M.doms.includes('ih'))) return null;
+  const V = hmVerdicts(M), cmp = V.flatMap(v => [v.mVer, v.iVer]).filter(v => v === 'Agrees' || v === 'Audit higher' || v === 'Audit lower'), agree = cmp.filter(v => v === 'Agrees').length;
+  const hi = V.filter(v => v.mVer === 'Audit higher' || v.iVer === 'Audit higher').map(v => v.s.code), nc = `${agree} of ${plural(cmp.length, 'comparison')}`;
+  const reg = `${plural(H.E, 'Extreme risk')} in register${H.n === 1 ? '' : 's'} that fail${H.n === 1 ? 's' : ''} the reliance tests`;
+  const scmOnly = !H.n, sc0 = H.prop[0];
+  const title = scmOnly ? `${sc0.s.code} has no 2026 HRA or MERP to compare with: this audit sets the first baseline, and the ${hmScmRows().length} proposed hazards are checked against its scores`
+    : !cmp.length ? `The 2026 HRA and MERP reports add evidence the checklist cannot see: readiness ${hmRange(H.ercMin, H.ercMax)} and ${reg}`
+    : hi.length ? `Our scores are higher than the 2026 evidence at ${joinAnd(hi)} (${nc} agree), so those scores stay provisional until the evidence is re-checked`
+    : `The 2026 HRA and MERP reports confirm our scores (${nc}): readiness ${H.fell === H.n ? 'fell to' : 'is'} ${hmRange(H.ercMin, H.ercMax)} and ${reg}`;
+  /* audit score of each focus area the 2026 evidence pointed to */
+  const focusScores = () => H.focus.filter(f => f.s && M.doms.includes(f.dk)).map(f => { const si = M.siteInt.find(z => z.s.key === f.s.key), st = si && si.per[f.dk] && si.per[f.dk].st.scored ? si.per[f.dk].st : null;
+    return {f, v:st && st.sec[f.sec] ? st.sec[f.sec].avg : null}; });
+  return {secNo:2, sec:CLOSE_SECS[1], title,
+    src:`${hmSrc(H)} Agreement: an audit score below 3.0 matches MERRAT readiness below 80% and a register that fails the reliance tests. The reports corroborate; they do not change scores (ISA 500 ¶8).`,
+    draw:s => {
+      const n = V.length, rh = Math.min(0.52, 2.85 / n);
+      mTable(s, 0.5, 1.45, [1.9, 1.3, 0.92, 1.28, 2.02, 0.92, 1.28, 2.71], [['Site', 'MERRAT 2026 (2024)', 'Audit MERP', 'MERP check', 'HRA register', 'Audit IH 3', 'HRA check', 'Measured, not in the register'],
+        ...V.map(v => [{t:`${v.s.name} (${v.s.code})`, b:true, sz:9.5},
+          v.x.proposal ? {t:'None in 2026', align:'ctr', b:true, color:PC.b[1], sz:9.5} : {t:`${hmPct(v.erc)} (${hmPct(v.x.merp.erc[0])})`, align:'ctr', b:true, sz:9.5, fill:PC.bg[hmTone(v.erc)], color:PC.bi[hmTone(v.erc)]},
+          cellV(v.mv, {sz:9.5}), hmVerCell(v.mVer),
+          v.x.proposal ? {t:`None · proposed ${H.scm.E} E / ${H.scm.H} H`, sz:9, align:'ctr'} : {t:`${v.x.hra.init.E} E / ${v.x.hra.init.H} H · ${hmActTxt(v.x).toLowerCase()}`, sz:9, align:'ctr'},
+          cellV(v.i3, {sz:9.5}), hmVerCell(v.iVer),
+          {t:v.x.proposal ? 'Not measured in 2026' : cut(v.x.wt[0], 112), sz:8.5, color:v.x.proposal ? PC.mute : PC.ink}])], {rowH:rh, sz:9.5});
+      const y0 = 1.45 + 0.34 + n * rh + 0.3, bh = 6.75 - y0 - 0.36;
+      if (n <= 2) {   /* few sites: three columns — what the reports measured, how the focus areas scored, what limits reliance */
+        const cw = 3.99, xs = [0.5, 4.67, 8.84];
+        mHead(s, xs[0], y0, cw, H.n ? 'Measured, not in the register' : 'Proposed hazards to confirm', {sz:11.5});
+        const A = H.n ? H.ev.flatMap(r => r.x.wt.map(t => ({runs:[...(H.rows.length > 1 ? [{t:`${r.s.code} · `, b:true, color:PC.brown}] : []), {t:cut(t, 110)}], bullet:true})))
+          : hmScmRows().filter(r => r.R === 'Extreme' || r.R === 'High').map(r => bul({runs:[{t:`${r.R} · `, b:true, color:PC.bi[HM_RISK_TONE[r.R]]}, {t:`${r.hz} (${r.seg.toLowerCase()})`}]}));
+        if (H.n && H.prop.length) A.push(bul({runs:[{t:`${sc0.s.code} · `, b:true, color:PC.brown}, {t:'no 2026 HRA or MERP: this audit is the first baseline'}]}));
+        mPara(s, xs[0], y0 + 0.34, cw, bh, A.slice(0, 6), {sz:10});
+        const fr = focusScores().slice(0, 7);
+        mHead(s, xs[1], y0, cw, 'Focus areas · audit section score', {sz:11.5});
+        if (fr.length) mTable(s, xs[1], y0 + 0.34, [cw - 0.72, 0.72], [['Focus area (from the 2026 evidence)', 'Score'], ...fr.map(({f, v}) => [{paras:[{runs:[{t:`${n > 1 ? f.s.code + ' ' : ''}${DOM[f.dk].code} ${f.sec} · `, b:true}, {t:cut(f.t.split(':')[0], 58)}]}], sz:9}, cellV(v, {sz:9.5})])],
+          {rowH:Math.min(0.44, (bh - 0.34) / fr.length), headH:0.3, sz:9});
+        else mPara(s, xs[1], y0 + 0.34, cw, 0.6, ['None of the focus areas is in the audits of this deck.'], {sz:10});
+        mHead(s, xs[2], y0, cw, 'Reliance · corroborating evidence only', {sz:11.5});
+        const C = H.n ? [bul({runs:[{t:plural(H.dqN, 'data-quality issue'), b:true, color:PC.b[1]}, {t:` in the ${H.n === 1 ? 'report and register' : 'reports and registers'} reviewed`}]}), ...H.ev.flatMap(r => [r.x.dq.merp[0], r.x.dq.hra[0], r.x.dq.merp[1]]).slice(0, 3).map(t => bul(cut(t, 120)))]
+          : [bul('No 2026 report to rely on: the audit evidence stands alone'), bul('The proposed baseline is a desk review, not an assessment'), bul('Confirmed hazards go into the HRA form with an owner and a due date'), bul('MERRAT is scored for the first time at this audit')];
+        mPara(s, xs[2], y0 + 0.34, cw, bh, C, {sz:10});
+        return;
+      }
+      mHead(s, 0.5, y0, 6.0, 'What the 2026 reports add to our evidence', {sz:11.5});
+      const add = H.ev.flatMap(r => r.x.wt.slice(1, H.n > 2 ? 2 : 3).map(t => ({runs:[{t:`${r.s.code} · `, b:true, color:PC.brown}, {t:cut(t, 100)}], bullet:true})));
+      if (H.prop.length) add.push(bul({runs:[{t:`${sc0.s.code} · `, b:true, color:PC.brown}, {t:'no 2026 HRA or MERP: this audit is the first baseline'}]}));
+      mPara(s, 0.5, y0 + 0.34, 6.0, bh, add.slice(0, 5), {sz:10});
+      mHead(s, 6.83, y0, 6.0, 'Reliance · corroborating evidence only', {sz:11.5});
+      mPara(s, 6.83, y0 + 0.34, 6.0, bh, [bul({runs:[{t:plural(H.dqN, 'data-quality issue'), b:true, color:PC.b[1]}, {t:` in the ${H.n} reports and registers reviewed (details in the Board report)`}]}), ...HM.common.dq.slice(0, 3).map(t => bul(t))], {sz:10});
+    }};
+}
+/* drill slide: MERRAT readiness of the site next to its drill result */
+const hmErcTxt = key => { const x = hmOf(key); return !x ? '—' : x.proposal ? 'none' : hmPct(x.merp.erc[1]); };
+
+/* =====================================================================
+   BOARD REPORT · key-audit-matter context, corroboration table, forensic review
+   ===================================================================== */
+function hmBoard(sites) { return hmScope({sites}); }
+/* KAM "why it matters": a short standing lead plus the 2026 evidence for the sites in scope (≤ 300 characters) */
+const HM_KAM_LEAD = {merp:'Remote sites depend on their own responders until evacuation, and a failed critical action can be fatal.',
+  ih:'Uncontrolled exposure causes occupational disease with long latency and statutory liability (Permenaker 5/2018 NAB).',
+  ffw:'Fitness-for-work controls stop medical incapacity from becoming a safety incident; the 2025 OHIH data recorded 12 illness-related fatalities and 759 active MHRE (54 extreme).',
+  fs:'A food-poisoning or waterborne outbreak in a camp can affect hundreds of workers at once and stop operations.'};
+const HM_IH_ORDER = ['Wetar_Copper', 'MTI_Morowali', 'BSI_BWX', 'Pani_Gold'];
+function hmKamWhy(dk, sites) {
+  const H = hmBoard(sites); if (!H.n) return '';
+  const lead = HM_KAM_LEAD[dk], codes = f => H.ev.filter(r => f(r.x)).map(r => r.s.code);
+  const lc = s => s.replace(/^([A-Z])(?=[a-z])/, c => c.toLowerCase());
+  if (dk === 'merp') { const e0 = H.ev.map(r => r.x.merp.erc[0]);
+    return `${lead} The 2026 MERP reassessments rate readiness ${hmRange(H.ercMin, H.ercMax)}${H.n > 1 ? ` at the ${H.n} assessed sites` : ''} (${H.fell === H.n ? 'down from' : 'against'} ${hmRange(Math.min(...e0), Math.max(...e0))} in 2024); none has drilled with its hospitals or medevac provider.`; }
+  if (dk === 'ih') { const w = H.ev.slice().sort((a, b) => HM_IH_ORDER.indexOf(a.s.key) - HM_IH_ORDER.indexOf(b.s.key)).slice(0, 2).map(r => `${lc(cut(r.x.wt[0].split(';')[0].replace(/\s*\(.*$/, '').replace(/,.*$/, ''), 60))} (${r.s.code})`);
+    return `${lead} The 2026 walkthroughs measured ${w.join(' and ')}; no HRA register in scope holds measured data.`; }
+  if (dk === 'ffw') { const sw = codes(x => x.hra.extreme.some(t => /shift work/i.test(t))); return sw.length ? `${lead} The 2026 HRA rates shift-work cardiovascular risk Extreme at ${joinAnd(sw)}.` : ''; }
+  if (dk === 'fs') { const k = codes(x => (x.hra.residHigh || []).some(t => /kitchen|laundry/i.test(t))); return k.length ? `${lead} Kitchen and laundry heat stays High after controls in the 2026 HRA at ${joinAnd(k)}.` : ''; }
+  return '';
+}
+/* chapter 3 · corroborating evidence (one compact row per site in scope) */
+function hmBoardRows(sites) {
+  const H = hmBoard(sites);
+  return H.rows.map(({s, x}) => x.proposal
+    ? [{t:s.code, b:true, jc:'center'}, {t:'None in 2026', b:true, color:'8E2317', jc:'center'}, {t:`None · proposed ${H.scm.E} E / ${H.scm.H} H`, jc:'center'}, 'Not measured in 2026', 'Proposal only; verify at the audit']
+    : [{t:s.code, b:true, jc:'center'}, {t:`${hmPct(x.merp.erc[0])} → ${hmPct(x.merp.erc[1])}`, b:true, jc:'center', color:hmTone(x.merp.erc[1]) <= 2 ? '8E2317' : '6A604F'},
+      {t:`${x.hra.init.E} E / ${x.hra.init.H} H of ${x.hra.rows} · ${x.hra.tracked ? `${x.hra.pastDue} past due` : 'no owner or date'}`, jc:'center'}, x.short.wt, x.short.dq]);
+}
+/* chapter 8 · reliability tests of the 2026 reports (ISA 500 ¶8): the test, where it was not met, what we found */
+function hmForensicRows(sites) {
+  const H = hmBoard(sites), codes = f => { const c = H.ev.filter(r => f(r.s.key)).map(r => r.s.code); return !c.length ? '—' : c.length === 4 ? 'All four' : c.join(', '); };
+  const all = () => true;
+  return [
+    ['Approved and signed by the site', codes(all), 'Approval blocks blank; the team leader also signs as reviewer'],
+    ['Scores reproduce from raw points', codes(k => ['BSI_BWX', 'MTI_Morowali', 'Wetar_Copper'].includes(k)), 'BSI 88% reported as 80%; MTI two score sets; BTR band set by weights'],
+    ['One risk matrix, applied consistently', codes(all), 'The same likelihood × consequence cell rated High and Extreme'],
+    ['Actions owned, dated and tracked', codes(all), 'BSI, BTR: every action past due; MTI, PGM: no owner or due date'],
+    ['Measured results in the register', codes(all), 'Noise doses to 642%, SO₂ 19.7 ppm, WBV above NAB: in no register'],
+    ['Personal data protected (UU 27/2022)', codes(all), 'Worker names beside exposure results; identifiable health data']
+  ].filter(r => r[1] !== '—');
+}
+
+/* =====================================================================
+   AUDIT MEETINGS PAGE · evidence panel
+   ===================================================================== */
+function hmPanel(sc) {
+  const H = hmScope(sc); if (!H.any) return '';
+  const tone = p => 'b' + hmTone(p);
+  const rowsEv = H.ev.map(({s, x}) => `<tr><td><b>${esc(s.code)}</b></td><td class="num"><span class="chip ${tone(x.merp.erc[1])}">${hmPct(x.merp.erc[0])} → ${hmPct(x.merp.erc[1])}</span></td><td>${esc(x.merp.weakest)}</td>
+    <td class="num">${x.hra.rows} · <b>${x.hra.init.E}</b> E / <b>${x.hra.init.H}</b> H</td><td>${esc(hmActTxt(x))}</td><td>${esc(cut(x.wt[0], 140))}</td><td>${(SIMK[x.merp.drill[0]] ? esc(`${x.merp.drill[0]} ${SIMK[x.merp.drill[0]].title}`) : '—')}</td></tr>`).join('');
+  const rowsP = H.prop.map(({s, x}) => `<tr><td><b>${esc(s.code)}</b></td><td class="num"><span class="chip b1">none in 2026</span></td><td>—</td><td class="num">proposed ${H.scm.E} E / ${H.scm.H} H</td><td>No 2026 register</td><td>Not measured in 2026</td><td>${esc(`${x.drill[0]} ${SIMK[x.drill[0]] ? SIMK[x.drill[0]].title : ''}`)}</td></tr>`).join('');
+  const dq = H.ev.map(({s, x}) => `<details class="hm-dq"><summary><b>${esc(s.code)}</b> · ${x.dq.hra.length + x.dq.merp.length} data-quality issues</summary><ul>${[...x.dq.merp, ...x.dq.hra].map(t => `<li>${esc(t)}</li>`).join('')}</ul></details>`).join('');
+  const scm = H.prop.length ? `<details class="hm-dq"${H.one ? " open" : ""}><summary><b>SCM</b> · proposed baseline (method applied; to verify in the field)</summary>
+    <p class="fine" style="margin:8px 0 0"><button class="btn" data-act="hm-csv">${ICON.down || ''} Download SCM baseline (CSV, HRA-form columns)</button></p>
+    <div class="table-wrap"><table class="plain hm-tbl"><thead><tr><th>Work group</th><th>Hazard</th><th>Health effect</th><th>L × C</th><th>Risk</th><th>Audit</th><th>Confirm by</th></tr></thead><tbody>
+    ${hmScmRows().map(r => `<tr><td>${esc(r.seg)}</td><td>${esc(r.type)} · ${esc(r.hz)}</td><td>${esc(r.eff)}</td><td>${esc(r.L)} × ${esc(r.C)}</td><td><span class="chip b${HM_RISK_TONE[r.R] || 0}">${esc(r.R)}</span></td><td>${esc(DOM[r.dk].code)} ${r.sec}</td><td>${esc(r.meas)}</td></tr>`).join('')}</tbody></table></div></details>` : '';
+  return `<section class="panel hm-panel">
+    <div class="panel-head"><div><h2>2026 HRA and MERP evidence · ${esc(sc.level === 'site' ? sc.code : sc.name)}</h2><p class="sub">Desk review of the site HRA registers and the ${esc(HM.src.merp.split(' · ')[0])} reports (as at ${fmtDate(HM.asOf)}). Used in the decks and the Board report as corroborating evidence; it never changes a checklist score.</p></div></div>
+    <div class="table-wrap"><table class="plain hm-tbl"><thead><tr><th>Site</th><th>MERRAT 2024 → 2026</th><th>Weakest domain</th><th>HRA rows · Extreme / High</th><th>Register actions</th><th>Worst measured exceedance</th><th>Suggested drill</th></tr></thead><tbody>${rowsEv}${rowsP}</tbody></table></div>
+    ${H.n >= 2 ? `<p class="fine"><b>Common to the assessed sites:</b> ${HM.common.gaps.map(g => esc(`${g[0]} (${g[1]})`)).join(' · ')}</p>` : ''}
+    ${dq}${scm}
+  </section>`;
+}
+/* closing executive summary: one line of 2026 context under "Why it matters" */
+function hmWhyLine(M) {
+  const H = M.hm; if (!H || !H.any) return '';
+  if (H.n) return `2026 MERP reassessment${H.n > 1 ? 's' : ''}: readiness ${hmRange(H.ercMin, H.ercMax)}, ${H.fell === H.n ? (H.n > 1 ? 'all down' : 'down') : `${H.fell} of ${H.n} down`} on 2024; the HRA register${H.n > 1 ? 's hold' : ' holds'} ${H.E} Extreme risks${H.prop.length ? '; SCM has no 2026 HRA or MERP' : ''}.`;
+  return 'SCM has no 2026 HRA or MERP assessment: this audit sets the first baseline.';
+}
+
+/* SCM proposed baseline as CSV in the columns of the Group HRA form (initial risk only; residual, PIC and dates left for the site) */
+function hmScmCsv() {
+  const q = v => { const s = String(v ?? ''); return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const head = ['No', 'Work group (SEG)', 'Location', 'Identification method', 'Health risk', 'Health risk sub-type', 'Health impact (ICD-10)', 'Probability', 'Effect', 'Initial risk', 'Initial control (to verify)', 'Additional control', 'Residual risk', 'ALARP', 'Audit link', 'Confirm by (measurement)', 'PIC', 'Due date', 'Status'];
+  const rows = hmScmRows().map((r, i) => [i + 1, r.seg, 'SCM Konawe', 'Desk review (v7.4 proposal)', r.type, r.hz, r.eff, r.L, r.C, r.R, '', '', '', '', `${DOM[r.dk].code} ${r.sec} ${hmSec(r.dk, r.sec)}`, r.meas, '', '', 'Proposed · verify in the field']);
+  return '﻿' + [head, ...rows].map(r => r.map(q).join(',')).join('\r\n');
+}
+function hmAction(A) {
+  if (A !== 'hm-csv') return false;
+  download(new Blob([hmScmCsv()], {type:'text/csv;charset=utf-8'}), `SCM_HRA_Proposed_Baseline_2026_${stamp()}.csv`); toast('SCM proposed baseline downloaded (CSV).'); return true;
 }
 
 /* =====================================================================
