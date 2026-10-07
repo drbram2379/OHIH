@@ -1252,6 +1252,109 @@ a.rp-car{display:block;margin-top:6px;text-decoration:none}
 .add-user .nu-scope{grid-column:span 2}
 @media (max-width:760px){.rp-card header{flex-wrap:wrap}.rp-card header .chip,.rp-res summary .chip{max-width:100%;white-space:normal;height:auto;min-height:22px}.rp-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.rp-grid{grid-template-columns:1fr}.rp-grid .w2{grid-column:auto}.rp-link-row{grid-template-columns:1fr auto}.rp-link-row input:nth-child(2){grid-column:1/-1}}
 
+/* ---------- v7.10 · auditee home (dashboard · monitoring & timeline · corrective actions) and the way home ---------- */
+.ah-crumb{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.ah-crumb .ah-home{height:32px;gap:6px}.ah-crumb .ah-home svg{width:15px;height:15px}
+.ah-crumb span{font-size:13px;color:var(--ink-2);min-width:0}.ah-crumb span a{font-weight:700;color:var(--gold-deep);text-decoration:none}
+.ah-tabs{display:flex;gap:4px;align-items:stretch;flex-wrap:wrap;border-bottom:1px solid var(--line-2);margin:4px 0 16px}
+.ah-tabs a{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;font-weight:700;font-size:13.5px;color:var(--ink-2);text-decoration:none;border-bottom:3px solid transparent;margin-bottom:-1px}
+.ah-tabs a svg{width:17px;height:17px;stroke:currentColor;flex:none}
+.ah-tabs a.on{color:var(--ink);border-bottom-color:var(--gold)}
+.ah-tabs a .n{font-size:11px;background:var(--sunk);border-radius:999px;padding:1px 7px;color:var(--ink-2)}
+.ah-tabs .ah-tab-go{margin-left:auto;color:var(--gold-deep)}
+.ah-preview{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;margin:0 0 10px;padding:10px 12px;background:var(--warn-bg);border:1px dashed var(--line-2);border-radius:var(--r)}
+.ah-preview .inp{margin:0;min-width:280px}.ah-preview .fine{margin:0;flex:1;min-width:220px}
+.ah-dash{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+.ah-dash>.panel{margin:0}
+.ah-next h2,.ah-sum h2{display:flex;align-items:center;gap:6px}
+.ah-steps{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:8px}
+.ah-steps li{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r);background:#fffdf8}
+.ah-steps li .dot{width:10px;height:10px;border-radius:50%;background:var(--s3)}
+.ah-steps li.s1{border-color:#efc2bb;background:#fff7f5}.ah-steps li.s1 .dot{background:var(--s1)}
+.ah-steps li.s2 .dot{background:var(--s2)}
+.ah-steps li b{display:block;font-size:13.5px}.ah-steps li small{display:block;color:var(--ink-2);font-size:12px;line-height:1.4}
+.ah-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:6px 0 12px}
+.ah-kpis>div{border:1px solid var(--line);border-radius:var(--r);padding:9px 10px;background:#fff}
+.ah-kpis b{display:block;font-size:22px;font-weight:800;line-height:1.1}.ah-kpis b small{font-size:13px;color:var(--ink-3);font-weight:700}
+.ah-kpis span{font-size:11.5px;color:var(--ink-2);line-height:1.3;display:block}
+.ah-kpis .warn{background:var(--s3-bg);border-color:#ecd98f}.ah-kpis .bad{background:var(--s1-bg);border-color:#efc2bb}.ah-kpis .bad b{color:var(--s1-ink)}.ah-kpis .ok b{color:var(--s4-ink)}
+.ah-prog{display:flex;height:12px;border-radius:999px;overflow:hidden;background:var(--sunk)}
+.ah-prog.sm{height:8px;margin:8px 0 4px}
+.ah-prog i{display:block;height:100%}
+.ah-h{font-size:17px;margin:22px 0 10px}
+.ah-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.ah-card{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--acc);border-radius:var(--r-lg);padding:14px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;min-width:0}
+.ah-card header{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.ah-card header svg{stroke:var(--acc)}
+.ah-card header div{flex:1;min-width:0}.ah-card header b{display:block;font-size:15px}.ah-card header small{color:var(--ink-2);font-size:12px}
+.ah-card.none{border-style:dashed;border-top-style:solid;background:#fcfbf8}
+.ah-none b{display:block;font-size:16px}.ah-none span{display:block;color:var(--ink-2);font-size:12.5px}.ah-none p{margin:8px 0 0;font-size:12.5px;color:var(--ink-2)}
+.ah-meta{font-size:12px;color:var(--ink-2)}.ah-meta b.late{color:var(--s1-ink)}
+.ah-body{display:grid;grid-template-columns:minmax(104px,max-content) minmax(0,1fr);gap:12px;align-items:center}
+.ah-score b{display:block;font-size:34px;font-weight:800;line-height:1}.ah-score span{display:block;font-size:12.5px;font-weight:700}.ah-score small{display:block;font-size:11px;color:var(--ink-3);max-width:150px;line-height:1.3}
+.ah-parts{display:grid;gap:3px;min-width:0}.ah-parts div{display:flex;justify-content:space-between;gap:10px;font-size:12.5px}.ah-parts b{font-size:15px}.ah-parts small{font-size:11px;color:var(--ink-3)}
+.ah-sev{display:flex;gap:6px;flex-wrap:wrap}
+.ah-sev span{display:inline-flex;align-items:baseline;gap:5px;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:700;background:var(--sunk);color:var(--ink-2)}
+.ah-sev span b{font-size:14px}.ah-sev .b1{background:var(--s1-bg);color:var(--s1-ink)}.ah-sev .b2{background:var(--s2-bg);color:var(--s2-ink)}.ah-sev .b3{background:var(--s3-bg);color:var(--s3-ink)}
+.ah-weak{display:grid;gap:4px;border-top:1px solid var(--line);padding-top:8px}
+.ah-weak .lbl{font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.04em}
+.ah-weak div{display:grid;grid-template-columns:minmax(0,1fr) 70px 34px;gap:8px;align-items:center;font-size:12px}
+.ah-weak div span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ah-weak i{display:block;height:6px;border-radius:999px;background:linear-gradient(90deg,var(--c) var(--w),var(--sunk) var(--w))}
+.ah-weak b{text-align:right;font-size:12px}
+.ah-drill{margin:0;font-size:12px;color:var(--ink-2);display:flex;gap:6px;align-items:center}.ah-drill svg{width:14px;height:14px;flex:none}
+.ah-fu{margin:0;padding:6px 10px;border-radius:var(--r-sm);background:var(--s1-bg);color:var(--s1-ink);font-size:12px;font-weight:700;display:flex;gap:6px;align-items:center}.ah-fu svg{width:14px;height:14px;flex:none}
+.ah-card footer{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.ah-tl{border:1px solid var(--line);border-radius:var(--r)}
+.ah-svg{display:block;width:100%;min-width:760px;height:auto;font-family:var(--font)}
+.legend i.lg-plan{background:#fff;outline:1.8px solid #6a604f;transform:rotate(45deg) scale(.8)}
+.legend i.lg-aud{background:#6a604f;border-radius:50%}
+.legend i.lg-rep{background:#3a2a12}
+.legend i.lg-fu{background:#c0392b;width:4px}
+table.ah-dl td small,table.ah-car td small{display:block;color:var(--ink-3);font-size:11.5px;line-height:1.35}
+table.ah-dl b.late,table.ah-car b.late,table.ah-car small.late{color:var(--s1-ink)}table.ah-dl b.soon,table.ah-car b.soon{color:var(--s2-ink)}
+table.ah-car td{vertical-align:top}table.ah-car td:first-child{white-space:nowrap}
+table.ah-car tr.late td:first-child{box-shadow:inset 3px 0 0 var(--s1)}
+.ah-st{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;white-space:nowrap}
+.ah-st::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.ah-filters{display:flex;gap:14px;flex-wrap:wrap}
+.ah-empty{display:flex;gap:18px;align-items:flex-start;border-left:4px solid var(--acc)}
+.ah-empty .ah-empty-ic{display:grid;place-items:center;width:56px;height:56px;border-radius:14px;background:var(--sunk);flex:none}
+.ah-empty .ah-empty-ic svg{width:30px;height:30px;stroke:var(--acc)}
+.ah-empty h2{margin:4px 0 6px;font-size:19px}.ah-empty p{margin:0 0 12px;color:var(--ink-2);max-width:760px}
+.ah-empty .rp-actions{display:flex;gap:8px;flex-wrap:wrap}
+.rp-card.flash{animation:ahflash 1.6s ease-out 1}
+@keyframes ahflash{0%{box-shadow:0 0 0 4px var(--gold)}100%{box-shadow:var(--shadow)}}
+@media (max-width:1100px){.ah-dash{grid-template-columns:1fr}}
+@media (max-width:760px){
+  .ah-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ah-cards{grid-template-columns:1fr}
+  .ah-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.ah-tabs a{padding:9px 10px;white-space:nowrap;font-size:13px}.ah-tabs .ah-tab-go{margin-left:0}
+  .ah-steps li{grid-template-columns:12px minmax(0,1fr)}.ah-steps li .btn{grid-column:2;justify-self:start}
+  .ah-body{grid-template-columns:1fr}
+  .ah-empty{flex-direction:column;gap:10px}
+  .ah-preview .inp{min-width:0;width:100%}
+}
+.ah-tabs a .s{display:none}
+.ah-cards{align-items:start}
+.ah-sev{gap:4px}.ah-sev span{padding:2px 7px;font-size:11px}.ah-sev span b{font-size:13px}
+.dist-row.ah-dist{grid-template-columns:minmax(96px,150px) minmax(0,1fr) 62px}
+.dist-row.ah-dist b{display:flex;gap:4px;align-items:center;flex-wrap:wrap;line-height:1.25}
+table.ah-dl td:last-child{white-space:nowrap}
+@media (max-width:760px){.ah-tabs a .l{display:none}.ah-tabs a .s{display:inline}.ah-body{grid-template-columns:1fr}.dist-row.ah-dist{grid-template-columns:96px minmax(0,1fr) 54px}}
+.ah-sev span{padding:2px 6px;font-size:10.5px;gap:4px}
+table.ah-dl{width:100%}table.ah-dl td{white-space:normal}table.ah-dl td:first-child,table.ah-dl td:last-child{white-space:nowrap}
+@media (max-width:760px){.ah-tabs{gap:0}.ah-tabs a{padding:9px 8px;gap:6px}.ah-tabs a svg{display:none}}
+@media (max-width:760px){
+  table.ah-car thead{display:none}
+  table.ah-car,table.ah-car tbody{display:block;width:100%;min-width:0}
+  table.ah-car tr{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"sc au bt" "it it it" "pc pc pc" "tg st rs";gap:6px 10px;padding:10px 2px;border-bottom:1px solid var(--line)}
+  table.ah-car td{display:block;padding:0;border:0;white-space:normal}
+  table.ah-car td:nth-child(1){grid-area:tg}table.ah-car td:nth-child(2){grid-area:au;align-self:center}table.ah-car td:nth-child(3){grid-area:it}
+  table.ah-car td:nth-child(4){grid-area:sc;align-self:center}table.ah-car td:nth-child(5){grid-area:pc;font-size:12px;color:var(--ink-2)}table.ah-car td:nth-child(5)::before{content:"PIC: ";font-weight:700}table.ah-car td:nth-child(6){grid-area:st;align-self:center}
+  table.ah-car td:nth-child(7){grid-area:rs;align-self:center;text-align:right}table.ah-car td:nth-child(8){grid-area:bt;align-self:center}
+  table.ah-car tr.late td:first-child{box-shadow:none}table.ah-car tr.late{box-shadow:inset 3px 0 0 var(--s1);padding-left:8px}
+}
+
 </style>
 </head>
 <body>
@@ -1800,10 +1903,12 @@ function renderShell() {
   <input type="file" id="file-xlsx" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>`;
 }
 /* Where a domain switch should land, keeping the page (and site) the user is on */
-const GLOBAL_PAGES = {home:{label:'Integrated Overview', icon:'home'}, '7s':{label:'7S Alignment Review', icon:'sevens'}, monitor:{label:'Monitoring & Timeline', icon:'timeline'}, meetings:{label:'Audit Meetings', icon:'slides'}, rca:{label:'Root Cause & Actions', icon:'fish'}, respond:{label:'Auditee Responses', icon:'reply'}, settings:{label:'Settings', icon:'gear'}};
+const GLOBAL_PAGES = {home:{label:'Integrated Overview', icon:'home'}, '7s':{label:'7S Alignment Review', icon:'sevens'}, monitor:{label:'Monitoring & Timeline', icon:'timeline'}, meetings:{label:'Audit Meetings', icon:'slides'}, rca:{label:'Root Cause & Actions', icon:'fish'}, respond:{label:'Auditee Responses', icon:'reply'}, settings:{label:'Settings', icon:'gear'}, auditee:{label:'Auditee Home', icon:'home'}};
 /* v7.9 · an auditee sees its responses, the checklists of its audits (read-only) and its connection; the corporate dashboards
    would show only the part of the data in its scope, so they are not offered */
-const AUDITEE_PAGES = ['respond', 'settings', 'audit', 'sim'];
+const AUDITEE_PAGES = ['auditee', 'respond', 'settings', 'audit', 'sim'];
+/* v7.10 · the auditee's menu: its home in three tabs, its responses and its connection */
+const AUDITEE_NAV = [['#/auditee', 'Dashboard', 'home', 'auditee', ''], ['#/auditee/timeline', 'Monitoring & Timeline', 'timeline', 'auditee', 'timeline'], ['#/auditee/car', 'Corrective Actions', 'car', 'auditee', 'car'], ['#/respond', 'Respond to Findings', 'reply', 'respond', ''], ['#/settings', 'Settings', 'gear', 'settings', '']];
 function switchHref(dk) {
   const {page, arg} = parseHash();
   if (GLOBAL_PAGES[page]) return HD(dk, 'summary');
@@ -1813,7 +1918,8 @@ function switchHref(dk) {
 }
 function renderSide(page, arg) {
   const home = !!GLOBAL_PAGES[page], aud = typeof isAuditee === 'function' && isAuditee();
-  $('#nav-home').innerHTML = (aud ? ['respond', 'settings'] : ['home','7s','monitor','rca','respond','meetings']).map(k => `<a href="#/${k}" ${page===k?'aria-current="page"':''}>${ICON[GLOBAL_PAGES[k].icon]}<span>${GLOBAL_PAGES[k].label}</span></a>`).join('');
+  $('#nav-home').innerHTML = aud ? AUDITEE_NAV.map(([h, l, ic, pg, sub]) => `<a href="${h}" ${page === pg && (pg !== 'auditee' || (arg || '') === sub) ? 'aria-current="page"' : ''}>${ICON[ic]}<span>${l}</span></a>`).join('')
+    : ['home','7s','monitor','rca','respond','meetings'].map(k => `<a href="#/${k}" ${page===k?'aria-current="page"':''}>${ICON[GLOBAL_PAGES[k].icon]}<span>${GLOBAL_PAGES[k].label}</span></a>`).join('');
   ['#dswitch', '#nav', '#side-sites'].forEach(sel => { const el = $(sel); if (el) el.hidden = aud; }); $$('.side-label').forEach(el => { el.hidden = aud; });
   if (aud) return;
   $('#dswitch').innerHTML = DOMAINS.map(d => `<a href="${switchHref(d.key)}" style="--acc:${d.accent}" ${!home && D===d.key?'aria-current="true"':''} title="${esc(d.full)} audit">${dIcon(d.key,15)}<span>${d.code}</span></a>`).join('');
@@ -1890,17 +1996,23 @@ function route() {
   if (page === 'audit' && arg && arg2 === 'sim') { location.replace(HD('merp', 'sim', arg)); return; }
   if (page === 'sim' && dk !== 'merp') { location.replace(HD('merp', 'sim', arg || '')); return; }
   if (page === 'audit' && arg && arg2) UI.sec[curKey(arg)] = +arg2;
-  const pages = {home:pageOverview, '7s':page7S, monitor:pageMonitor, meetings:pageMeetings, rca:pageRCA, respond:pageRespond, settings:pageSettings, summary:pageSummary, audit:() => pageAudit(arg), sim:() => pageSim(arg, arg2), site:() => pageSite(arg), benchmark:pageBenchmark, car:pageCAR, guide:pageGuide};
+  const pages = {home:pageOverview, '7s':page7S, monitor:pageMonitor, meetings:pageMeetings, rca:pageRCA, respond:pageRespond, settings:pageSettings, auditee:() => pageAuditeeHome(arg), summary:pageSummary, audit:() => pageAudit(arg), sim:() => pageSim(arg, arg2), site:() => pageSite(arg), benchmark:pageBenchmark, car:pageCAR, guide:pageGuide};
   const aud = typeof isAuditee === 'function' && isAuditee();
-  const fn = aud && !AUDITEE_PAGES.includes(page) ? pageRespond : pages[page] || pageSummary, global = !!GLOBAL_PAGES[page] || fn === pageRespond;
-  view.innerHTML = (page === 'settings' || page === 'respond' || aud ? '' : domainTabs(page)) + fn();
+  const toHome = aud && !AUDITEE_PAGES.includes(page);                     // v7.10: an auditee lands on its home, not on a corporate page
+  const fn = toHome ? () => pageAuditeeHome('') : pages[page] || pageSummary, global = !!GLOBAL_PAGES[page] || toHome;
+  /* v7.10 · safety net (UAT 7 Oct 2026): a page that fails to render shows a message and a way home, never a blank page */
+  let html;
+  try { html = (page === 'settings' || page === 'respond' || page === 'auditee' || aud ? '' : domainTabs(page)) + (aud && !toHome && page !== 'auditee' ? ahCrumb(page, arg) : '') + fn(); }
+  catch (e) { console.error(e); html = (aud ? ahCrumb(page, arg) : '') + routeError(e); }
+  view.innerHTML = html;
   view.dataset.domain = global ? '' : D;
   view.style.setProperty('--acc', global ? '#3a2a12' : CL.meta.accent);
-  document.title = global ? `OHIH Audit · ${(GLOBAL_PAGES[page] || GLOBAL_PAGES.respond).label}` : `${CL.meta.code} · ${PAGE_TITLE[page] || 'Audit'} · OHIH Audit`;
+  document.title = global ? `OHIH Audit · ${(toHome ? GLOBAL_PAGES.auditee : GLOBAL_PAGES[page] || GLOBAL_PAGES.respond).label}` : `${CL.meta.code} · ${PAGE_TITLE[page] || 'Audit'} · OHIH Audit`;
   UI.bell = false; const bp = $('#bell-panel'); if (bp) bp.hidden = true;
-  renderBell();
-  renderSide(page, arg);
+  try { renderSide(toHome ? 'auditee' : page, toHome ? '' : arg); } catch (e) { console.error(e); }   // v7.10: the menu first, so a failing alert never hides it
+  try { renderBell(); } catch (e) { console.error(e); }
   view.scrollTop = 0;
+  if (UI.focusSel) { const n = $(UI.focusSel, view); UI.focusSel = null; if (n) { n.scrollIntoView({block:'center'}); n.classList.add('flash'); } }   // v7.10: "Answer" from the auditee home
   const tabs = $('.dtabs', view), on = $('.dtab.on', view);
   if (tabs && on && tabs.scrollWidth > tabs.clientWidth) tabs.scrollLeft = on.offsetLeft - tabs.offsetLeft - 14;
   if (page === 'audit') revealRail();
@@ -2173,14 +2285,14 @@ const secOf = site => UI.sec[curKey(site)] || 1;
 function pageAudit(site) {
   if (!site || !SITE[site]) {
     return `<div class="page-title"><div><h1>${esc(CL.meta.name)} audit checklist</h1><p>Choose the site you are auditing. ${esc(CL.meta.full)} checklist v${CL.version} · ${ITEMS.length} items in ${SECTIONS.length} sections.</p></div></div>
-    <div class="site-pick">${SITES.map(s => { const a = newestAudit(s.key,'all',D,'all'), st = stats(a);
+    <div class="site-pick">${SITES.filter(s => !(typeof isAuditee === 'function' && isAuditee()) || myScope().some(e => e.site === s.key && (!e.dk || e.dk === D))).map(s => { const a = newestAudit(s.key,'all',D,'all'), st = stats(a);   // v7.10: an auditee sees its own sites
       return `<a href="${H('audit', s.key)}">${siteLogo(s)}<span><b>${s.name}</b><small>${s.code} · ${s.sub}</small><small>${a ? `${esc(typeLabel(a))} · ${fmtDate(a.date)} · ${st.scored}/${st.applicable} assessed` : 'No audit yet'}</small></span></a>`; }).join('')}</div>
-    <p class="hint-line">${ICON.info.replace('<svg','<svg style="width:16px;height:16px;flex:none"')} Auditing several checklists at one site? Use the audit tabs above to switch between FFW, MERP, IH and Food Safety; the site stays selected.</p>`;
+    ${typeof isAuditee === 'function' && isAuditee() ? '' : `<p class="hint-line">${ICON.info.replace('<svg','<svg style="width:16px;height:16px;flex:none"')} Auditing several checklists at one site? Use the audit tabs above to switch between FFW, MERP, IH and Food Safety; the site stays selected.</p>`}`;
   }
   const s = SITE[site];
   if (UI.forceStart && UI.forceStart.site === site && UI.forceStart.dk === D) { const pre = UI.forceStart; UI.forceStart = null; return startForm(s, pre); }
   const a = currentAudit(site);
-  if (!a) return startForm(s);
+  if (!a) return canCreate() ? startForm(s) : noAuditView(s);              // v7.10: auditee / viewer — an audit not yet conducted explains itself (UAT 7 Oct 2026)
   const secNo = secOf(site);
   if (isMulti(a) && !a.__base) return `${demoBanner()}${accessBanner(a)}<div class="audit-bar has-units" id="audit-bar">${auditBar(a)}</div>
     ${fuBanner(a)}${metaForm(a)}${revisionPanel(a, !!revSession(a.id))}<div id="sec-area" class="prov-ov">${provOverview(a)}</div>`;
@@ -2203,7 +2315,7 @@ function typeCards(sel, name = 'st-type') {
 }
 function startForm(s, pre = {}) {
   const p = DB.prefs;
-  if (!canCreate()) return `<div class="page-title"><div><h1>${esc(CL.meta.code)} audit · ${s.name}</h1><p>No ${esc(CL.meta.code)} audit has been recorded for this site yet.</p></div></div><div class="banner lock">${ICON.lock}<span>Your role is Viewer (read-only). Audits are started by the auditors.</span></div>`;
+  if (!canCreate()) return `<div class="page-title"><div><h1>${esc(CL.meta.code)} audit · ${s.name}</h1><p>No ${esc(CL.meta.code)} audit has been recorded for this site yet.</p></div></div><div class="banner lock">${ICON.lock}<span>Your role is ${esc(ROLE_NAME[myRole()] || 'read-only')} (read-only). Audits are started by the auditors.</span></div>`;
   // Prefill team names from this site's most recent audit in any checklist
   const recent = Object.values(DB.audits).filter(a => a.site === s.key && !a.demo).sort((x,y) => (y.date||'').localeCompare(x.date||''))[0];
   const v = k => esc(recent?.[k] || (k === 'lead' ? p.lead : '') || '');
@@ -2707,6 +2819,7 @@ document.addEventListener('click', e => {
   const cu = t.closest('[data-car-unit]'); if (cu) { UI.carUnit = cu.dataset.carUnit; route(); return; }
   const rt = t.closest('[data-rp-tab]'); if (rt) { UI.rpTab = rt.dataset.rpTab; UI.rpMore = 40; route(); return; }      // v7.9 auditee responses
   const rd2 = t.closest('[data-rp-dom]'); if (rd2) { UI.rpDom = rd2.dataset.rpDom; UI.rpMore = 40; route(); return; }
+  if (typeof ahClick === 'function' && ahClick(t)) return;                // v7.10 auditee home filters
   if (UI.bell && !t.closest('#bell-panel') && !t.closest('[data-act="bell"]')) { UI.bell = false; $('#bell-panel').hidden = true; }
   const bt = t.closest('[data-bell-tab]'); if (bt) { UI.bellTab = bt.dataset.bellTab; renderBell(); return; }
   const rd = t.closest('[data-read]'); if (rd) { markRead([rd.dataset.read]); if (rd.tagName === 'A') { UI.bell = false; $('#bell-panel').hidden = true; } }
@@ -2857,6 +2970,7 @@ document.addEventListener('click', e => {
     case 'owner-auto': { let n = 0; Object.values(DB.audits).filter(a => !a.demo && !a.owner).forEach(a => { const e = guessOwner(a); if (e) { a.owner = e; delete a.lo; touch(a); n++; } }); persist(); route(); toast(`${n} owner${n===1?'':'s'} assigned`); break; }
     default: if (typeof provAction === 'function' && provAction(A, act)) break;   // v7.8 caterer tabs and registry · v7.9 every unit
       if (typeof repAction === 'function' && /^(rp|rv)-/.test(A) && repAction(A, act)) break;   // v7.9 auditee responses
+      if (typeof ahAction === 'function' && /^(ah-|reload-page$)/.test(A) && ahAction(A, act)) break;   // v7.10 auditee home
       if (typeof meetAction === 'function' && meetAction(A, act)) break;
       if (typeof rcaAction === 'function') rcaAction(A, act);   // v7.5 root cause analysis
   }
@@ -2866,6 +2980,7 @@ document.addEventListener('change', e => {
   const t = e.target;
   if (t.name === 'st-type') { $$('.st-extra').forEach(el => el.hidden = el.dataset.for !== t.value); $$('.split-box').forEach(el => el.hidden = t.value === 'Follow-up'); $$('.tcard').forEach(c => c.classList.toggle('on', c.contains(t))); const ph = TEAM_PH[t.value]; if (ph) { $('#st-lead').placeholder = ph[0]; $('#st-co').placeholder = ph[1]; } return; }
   if (t.dataset.filter) { F[t.dataset.filter] = t.value; if (t.dataset.filter === 'group') F.site = 'all'; route(); return; }
+  if (t.dataset.ahScope != null) { UI.ahScope = t.value; route(); return; }   // v7.10 auditee home preview
   if ((t.dataset.ureg || t.dataset.uregSite || t.dataset.uregPick != null) && syncOn() && !canEditShared()) { toast('The caterer and facility lists are managed by the Super Admin.', 4000); route(); return; }
   if (typeof provInput === 'function' && provInput(t)) return;            // v7.8 caterer registry · audit split
   if (typeof repInput === 'function' && (t.dataset.rp || t.dataset.rpLink || t.dataset.rvc != null) && repInput(t)) return;   // v7.9 auditee responses
@@ -4830,7 +4945,7 @@ function pageSim(site, sc) {
         <span class="sim-chips">${SIM.scenarios.map(S => { const st = a ? simState(a, S.key) : {result: simMeta(null, S.key, s.key).na ? 'na' : 'notdrilled'}; return `<i class="${SIM_RES[st.result][0]} ${st.selected ? 'drill' : ''}" title="${S.key} ${esc(S.title)}: ${SIM_RES[st.result][1]}">${S.key}</i>`; }).join('')}</span></span></a>`; }).join('')}</div>` + simGuide();
   }
   const a = simAuditFor(site), s = SITE[site];
-  if (!a) return head + `<div class="panel"><div class="empty"><h3>No MERP audit for ${s.name} yet</h3><p>Simulation results are recorded as part of the site's MERP audit. Start the MERP audit first (opening meeting), then assess the drill here.</p><div class="btns"><a class="btn gold" href="${HD('merp','audit',site)}">${ICON.play} Start MERP audit</a></div></div></div>`;
+  if (!a) return head + `<div class="panel"><div class="empty"><h3>No MERP audit for ${s.name} yet</h3><p>Simulation results are recorded as part of the site's MERP audit. ${canCreate() ? 'Start the MERP audit first (opening meeting), then assess the drill here.' : 'The audit team records them during the MERP audit.'}</p><div class="btns">${canCreate() ? `<a class="btn gold" href="${HD('merp','audit',site)}">${ICON.play} Start MERP audit</a>` : `<a class="btn gold" href="${typeof ahHome === 'function' ? ahHome() : '#/home'}">${ICON.prev} Back ${typeof isAuditee === 'function' && isAuditee() ? 'to my audit' : 'to the overview'}</a>`}</div></div></div>`;   // v7.10: read-only roles are not asked to start an audit
   const sum = simSummary(a), st = stats(a, 'merp'), mt = st.merpTotal;
   /* open the drilled scenario by default */
   if (!SIMK[sc]) sc = (UI.simSite === site && SIMK[UI.simSc]) ? UI.simSc : (sum.drilled[0]?.sc || 'S1');
@@ -9695,8 +9810,11 @@ function repFindings(a) {
 
 /* ---------- page ---------- */
 function pageRespond() {
-  const aud = isAuditee(), tab = UI.rpTab || (aud ? 'todo' : 'review'), dom = UI.rpDom || 'all';
+  /* v7.10: "Answer" on the auditee home opens this page once on that finding (all states, its audit), without changing the filters */
+  const jump = UI.rpJump; UI.rpJump = null;
+  const aud = isAuditee(), tab = jump ? 'all' : UI.rpTab || (aud ? 'todo' : 'review'), dom = jump ? jump.dk : UI.rpDom || 'all';
   const audits = repAudits().filter(a => dom === 'all' || a.domain === dom).filter(a => stats(a, a.domain).scored).sort((x, y) => (y.date || '').localeCompare(x.date || ''));
+  if (jump && jump.aid && DB.audits[jump.aid] && !audits.includes(DB.audits[jump.aid])) audits.unshift(DB.audits[jump.aid]);   // a preview of a site outside the filters
   const all = audits.flatMap(a => repFindings(a).map(f => ({a, f, r:repOfF(f)})));
   const match = (x, k) => { const kk = repState(x.r).k, od = repOverdue(x.f, x.r);
     return k === 'all' ? true : k === 'todo' ? ['none', 'draft', 'returned', 'kept'].includes(kk) && isOpenF(x.f) : k === 'review' ? repWaiting(x.r) : k === 'open' ? (['none', 'draft'].includes(kk) && isOpenF(x.f)) || od
@@ -9715,13 +9833,13 @@ function pageRespond() {
   kpi.wait += resWait;
   const me = ME() || {};
   const head = aud ? `<div class="page-title"><div><h1>Respond to the audit</h1><p>${esc(me.name || '')} · auditee for <b>${esc(scopeText(me.scope))}</b>. For each finding: agree or object, confirm the root cause, set the action, PIC and target date, and add links to your evidence in Google Drive. The audit team reviews each response.</p></div></div>`
-    : `${filterBar('')}${demoBanner()}<div class="page-title"><div><h1>Auditee responses</h1><p>The sites' answers to the findings: agreement or objection (4.4.1), root cause, action plan, PIC and target (4.5.1), and the close-out evidence (4.5.2). Accept a plan to copy it into the corrective action register; verify evidence to close the finding.</p></div></div>`;
+    : `${filterBar('')}${demoBanner()}<div class="page-title"><div><h1>Auditee responses</h1><p>The sites' answers to the findings: agreement or objection (4.4.1), root cause, action plan, PIC and target (4.5.1), and the close-out evidence (4.5.2). Accept a plan to copy it into the corrective action register; verify evidence to close the finding.</p></div><a class="btn" href="#/auditee" title="What an auditee sees on signing in (v7.10)">${ICON.home} Auditee home · preview</a></div>`;
   const note = !syncOn() ? `<div class="banner quiet">${ICON.info}<span>This device is not connected to the shared back end: responses recorded here stay on this device (the auditor records them on the auditee's behalf).</span></div>`
     : !repBackendOk() && !aud ? `<div class="banner lock">${ICON.lock}<span>The shared back end runs Code.gs v${esc(SYNC.backend || '7.2')}. Auditee responses need <b>v${AUDITEE_BACKEND}</b>: until then they stay on this device. ${isAdmin() ? 'Paste Code.gs v7.9 and deploy a new version (Settings).' : 'Ask the Super Admin to update the back end.'}</span></div>` : '';
   const strip = `<div class="rp-kpis"><div><b>${all.length}</b><span>findings in scope</span></div><div><b>${kpi.sent}</b><span>answered</span></div><div class="${kpi.wait ? 'warn' : ''}"><b>${kpi.wait}</b><span>${aud ? 'waiting for review' : 'to review'}</span></div><div class="${kpi.od ? 'bad' : ''}"><b>${kpi.od}</b><span>responses overdue</span></div><div class="${kpi.unres ? 'bad' : ''}"><b>${kpi.unres}</b><span>unresolved objections</span></div></div>`;
   const tabsH = `<div style="display:flex;gap:14px;flex-wrap:wrap;margin:10px 0"><div class="tabs" role="group" aria-label="Status">${tabs.map(([k, l]) => `<button data-rp-tab="${k}" aria-pressed="${tab === k}">${l} · ${count(k)}</button>`).join('')}</div>
     <div class="tabs" role="group" aria-label="Audit">${[['all', 'All audits'], ...DOMAINS.filter(d => repAudits().some(a => a.domain === d.key)).map(d => [d.key, d.code])].map(([k, l]) => `<button data-rp-dom="${k}" aria-pressed="${dom === k}">${l}</button>`).join('')}</div></div>`;
-  let shown = 0; const limit = UI.rpMore || 40;
+  let shown = 0; const jIdx = jump && jump.key ? list.findIndex(x => repKey((x.f.a.__base || x.f.a).id, fid(x.f)) === jump.key) : -1, limit = Math.max(UI.rpMore || 40, jIdx + 1);
   if (!audits.length) return head + note + `<div class="panel"><div class="empty"><h3>${aud ? 'No audit result in your scope yet' : 'No audit with findings in this scope'}</h3><p>${aud ? 'When the audit team records the audit, its findings appear here for your response.' : 'Findings appear here when items are scored 1–3.'}</p></div></div>`;
   const resShow = a => audKeys(a).some(k => { const st = repState(repOf(a.id, k)).k; return tab === 'review' ? repWaiting(repOf(a.id, k)) : tab === 'todo' ? ['none', 'draft', 'returned'].includes(st) && canRespond(a, k) : false; });
   const byAudit = audits.map(a => { const L = list.filter(x => x.a === a); if (!L.length && tab !== 'all' && !resShow(a)) return '';
@@ -9964,6 +10082,317 @@ function repDemo() {
     else if (x < .68) set(f, {...plan(f), stage:'evidence', evNote:'Done: records and photos in the folder.', links:[link(i)], u:u + 2 * 864e5, rvState:'accepted', rvU:u + 864e5, log:[{t:new Date(u).toISOString(), w:'Demo auditee', e:'response sent (agree)'}, {t:new Date(u + 864e5).toISOString(), w:'Demo Lead Auditor', e:'plan accepted'}, {t:new Date(u + 2 * 864e5).toISOString(), w:'Demo auditee', e:'evidence sent for close-out'}]});
   });
   REV++;
+}
+
+/* =====================================================================
+   AUDITEE HOME (v7.10)
+   The landing page of an auditee (site OHIH doctor, site management, caterer, clinic): what the audit found in its scope,
+   what is due and when, and its corrective actions, in three tabs:
+     #/auditee           Dashboard: next steps, KPIs, one card per audit in scope (conducted or not yet conducted)
+     #/auditee/timeline  Monitoring & timeline: audit plan → audit → response due → CAR targets → follow-up, progress, ageing
+     #/auditee/car       Corrective actions: the CAR register of its scope with each response state and the next action
+   The page reads only what the server already sends an auditee (audits, answers and responses in scope, the plan of its
+   sites), so it needs no back-end change. The audit team can open the same page as a preview for any site or unit.
+   UAT 7 Oct 2026: an auditee who opened an audit not yet conducted saw an almost empty page with no way back. Every page an
+   auditee opens now carries a Home button, an audit not yet conducted explains itself, and a page that fails to render
+   shows a message with a way home (route() safety net in 03_shell.js).
+   ===================================================================== */
+const AH_TABS = [['', 'Dashboard', 'home', 'Dashboard'], ['timeline', 'Monitoring & timeline', 'timeline', 'Timeline'], ['car', 'Corrective actions', 'car', 'Actions']];
+const AH_STATE = [['open', 'No response yet', '#c9c2b4'], ['waiting', 'Waiting for review', '#d9a400'], ['returned', 'Returned · to revise', '#e07b1f'], ['progress', 'Plan accepted · in progress', '#b27f10'], ['closed', 'Closed', '#2e8b57']];
+const inDays = d => d < 0 ? `${-d} day${d === -1 ? '' : 's'} ago` : d === 0 ? 'today' : `in ${d} day${d === 1 ? '' : 's'}`;
+const ahHome = () => (typeof isAuditee === 'function' && isAuditee()) ? '#/auditee' : '#/home';
+
+/* ---------- scope: the auditee's own, or the preview chosen by the audit team ---------- */
+function ahScope() {
+  if (isAuditee()) return myScope();
+  if (UI.ahScope == null) {
+    const s = F.site && F.site !== 'all' && SITE[F.site] ? F.site : (SITES.find(x => DOMAINS.some(d => latest(x.key, 'all', d.key, 'all'))) || SITES[0]).key;
+    UI.ahScope = s;
+  }
+  return scopeEntries(UI.ahScope);
+}
+/* rows: per site × audit in scope, the latest audit of each programme, as on the responses page (the integrated audit of
+   record and the site's own regular audit), or one row "not yet conducted". up = the audit of the plan is still to come
+   (no integrated audit dated from 21 days before the planned day), so the auditee is reminded of it even when an earlier
+   audit exists. */
+function ahRows(sc = ahScope()) {
+  const out = [];
+  [...new Set(sc.map(e => e.site))].forEach(site => {
+    const E = sc.filter(e => e.site === site);
+    DOMAINS.forEach(d => {
+      const hit = E.filter(e => !e.dk || e.dk === d.key); if (!hit.length) return;
+      const units = hit.some(e => !e.u) ? null : [...new Set(hit.map(e => e.u))], plan = planDate(site, d.key);
+      const A = ['integrated', 'regular'].map(cat => latest(site, 'all', d.key, cat)).filter(Boolean), integ = A.find(a => typeCat(a) === 'integrated');
+      const up = !!plan && daysFromToday(plan) >= 0 && !(integ && integ.date >= addDays(plan, -21));
+      const base = {site, dk:d.key, units, plan, up, st:null, score:null, parts:[], fs:[], unsplit:false};
+      if (!A.length) { out.push({...base, a:null}); return; }
+      A.forEach((a, i) => {
+        const r = {...base, a, up:up && i === 0}, st = stats(a, d.key); r.st = st;
+        r.unsplit = !!units && !isMulti(a);
+        r.fs = st.findings.filter(f => !units || units.includes(fUnit(f)));
+        if (units && isMulti(a)) { r.parts = unitParts(a).filter(p => units.includes(p.u)); r.score = r.parts.length === 1 ? r.parts[0].st.overall : null; }
+        else if (!units) r.score = st.overall;
+        out.push(r);
+      });
+    });
+  });
+  return out.sort((x, y) => (!!y.a - !!x.a) || (x.a ? 0 : String(x.plan || '9999').localeCompare(String(y.plan || '9999'))));   // conducted audits first, then by planned date
+}
+/* the evidence pack is due before the site visit (procedure 7.3; the plan's gate: Day 2 − 3 days) */
+const ahEvidence = r => { const p = plan().sites[r.site]; return p && p.start ? addDays(p.start, -3) : addDays(r.plan, -3); };
+const ahPairs = rows => [...new Set(rows.map(r => r.site + '|' + r.dk))];
+/* the state of one finding for the auditee, in five groups */
+function ahState(f) {
+  if (!isOpenF(f)) return 'closed';
+  const k = repState(repOfF(f)).k;
+  return ['sent', 'objection', 'evidence'].includes(k) ? 'waiting' : ['returned', 'kept'].includes(k) ? 'returned' : ['accepted', 'upheld'].includes(k) ? 'progress' : k === 'verified' ? 'closed' : 'open';
+}
+/* follow-up audit (procedure 4.6). A caterer's or facility's auditee holds only its own answers, so the site result is not
+   computed on its device: its follow-up rule is its own unit below 2.5, or a score-1 finding of its own open after 30 days */
+function ahFollowUp(r) {
+  if (!r.a || !r.st || typeCat(r.a) !== 'integrated') return null;
+  const due = addDays(r.a.date, 182);
+  if (!r.units) return needsFollowUp(r.a, r.st) ? {due, why:followUpReason(r.a, r.st)} : null;
+  const low = r.parts.filter(p => p.st.scored && r2(p.st.overall) < 2.5), old1 = r.fs.some(f => f.r.score === 1 && isOpenF(f) && daysFromToday(addDays(r.a.date, 30)) < 0);
+  return low.length ? {due, why:`${low.map(p => `${uName(r.a, p.u)} ${fmt(p.st.overall)}`).join(' and ')} below 2.5`} : old1 ? {due, why:'Score 1 finding open more than 30 days'} : null;
+}
+const ahLabel = r => `${DOM[r.dk].code} · ${SITE[r.site].code}${r.units ? ' · ' + r.units.map(u => unitName(r.site, u, r.dk)).join(', ') : ''}${r.a && typeCat(r.a) === 'regular' ? ' · regular' : ''}`;
+
+/* ---------- page ---------- */
+function pageAuditeeHome(tab) {
+  if (!AH_TABS.some(t => t[0] === (tab || ''))) tab = '';
+  const aud = isAuditee(), sc = ahScope(), rows = ahRows(sc), me = ME() || {};
+  const all = rows.flatMap(r => r.fs.map(f => ({r, f, k:ahState(f)})));
+  const head = `<div class="page-title ah-title"><div><h1>${aud ? 'My audit' : 'Auditee home · preview'}</h1>
+      <p>${aud ? `${esc(me.name || me.email || '')} · auditee for <b>${esc(scopeText(me.scope))}</b>.` : `What an auditee with this scope sees on signing in: the dashboard, the timeline and the corrective actions. Choose the scope below.`} Procedure MDA-SUS-OHS-PRO: respond to each finding by the report date (4.4.1–4.4.2), act on it by its target date (4.5.1) and send the evidence for close-out (4.5.2).</p></div></div>`;
+  const pick = aud ? '' : ahScopePicker();
+  const tabs = `<nav class="ah-tabs" aria-label="Auditee home">${AH_TABS.map(([k, l, ic, sl]) => `<a href="#/auditee${k ? '/' + k : ''}" ${(tab || '') === k ? 'aria-current="page"' : ''} class="${(tab || '') === k ? 'on' : ''}">${ICON[ic]}<span class="l">${l}</span><span class="s">${sl}</span>${k === 'car' ? `<b class="n">${all.filter(x => x.k !== 'closed').length}</b>` : ''}</a>`).join('')}
+    <a class="ah-tab-go" href="#/respond">${ICON.reply}<span class="l">Respond to findings</span><span class="s">Respond</span></a></nav>`;
+  if (!rows.length) return `${demoBanner()}${head}${pick}<div class="panel"><div class="empty"><h3>${aud ? 'Your scope has no audit yet' : 'Choose a scope'}</h3><p>${aud ? 'Ask the Super Admin to check your auditee scope (Settings → Users).' : ''}</p></div></div>`;
+  const body = tab === 'timeline' ? ahTimelineTab(rows, all) : tab === 'car' ? ahCarTab(rows, all) : ahDashboard(rows, all);
+  return `${demoBanner()}${head}${pick}${tabs}${body}`;
+}
+function ahScopePicker() {
+  const opts = [];
+  SITES.forEach(s => {
+    opts.push([s.key, `${s.code} · ${s.name} · all audits`]);
+    DOMAINS.forEach(d => {
+      const a = latest(s.key, 'all', d.key, 'all');
+      if (a) opts.push([`${s.key}:${d.key}`, `${s.code} · ${d.code}`]);
+      if (a && isMulti(a)) unitKeys(a).forEach(u => opts.push([`${s.key}:${d.key}@${u}`, `${s.code} · ${d.code} · ${unitName(s.key, u, d.key)}`]));
+    });
+  });
+  return `<div class="ah-preview"><label class="inp"><span>Preview the auditee home for</span><select class="select" data-ah-scope>${opts.map(([v, l]) => `<option value="${esc(v)}" ${UI.ahScope === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></label>
+    <p class="fine">An auditee key with this scope (Settings → Users &amp; access keys) shows the same page. The data are yours; an auditee sees only its scope.</p></div>`;
+}
+
+/* ---------- Dashboard ---------- */
+function ahDashboard(rows, all) {
+  const n = k => all.filter(x => x.k === k).length, od = all.filter(x => repOverdue(x.f, repOfF(x.f))).length, late = all.filter(x => isOverdue(x.f)).length;
+  const kpi = `<div class="ah-kpis">
+    <div><b class="num">${ahPairs(rows.filter(r => r.a && r.st.scored)).length}<small>/${ahPairs(rows).length}</small></b><span>audits conducted</span></div>
+    <div><b class="num">${all.length}</b><span>findings in scope</span></div>
+    <div class="${n('open') + n('returned') ? 'warn' : ''}"><b class="num">${n('open') + n('returned')}</b><span>to answer or revise</span></div>
+    <div><b class="num">${n('progress')}</b><span>plans accepted · in progress</span></div>
+    <div class="ok"><b class="num">${n('closed')}</b><span>closed</span></div>
+    <div class="${od ? 'bad' : ''}"><b class="num">${od}</b><span>responses overdue</span></div>
+    <div class="${late ? 'bad' : ''}"><b class="num">${late}</b><span>actions past target</span></div></div>`;
+  const prog = all.length ? `<div class="ah-prog" title="${AH_STATE.map(([k, l]) => `${l}: ${n(k)}`).join(' · ')}">${AH_STATE.map(([k, , c]) => n(k) ? `<i style="width:${(n(k) / all.length * 100).toFixed(2)}%;background:${c}"></i>` : '').join('')}</div>
+    <div class="legend">${AH_STATE.map(([k, l, c]) => `<span><i style="background:${c}"></i>${l} · ${n(k)}</span>`).join('')}</div>` : '';
+  return `<div class="ah-dash"><section class="panel ah-next"><h2>${ICON.next} Next steps</h2>${ahNextSteps(rows, all)}</section>
+    <section class="panel ah-sum"><h2>${ICON.summary} Where you stand</h2>${kpi}${prog}</section></div>
+    <h2 class="ah-h">Your audits</h2><div class="ah-cards">${rows.map(ahCard).join('')}</div>`;
+}
+function ahNextSteps(rows, all) {
+  const S = [];
+  const todo = all.filter(x => x.k === 'open'), ret = all.filter(x => x.k === 'returned'), prog = all.filter(x => x.k === 'progress'), late = all.filter(x => isOverdue(x.f));
+  const first = L => L.map(x => x.r.a ? respDue(x.r.a) : null).filter(Boolean).sort()[0];
+  if (todo.length) { const due = first(todo), d = daysFromToday(due);
+    S.push({sev:d < 0 ? 1 : 2, date:due, t:`Answer ${plural(todo.length, 'finding')}`, s:`agree or object, root cause, action, PIC, target and Google Drive evidence · due ${fmtDate(due)} (${inDays(d)}) · procedure 4.4.1`, href:'#/respond', act:'Answer now'}); }
+  if (ret.length) S.push({sev:2, date:todayISO(), t:`Revise ${plural(ret.length, 'returned response')}`, s:'the audit team returned them with a comment, or kept the finding after your objection', href:'#/respond', act:'Open'});
+  if (prog.length) { const t = prog.map(x => x.f.r.target).filter(Boolean).sort()[0];
+    S.push({sev:t && daysFromToday(t) < 0 ? 1 : 3, date:t || '', t:`Carry out ${plural(prog.length, 'accepted plan')} and send the close-out evidence`, s:`${t ? `first target ${fmtDate(t)}` : 'no target date'} · links to the evidence in Google Drive · procedure 4.5.2`, href:'#/auditee/car', act:'Actions'}); }
+  if (late.length) S.push({sev:1, date:late.map(x => x.f.r.target).sort()[0], t:`${plural(late.length, 'corrective action')} past the target date`, s:'send the evidence, or agree a new date with the audit team (a reason is needed)', href:'#/auditee/car', act:'See them'});
+  rows.forEach(r => { const fu = ahFollowUp(r); if (fu) S.push({sev:3, date:fu.due, t:`Follow-up audit · ${ahLabel(r)}`, s:`${fu.why} · required by ${fmtDate(fu.due)} (procedure 4.6)`, href:'#/auditee/timeline', act:'Timeline'}); });
+  rows.filter(r => r.up).forEach(r => { const ev = ahEvidence(r);
+    S.push({sev:3, date:r.plan, t:`${DOM[r.dk].short} audit at ${SITE[r.site].code} · planned ${fmtDate(r.plan)}`, s:`${daysFromToday(ev) < 0 ? 'the evidence pack was due' : 'have the evidence pack ready by'} ${fmtDate(ev)} (at least 48 h before the visit, procedure 7.3)`, href:'#/auditee/timeline', act:'Timeline'}); });
+  if (!S.length) return `<div class="empty" style="padding:14px 6px"><h3>Nothing due now</h3><p>${all.length ? 'Every finding in your scope is answered or closed.' : 'No finding in your scope yet.'}</p></div>`;
+  return `<ol class="ah-steps">${S.sort((x, y) => x.sev - y.sev || String(x.date).localeCompare(String(y.date))).slice(0, 6).map(x => `<li class="s${x.sev}"><span class="dot"></span><div><b>${esc(x.t)}</b><small>${esc(x.s)}</small></div><a class="btn sm ${x.sev === 1 ? 'gold' : ''}" href="${x.href}">${esc(x.act)}</a></li>`).join('')}</ol>`;
+}
+/* one card per audit in scope */
+function ahCard(r) {
+  const d = DOM[r.dk], s = SITE[r.site], P = plan();
+  const unitChips = r.units ? r.units.map(u => `<span class="chip unit">${esc(unitName(r.site, u, r.dk))}</span>`).join('') : '';
+  const top = `<header>${dIcon(r.dk, 18)}<div><b>${esc(d.short)}</b><small>${esc(s.name)} (${s.code})</small></div>${r.a && typeCat(r.a) === 'regular' ? '<span class="chip b0">Regular audit</span>' : ''}${unitChips}</header>`;
+  if (!r.a) {
+    const pd = r.plan, dd = pd ? daysFromToday(pd) : null;
+    return `<article class="ah-card none" style="--acc:${d.accent}">${top}<div class="ah-none"><b>Not audited yet</b>
+      <span>${pd ? `Planned ${fmtDate(pd)}${dd < 0 ? ' · the date has passed; the audit team may reschedule' : ' · ' + inDays(dd)}` : `No date in the ${P.year} audit plan`}</span>
+      <p>Nothing to answer until the audit team records this audit. Prepare the evidence (procedure 7.3: ≥ 48 h before the visit).</p></div></article>`;
+  }
+  const a = r.a, st = r.st, c = {1:0, 2:0, 3:0}; r.fs.forEach(f => { c[f.r.score] = (c[f.r.score] || 0) + 1; });
+  const v = r.score, base = r.parts.length === 1 ? r.parts[0].st : r.units ? null : st;   // no site-wide sections for a unit scope
+  const weak = !base ? [] : Object.entries(base.sec || {}).filter(([, x]) => x.avg != null).sort((x, y) => x[1].avg - y[1].avg).slice(0, 3);
+  const n = k => r.fs.filter(f => ahState(f) === k).length, todo = n('open') + n('returned');
+  const fu = ahFollowUp(r);
+  const scoreBox = r.unsplit ? `<div class="ah-score"><b class="num" style="color:var(--ink-3)">—</b><span>Not assessed per ${UNIT_CFG[r.dk] ? UNIT_CFG[r.dk].noun : 'unit'}</span><small>This audit was not split; your scope covers ${esc(r.units.map(u => unitName(r.site, u, r.dk)).join(', '))} only</small></div>`
+    : r.units && r.parts.length > 1 ? `<div class="ah-parts">${r.parts.map(p => `<div><span>${esc(uName(a, p.u))}</span><b class="num" style="color:${bandColor(band(p.st.overall))}">${fmt(p.st.overall)}</b></div>`).join('')}<small>${esc(UNIT_CFG[r.dk] ? UNIT_CFG[r.dk].Noun : 'Unit')} scores</small></div>`
+    : `<div class="ah-score"><b class="num" style="color:${v != null ? bandColor(band(v)) : 'var(--ink-3)'}">${fmt(v)}</b><span>${v != null ? BAND_NAME[band(v)] : 'Not scored yet'}</span><small>${r.units ? `${esc(uName(a, r.units[0]))} · ${esc(UNIT_CFG[r.dk] ? UNIT_CFG[r.dk].noun : 'unit')} score` : r.dk === 'merp' && st.merpTotal && st.merpTotal.sim != null ? `site result · checklist ${fmt(st.checklistOverall)} with the drill` : 'site result'}</small></div>`;
+  const sev = r.fs.length ? `<div class="ah-sev">${[[1, 'NC-Maj'], [2, 'NC-Min'], [3, 'OFI']].map(([k, l]) => `<span class="b${k}"><b class="num">${c[k] || 0}</b>${l}</span>`).join('')}</div>` : `<p class="fine" style="margin:6px 0">No finding in your scope.</p>`;
+  const bar = r.fs.length ? `<div class="ah-prog sm" title="${AH_STATE.map(([k, l]) => `${l}: ${n(k)}`).join(' · ')}">${AH_STATE.map(([k, , col]) => n(k) ? `<i style="width:${(n(k) / r.fs.length * 100).toFixed(2)}%;background:${col}"></i>` : '').join('')}</div><small class="fine">${n('closed')} of ${r.fs.length} closed · ${n('progress')} in progress · ${todo} to answer</small>` : '';
+  const ws = weak.length ? `<div class="ah-weak"><span class="lbl">Weakest sections</span>${weak.map(([no, x]) => `<div><span>${no}. ${esc(cut(d.sec[no] || '', 46))}</span><i style="--w:${(x.avg / 4 * 100).toFixed(0)}%;--c:${bandColor(band(x.avg))}"></i><b class="num">${fmt(x.avg)}</b></div>`).join('')}</div>` : '';
+  const drill = r.dk === 'merp' && st.sim && !r.units ? `<p class="ah-drill">${ICON.siren} Drill · ${esc(simDrillText(st.sim))}</p>` : '';
+  return `<article class="ah-card" style="--acc:${d.accent}">${top}
+    <div class="ah-meta">${esc(typeLabel(a))} · ${fmtDate(a.date)}${a.lead ? ' · ' + esc(a.lead) : ''} · response due <b class="${daysFromToday(respDue(a)) < 0 && todo ? 'late' : ''}">${fmtDate(respDue(a))}</b></div>
+    <div class="ah-body">${scoreBox}<div class="ah-right">${sev}${bar}</div></div>${drill}${ws}
+    ${fu ? `<p class="ah-fu">${ICON.refresh} Follow-up audit by ${fmtDate(fu.due)} · ${esc(fu.why)}</p>` : ''}
+    <footer><a class="btn sm" href="${HD(r.dk, 'audit', r.site)}" data-cur="${a.id}" ${isMulti(a) ? `data-unit="${esc(r.units && r.units.length === 1 ? r.units[0] : '*')}"` : ''}>${ICON.audit} Checklist${isAuditee() || !canEdit(a) ? ' (read-only)' : ''}</a>
+      ${r.fs.length ? `<a class="btn sm ${todo ? 'gold' : ''}" href="#/respond" data-act="ah-respond" data-dk="${r.dk}">${ICON.reply} ${todo ? `Answer ${todo}` : 'Responses'}</a>` : ''}</footer></article>`;
+}
+
+/* ---------- Monitoring & timeline ---------- */
+function ahTimelineTab(rows, all) {
+  const fs = all.map(x => x.f);
+  return `<section class="panel"><div class="panel-head"><div><h2>${ICON.timeline} Timeline</h2><p class="sub">Each audit in your scope: the planned day, the audit, the response date (report date), the corrective-action window (30 / 60 / 90 days) with your open actions at their target dates, and the follow-up audit when one is required. The red line is today.</p></div></div>
+      <div class="table-wrap ah-tl">${ahTimelineSVG(rows)}</div>
+      <div class="legend"><span><i class="lg-plan"></i>Planned audit day</span><span><i class="lg-aud"></i>Audit</span><span><i class="lg-rep"></i>Response due (report)</span><span><i style="background:#e8b85a"></i>Action due</span><span><i style="background:#c0392b"></i>Action overdue</span><span><i style="background:#2e8b57"></i>Closed</span><span><i class="lg-fu"></i>Follow-up audit due</span></div></section>
+    <div class="grid2" style="margin-top:18px">
+      <section class="panel"><h2>Response progress</h2><p class="sub">Your answers to each audit's findings, by state.</p>${ahProgressRows(rows)}</section>
+      <section class="panel"><h2>Corrective-action ageing</h2><p class="sub">Open actions by days to their target date; reminders start 14 days before.</p>${ahAgingRows(rows)}</section></div>
+    <div class="grid2" style="margin-top:18px">
+      <section class="panel"><h2>Open findings over time</h2><p class="sub">Opened at the audit date, closed at verification; dotted line = actions falling due.</p>${burnSVG(fs)}</section>
+      <section class="panel"><h2>Deadlines · overdue and the next 45 days</h2>${ahDeadlines(rows, all)}</section></div>`;
+}
+function ahTimelineSVG(rows) {
+  const today = todayISO(), dates = [addDays(today, -21), addDays(today, 30)];
+  rows.forEach(r => { if (r.plan) dates.push(addDays(r.plan, -7));
+    if (r.a) { dates.push(r.a.date, addDays(respDue(r.a), 92)); r.fs.forEach(f => { if (f.r.target) dates.push(f.r.target); }); const fu = ahFollowUp(r); if (fu) dates.push(addDays(fu.due, 7)); } });
+  dates.sort(); let d0 = dates[0], d1 = dates[dates.length - 1];
+  const w0 = new Date(d0 + 'T00:00:00'); w0.setDate(w0.getDate() - ((w0.getDay() + 6) % 7)); d0 = isoOf(w0);
+  const days = Math.max(42, Math.round((new Date(d1 + 'T00:00:00') - w0) / 864e5) + 7);
+  const L = 170, W = 1000, PW = W - L - 16, RH = 56, top = 42, Hh = top + rows.length * RH + 18;
+  const X = iso => L + Math.round((new Date(iso + 'T00:00:00') - w0) / 864e5) * PW / days;
+  const step = days > 150 ? 28 : days > 80 ? 14 : 7;
+  let s = `<svg class="ah-svg" viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Timeline of the audits in your scope">`;
+  for (let i = 0; i <= days; i += step) { const dd = addDays(d0, i), x = X(dd), dt = new Date(dd + 'T00:00:00');
+    s += `<line x1="${x}" x2="${x}" y1="${top - 6}" y2="${Hh - 10}" stroke="#eee8dc"/><text x="${x + 3}" y="${top - 12}" font-size="10" fill="#9a8f7c">${dt.getDate()} ${dt.toLocaleString('en-GB', {month:'short'})}</text>`;
+    if (i === 0 || dt.getDate() <= step) s += `<text x="${x + 3}" y="14" font-size="11" font-weight="700" fill="#6a604f">${dt.toLocaleString('en-GB', {month:'long', year:'numeric'})}</text>`; }
+  rows.forEach((r, i) => {
+    const y = top + i * RH, cy = y + 22, acc = DOM[r.dk].accent;
+    s += `<rect x="0" y="${y}" width="${W}" height="${RH}" fill="${i % 2 ? '#fcfbf8' : '#fff'}"/>`;
+    s += `<text x="10" y="${y + 21}" font-size="12.5" font-weight="700" fill="#2b2416">${esc(DOM[r.dk].code)} · ${esc(SITE[r.site].code)}</text><text x="10" y="${y + 37}" font-size="10.5" fill="#6a604f">${esc(cut(r.units ? r.units.map(u => unitName(r.site, u, r.dk)).join(', ') : r.a ? typeLabel(r.a) : 'Not audited yet', 26))}</text>`;
+    if (r.plan) { const x = X(r.plan); s += `<path d="M${x} ${cy - 8} l7 8 l-7 8 l-7 -8z" fill="#fff" stroke="${acc}" stroke-width="1.8"><title>Planned ${DOM[r.dk].code} audit day · ${fmtDate(r.plan)}</title></path>`; }
+    if (!r.a) { if (!r.plan) s += `<text x="${L + 6}" y="${cy + 4}" font-size="11" fill="#9a8f7c">No date in the audit plan</text>`; return; }
+    if (typeCat(r.a) === 'regular') s += `<text x="10" y="${y + 50}" font-size="9.5" fill="#9a8f7c">regular audit</text>`;
+    const rep = respDue(r.a), xa = X(r.a.date), xr = X(rep);
+    [[30, '#c0392b'], [60, '#e07b1f'], [90, '#d9a400']].forEach(([n, c], k) => { s += `<line x1="${xr}" x2="${X(addDays(rep, n))}" y1="${cy + 14 + k * 4}" y2="${cy + 14 + k * 4}" stroke="${c}" stroke-width="2" stroke-dasharray="3 3" opacity=".7"><title>Score ${k + 1} actions due ${fmtDate(addDays(rep, n))} (procedure 4.5.1)</title></line>`; });
+    s += `<line x1="${xa}" x2="${xr}" y1="${cy}" y2="${cy}" stroke="${acc}" stroke-width="3" opacity=".35"/>`;
+    s += `<circle cx="${xa}" cy="${cy}" r="7" fill="${acc}"><title>${DOM[r.dk].code} audit · ${fmtDate(r.a.date)}</title></circle>`;
+    const open = r.fs.filter(f => ['open', 'returned'].includes(ahState(f))).length;
+    s += `<rect x="${xr - 6}" y="${cy - 6}" width="12" height="12" rx="2" fill="${open && daysFromToday(rep) < 0 ? '#c0392b' : '#3a2a12'}"><title>Response due (report date) ${fmtDate(rep)}${open ? ` · ${open} finding${open === 1 ? '' : 's'} not answered` : ''}</title></rect>`;
+    const by = {}; r.fs.forEach(f => { if (!f.r.target) return; const t = f.r.target, k = !isOpenF(f) ? 'c' : daysFromToday(t) < 0 ? 'l' : 'o'; const q = by[t + k] || (by[t + k] = {t, k, n:0}); q.n++; });
+    Object.values(by).forEach(q => { const x = X(q.t); s += `<circle cx="${x}" cy="${cy + 1}" r="${Math.min(8, 3.2 + Math.sqrt(q.n) * 1.5)}" fill="${q.k === 'c' ? '#2e8b57' : q.k === 'l' ? '#c0392b' : '#e8b85a'}" opacity=".9"><title>${q.n} action${q.n === 1 ? '' : 's'} ${q.k === 'c' ? 'closed (target' : 'due'} ${fmtDate(q.t)}${q.k === 'c' ? ')' : q.k === 'l' ? ' · overdue' : ''}</title></circle>`; });
+    const fu = ahFollowUp(r); if (fu) { const x = X(fu.due); s += `<path d="M${x} ${cy - 11} v22 M${x} ${cy - 11} l10 4 l-10 4" stroke="#8e2317" stroke-width="2" fill="#c0392b"><title>Follow-up audit required by ${fmtDate(fu.due)} · ${esc(fu.why)}</title></path>`; }
+  });
+  const tx = X(today); s += `<line x1="${tx}" x2="${tx}" y1="${top - 8}" y2="${Hh - 8}" stroke="#c0392b" stroke-width="1.5" stroke-dasharray="4 3"/><text x="${tx + 4}" y="${Hh - 4}" font-size="10.5" font-weight="700" fill="#8e2317">Today</text>`;
+  return s + '</svg>';
+}
+function ahProgressRows(rows) {
+  const R = rows.filter(r => r.fs.length);
+  if (!R.length) return '<div class="empty" style="padding:14px 6px"><p>No finding in your scope yet.</p></div>';
+  return R.map(r => { const n = k => r.fs.filter(f => ahState(f) === k).length;
+    return `<div class="dist-row ah-dist"><b>${dChip(r.dk)} ${esc(SITE[r.site].code)}${r.units ? ' · ' + esc(r.units.map(u => unitName(r.site, u, r.dk)).join(', ')) : ''}</b><div class="stack" title="${AH_STATE.map(([k, l]) => `${l}: ${n(k)}`).join(' · ')}">${AH_STATE.map(([k, , c]) => `<i style="width:${(n(k) / r.fs.length * 100).toFixed(2)}%;background:${c}"></i>`).join('')}</div><small class="num">${n('closed')}/${r.fs.length}</small></div>`; }).join('')
+    + `<div class="legend">${AH_STATE.map(([, l, c]) => `<span><i style="background:${c}"></i>${l}</span>`).join('')}</div>`;
+}
+function ahAgingRows(rows) {
+  const R = rows.filter(r => r.fs.length);
+  if (!R.length) return '<div class="empty" style="padding:14px 6px"><p>No corrective action in your scope yet.</p></div>';
+  return R.map(r => { const c = {}; AGING.forEach(([k]) => c[k] = 0); r.fs.forEach(f => c[agingBucket(f)]++);
+    return `<div class="dist-row ah-dist"><b>${dChip(r.dk)} ${esc(SITE[r.site].code)}${r.units ? ' · ' + esc(r.units.map(u => unitName(r.site, u, r.dk)).join(', ')) : ''}</b><div class="stack" title="${AGING.map(([k, l]) => `${l}: ${c[k]}`).join(' · ')}">${AGING.map(([k, , col]) => `<i style="width:${(c[k] / r.fs.length * 100).toFixed(2)}%;background:${col}"></i>`).join('')}</div><small class="num">${c.late + c.late30} late</small></div>`; }).join('')
+    + `<div class="legend">${AGING.map(([, l, col]) => `<span><i style="background:${col}"></i>${l}</span>`).join('')}</div>`;
+}
+function ahDeadlines(rows, all) {
+  const E = [], lim = addDays(todayISO(), 45);
+  rows.forEach(r => { if (r.up && r.plan <= lim) E.push({date:ahEvidence(r), what:`Evidence pack for the ${DOM[r.dk].short} audit (planned ${fmtDate(r.plan)})`, who:`${DOM[r.dk].code} · ${SITE[r.site].code}`, href:'#/auditee/timeline'});
+    if (!r.a) return;
+    const todo = r.fs.filter(f => ['open', 'returned'].includes(ahState(f))).length, rep = respDue(r.a);
+    if (todo && rep <= lim) E.push({date:rep, what:`Response to ${plural(todo, 'finding')}`, who:ahLabel(r), href:'#/respond'});
+    const fu = ahFollowUp(r); if (fu && fu.due <= lim) E.push({date:fu.due, what:'Follow-up audit', who:ahLabel(r), href:'#/auditee/timeline'}); });
+  all.filter(x => isOpenF(x.f) && x.f.r.target && x.f.r.target <= lim).forEach(x => E.push({date:x.f.r.target, what:`${SCORE[x.f.r.score].cat} · ${x.f.it.id} ${cut(x.f.it.q, 60)}`, who:`${DOM[x.r.dk].code} · ${fCode(x.f)}`, href:'#/auditee/car', k:x.k}));
+  if (!E.length) return '<div class="empty" style="padding:14px 6px"><p>Nothing overdue or due in the next 45 days.</p></div>';
+  E.sort((x, y) => x.date.localeCompare(y.date));
+  return `<div class="table-wrap"><table class="plain ah-dl"><thead><tr><th>Date</th><th>What</th><th>Audit</th></tr></thead><tbody>${E.slice(0, 30).map(e => { const d = daysFromToday(e.date);
+    return `<tr><td class="num"><b class="${d < 0 ? 'late' : d <= 7 ? 'soon' : ''}">${fmtDate(e.date)}</b><small>${d < 0 ? `${-d} d overdue` : inDays(d)}</small></td><td><a href="${e.href}">${esc(e.what)}</a>${e.k ? ` <span class="chip ${({open:'b0', waiting:'b3', returned:'b1', progress:'b4'})[e.k] || 'b0'}">${esc((AH_STATE.find(s => s[0] === e.k) || [])[1] || '')}</span>` : ''}</td><td>${esc(e.who)}</td></tr>`; }).join('')}</tbody></table></div>${E.length > 30 ? `<p class="fine">${E.length - 30} more in Corrective actions.</p>` : ''}`;
+}
+
+/* ---------- Corrective actions ---------- */
+function ahCarTab(rows, all) {
+  const f0 = UI.ahF || (UI.ahF = {st:'open', dk:'all'});
+  const doms = DOMAINS.filter(d => rows.some(r => r.dk === d.key && r.fs.length));
+  const byState = (x, k) => k === 'all' ? true : k === 'open' ? isOpenF(x.f) : k === 'answer' ? ['open', 'returned'].includes(x.k) : k === 'waiting' ? x.k === 'waiting' : k === 'progress' ? x.k === 'progress' : k === 'late' ? isOverdue(x.f) : k === 'closed' ? x.k === 'closed' : true;
+  const dkF = doms.some(d => d.key === f0.dk) ? f0.dk : 'all';             // a filter left from another scope never empties the table
+  const inDk = x => dkF === 'all' || x.r.dk === dkF, cnt = k => all.filter(x => inDk(x) && byState(x, k)).length;
+  const L = all.filter(x => inDk(x) && byState(x, f0.st)).sort((p, q) => (isOpenF(q.f) - isOpenF(p.f)) || (isOverdue(q.f) - isOverdue(p.f)) || String(p.f.r.target || '9999').localeCompare(String(q.f.r.target || '9999')) || p.f.r.score - q.f.r.score);
+  const sts = [['open', 'Open'], ['answer', 'To answer'], ['waiting', 'Waiting for review'], ['progress', 'Plan accepted'], ['late', 'Past target'], ['closed', 'Closed'], ['all', 'All']];
+  const filt = `<div class="ah-filters"><div class="tabs" role="group" aria-label="Status">${sts.map(([k, l]) => `<button data-ah-st="${k}" aria-pressed="${f0.st === k}">${l} · ${cnt(k)}</button>`).join('')}</div>
+    ${doms.length > 1 ? `<div class="tabs" role="group" aria-label="Audit">${[['all', 'All audits'], ...doms.map(d => [d.key, d.code])].map(([k, l]) => `<button data-ah-dk="${k}" aria-pressed="${dkF === k}">${l}</button>`).join('')}</div>` : ''}</div>`;
+  const nextAct = x => { const k = x.k, key = repKey((x.f.a.__base || x.f.a).id, fid(x.f));
+    const lbl = k === 'open' ? 'Answer' : k === 'returned' ? 'Revise' : k === 'progress' ? 'Send evidence' : k === 'waiting' ? 'View' : 'View';
+    return `<button class="btn sm ${['open', 'returned'].includes(k) || (k === 'progress' && isOverdue(x.f)) ? 'gold' : ''}" data-act="ah-answer" data-key="${esc(key)}" data-dk="${x.r.dk}">${lbl}</button>`; };
+  const lim = UI.ahMore || 60;
+  const rowsH = L.slice(0, lim).map(x => { const f = x.f, di = dueInfo(f.r), st = AH_STATE.find(s => s[0] === x.k);
+    return `<tr class="${isOverdue(f) ? 'late' : ''}"><td class="num"><b class="${di.cls}">${f.r.target ? fmtDate(f.r.target) : '—'}</b><small>${esc(di.text)}</small></td>
+      <td>${dChip(x.r.dk)} <b>${esc(fCode(f))}</b></td>
+      <td><b>${esc(f.it.id)}</b> ${esc(cut(f.it.q, 80))}<small>${esc(cut(f.r.notes || 'No finding notes', 140))}</small>${f.r.action ? `<small><b>Action:</b> ${esc(cut(f.r.action, 120))}</small>` : ''}</td>
+      <td class="c">${sq(f.r.score)}</td><td>${esc(f.r.pic || '—')}</td><td><span class="chip ${statusOf(f.r) === 'Closed' ? 'b4' : statusOf(f.r) === 'In Progress' ? 'b3' : 'b0'}">${esc(statusOf(f.r))}</span></td>
+      <td><span class="ah-st" style="--c:${st[2]}">${esc(st[1])}</span>${repOverdue(f, repOfF(f)) ? '<small class="late">response overdue</small>' : ''}</td><td>${nextAct(x)}</td></tr>`; }).join('');
+  return `<section class="panel"><div class="panel-head"><div><h2>${ICON.car} Corrective actions</h2><p class="sub">The corrective-action register of your scope. The audit team owns the register; your accepted plan is copied into it, and verified evidence closes the action. Sorted: past target first, then by target date.</p></div></div>
+    ${filt}${L.length ? `<div class="table-wrap"><table class="plain ah-car"><thead><tr><th>Target</th><th>Audit</th><th>Item · finding</th><th class="c">Score</th><th>PIC</th><th>CAR</th><th>Your response</th><th></th></tr></thead><tbody>${rowsH}</tbody></table></div>${L.length > lim ? `<p style="text-align:center;margin:12px 0 0"><button class="btn" data-act="ah-more">Show ${Math.min(60, L.length - lim)} more of ${L.length - lim}</button></p>` : ''}` : '<div class="empty" style="padding:16px 6px"><p>No corrective action matches this filter.</p></div>'}</section>`;
+}
+
+/* ---------- navigation for auditees (UAT 7 Oct 2026) ---------- */
+/* the bar above every page an auditee opens: a way home, and where it is */
+function ahCrumb(page, arg) {
+  const t = page === 'respond' ? 'Respond to findings' : page === 'settings' ? 'Settings' : page === 'sim' ? `${arg && SITE[arg] ? SITE[arg].code + ' · ' : ''}MERP emergency simulation (read-only)` : page === 'audit' ? `${arg && SITE[arg] ? SITE[arg].code + ' · ' : ''}${DOM[D].short} checklist (read-only)` : '';
+  return `<nav class="ah-crumb" aria-label="Breadcrumb"><a class="btn sm ah-home" href="#/auditee" data-ah-home>${ICON.prev} Home</a><span><a href="#/auditee">My audit</a>${t ? ` › ${esc(t)}` : ''}</span></nav>`;
+}
+/* an audit not yet conducted, for a role that cannot start one (auditee, viewer): say so, give the plan date and a way back */
+function noAuditView(s) {
+  const dk = D, aud = isAuditee(), P = plan(), pd = planDate(s.key, dk), dd = pd ? daysFromToday(pd) : null;
+  const inScope = !aud || myScope().some(e => e.site === s.key && (!e.dk || e.dk === dk));
+  const others = DOMAINS.filter(d => d.key !== dk && latest(s.key, 'all', d.key, 'all') && (!aud || myScope().some(e => e.site === s.key && (!e.dk || e.dk === d.key))));
+  const home = aud ? `<a class="btn gold" href="#/auditee">${ICON.prev} Back to my audit</a>` : `<a class="btn gold" href="#/home">${ICON.prev} Back to the overview</a><a class="btn" href="${H('summary')}">${ICON.summary} ${esc(DOM[dk].code)} executive summary</a>`;
+  return `<div class="page-title"><div><h1>${esc(DOM[dk].short)} · ${esc(s.name)}</h1><p>${esc(s.code)} · ${esc(s.sub)}</p></div></div>
+    <section class="panel ah-empty" style="--acc:${DOM[dk].accent}"><span class="ah-empty-ic">${dIcon(dk, 30)}</span><div>
+      <h2>${inScope ? `The ${esc(DOM[dk].code)} audit at ${esc(s.code)} has not been conducted yet` : `${esc(s.code)} · ${esc(DOM[dk].code)} is outside your auditee scope`}</h2>
+      <p>${inScope ? (pd ? `Planned for <b>${fmtDate(pd)}</b> in the ${P.year} audit plan${dd < 0 ? ' — the date has passed; the audit team may have rescheduled it' : ' — ' + inDays(dd)}.` : `There is no date for it in the ${P.year} audit plan yet.`) : 'Your auditee key covers ' + esc(scopeText((ME() || {}).scope)) + '.'}
+        ${inScope ? (aud ? ' Nothing to answer until the audit team records it; its findings then appear on your home page. Prepare the evidence at least 48 hours before the visit (procedure 7.3).' : ` Your role (${esc(ROLE_NAME[myRole()] || 'read-only')}) cannot start audits; the audit team records it.`) : ''}</p>
+      <div class="rp-actions">${home}${others.map(d => `<a class="btn" href="${HD(d.key, 'audit', s.key)}">${dIcon(d.key, 14)} ${esc(d.code)} checklist</a>`).join('')}</div></div></section>`;
+}
+/* a page that failed to render: a message and a way home instead of a blank or stale page */
+function routeError(e) {
+  const home = ahHome();
+  return `<section class="panel ah-empty" style="--acc:#c0392b;margin-top:12px"><span class="ah-empty-ic">${ICON.info}</span><div><h2>This page could not be shown</h2>
+    <p>Your data are safe. Go back home, or reload the page. If it happens again, send this note to the Super Admin: <code>${esc(String(e && e.message || e).slice(0, 160))}</code></p>
+    <div class="rp-actions"><a class="btn gold" href="${home}">${ICON.prev} Home</a><button class="btn" data-act="reload-page">${ICON.refresh} Reload</button></div></div></section>`;
+}
+/* events */
+function ahAction(A, el) {
+  if (A === 'ah-answer' || A === 'ah-respond') {                         // one-time view of the responses page: its own filters stay as they were
+    const key = el.dataset.key || '';
+    UI.rpJump = {dk:el.dataset.dk || 'all', key, aid:key ? key.split('|')[0] : ''};
+    if (key) { UI.rpOpen = key; UI.focusSel = '#rp-' + key.replace(/[^A-Za-z0-9]/g, '-'); }
+    go('#/respond'); return true;
+  }
+  if (A === 'reload-page') { location.reload(); return true; }
+  if (A === 'ah-more') { UI.ahMore = (UI.ahMore || 60) + 60; route(); return true; }
+  return false;
+}
+function ahClick(t) {
+  const hl = t.closest('.ah-crumb a[href^="#/"], .ah-empty a[href^="#/"]'); if (hl && hl.getAttribute('href') === location.hash) { route(); return true; }   // the hash does not change: render again
+  const st = t.closest('[data-ah-st]'); if (st) { UI.ahF = {...(UI.ahF || {dk:'all'}), st:st.dataset.ahSt}; UI.ahMore = 60; route(); return true; }
+  const dk = t.closest('[data-ah-dk]'); if (dk) { UI.ahF = {...(UI.ahF || {st:'open'}), dk:dk.dataset.ahDk}; UI.ahMore = 60; route(); return true; }
+  return false;
 }
 
 /* =====================================================================
