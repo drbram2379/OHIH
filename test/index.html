@@ -1233,7 +1233,7 @@ table.prov-reg input[data-ureg$="|aka"],table.prov-reg input[id^="ureg-a-"]{max-
 .rp-find{font-size:13px;margin:8px 0 0;color:var(--ink)}.rp-find small{color:var(--ink-3)}
 .rp-said{font-size:13px;background:var(--sunk);border-radius:8px;padding:8px 10px;margin:8px 0 0}
 .rp-form{margin-top:10px;display:flex;flex-direction:column;gap:8px}
-.rp-form.ev{border-top:1px dashed var(--line);padding-top:8px}
+.rp-form.rp-ev{border-top:1px dashed var(--line);padding-top:8px}
 .rp-dec{display:flex;flex-wrap:wrap;gap:6px}
 .rp-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.rp-grid .w2{grid-column:span 3}
 .rp-links{display:flex;flex-direction:column;gap:6px}.rp-links .lbl{font-size:12px;font-weight:700;color:var(--ink-2)}
@@ -1353,6 +1353,16 @@ table.ah-dl{width:100%}table.ah-dl td{white-space:normal}table.ah-dl td:first-ch
   table.ah-car td:nth-child(4){grid-area:sc;align-self:center}table.ah-car td:nth-child(5){grid-area:pc;font-size:12px;color:var(--ink-2)}table.ah-car td:nth-child(5)::before{content:"PIC: ";font-weight:700}table.ah-car td:nth-child(6){grid-area:st;align-self:center}
   table.ah-car td:nth-child(7){grid-area:rs;align-self:center;text-align:right}table.ah-car td:nth-child(8){grid-area:bt;align-self:center}
   table.ah-car tr.late td:first-child{box-shadow:none}table.ah-car tr.late{box-shadow:inset 3px 0 0 var(--s1);padding-left:8px}
+}
+
+/* ---------- v7.11 · response link rows on a phone: address and remove (×) on one line, the description below, Open under it ---------- */
+@media (max-width:760px){
+  .rp-link-row{grid-template-columns:minmax(0,1fr) auto}
+  .rp-link-row input[data-rp-link$="|url"]{grid-column:1;grid-row:1}
+  .rp-link-row [data-act="rp-link-del"]{grid-column:2;grid-row:1}
+  .rp-link-row input[data-rp-link$="|label"]{grid-column:1/-1;grid-row:2}
+  .rp-link-row a.btn{grid-column:1;grid-row:3;justify-self:start}
+  .rp-link-row small.warn{grid-row:4}
 }
 
 </style>
@@ -9915,7 +9925,7 @@ function repCard(f, r) {
         <label class="inp"><span>Target date (procedure: ${fmtDate(f.r.target || targetFor(a, f.r.score))})</span><input type="date" data-rp="${esc(key)}|target" value="${esc(v.target || f.r.target || '')}"></label></div>`}
       ${repLinksEd(key, r)}
       <div class="rp-actions"><button class="btn sm gold" data-act="rp-send" data-key="${esc(key)}">${ICON.mail} Send ${obj ? 'objection' : 'response'}</button>${repDraftNote(key, r)}</div></div>` : '';
-  const evForm = may && evid ? `<div class="rp-form ev"><p class="rp-said"><b>Next step:</b> carry out the action${v.target || f.r.target ? ` by ${fmtDate(v.target || f.r.target)}` : ''}, then send the evidence for close-out.</p>
+  const evForm = may && evid ? `<div class="rp-form rp-ev"><p class="rp-said"><b>Next step:</b> carry out the action${v.target || f.r.target ? ` by ${fmtDate(v.target || f.r.target)}` : ''}, then send the evidence for close-out.</p>
       <label class="inp"><span>What was done (close-out evidence)</span><textarea rows="2" data-rp="${esc(key)}|evNote" placeholder="e.g. New chiller installed 2 Oct; daily log since then; staff briefed">${esc(v.evNote || '')}</textarea></label>
       ${repLinksEd(key, r, 'Evidence · links to Google Drive (photos, records, signed documents)')}
       <div class="rp-actions"><button class="btn sm gold" data-act="rp-evidence" data-key="${esc(key)}">${ICON.up} Send evidence for close-out</button>${repDraftNote(key, r)}</div></div>` : '';
