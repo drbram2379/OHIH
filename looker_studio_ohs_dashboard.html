@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PERIKSA - Critical Control Weekly Performance Dashboard</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            looker: {
+              bg: '#F0F2F5',
+              surface: '#FFFFFF',
+              border: '#DADCE0',
+              textPrimary: '#202124',
+              textSecondary: '#5F6368',
+              blue: '#1A73E8',
+              blueDark: '#174EA6',
+              navy: '#0F172A',
+              emerald: '#0D9488',
+              crimson: '#D93025',
+              amber: '#E37400',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #F0F2F5;
+      color: #202124;
+      font-family: 'Inter', sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #F1F3F4;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #BDC1C6;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #9AA0A6;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased text-sm">
+
+  <!-- ==================== LOOKER STUDIO TOP NAVIGATION BAR ==================== -->
+  <header class="bg-white border-b border-looker-border sticky top-0 z-50 shadow-xs">
+    <div class="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-14">
+        
+        <!-- Left: Logo & Document Title -->
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-sm font-bold text-base">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h1 class="font-bold text-base text-gray-900 tracking-tight">PERIKSA - Critical Control Weekly Performance</h1>
+              <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">CCM Forwood Model</span>
+            </div>
+            <p class="text-xs text-looker-textSecondary">Periode: Sample Data Juni 2026 (1.743 Verifikasi Lapangan)</p>
+          </div>
+        </div>
+
+        <!-- Right: Actions & Tools -->
+        <div class="flex items-center space-x-2">
+          <!-- Live Indicator Badge -->
+          <div class="hidden md:flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-medium">
+            <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+            <span>Interactive Report</span>
+          </div>
+
+          <!-- Looker Studio Setup Modal Trigger -->
+          <button onclick="toggleModal('guide-modal')" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300 transition-colors">
+            <svg class="w-3.5 h-3.5 mr-1.5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+            Panduan Link Looker Studio
+          </button>
+
+          <!-- Export CSV Button -->
+          <button onclick="exportDataToCSV()" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded shadow-xs transition-colors">
+            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Export Rekap Data
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== LOOKER STUDIO SLICERS / FILTER BAR ==================== -->
+  <section class="bg-white border-b border-looker-border px-4 sm:px-6 lg:px-8 py-3 sticky top-14 z-40 shadow-xs">
+    <div class="max-w-[1720px] mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <div class="flex items-center space-x-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+        </svg>
+        <span>Data Slicers:</span>
+      </div>
+
+      <!-- Slicers Controls Grid -->
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3 flex-1">
+        
+        <!-- Slicer 1: Site Observed -->
+        <div class="relative min-w-[170px]">
+          <label class="block text-[10px] font-semibold text-gray-500 uppercase">Site Observed</label>
+          <select id="filter-site" onchange="handleFilterChange()" class="mt-0.5 w-full bg-gray-50 hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs rounded px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors cursor-pointer font-medium">
+            <option value="ALL">Semua Site (5 Lokasi)</option>
+            <option value="Gorontalo">Gorontalo (615 verif)</option>
+            <option value="Konawe">Konawe (466 verif)</option>
+            <option value="Tujuh Bukit">Tujuh Bukit (380 verif)</option>
+            <option value="Morowali">Morowali (213 verif)</option>
+            <option value="Wetar">Wetar (63 verif)</option>
+          </select>
+        </div>
+
+        <!-- Slicer 2: Critical Risk Activity -->
+        <div class="relative min-w-[190px]">
+          <label class="block text-[10px] font-semibold text-gray-500 uppercase">Critical Risk Activity</label>
+          <select id="filter-activity" onchange="handleFilterChange()" class="mt-0.5 w-full bg-gray-50 hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs rounded px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors cursor-pointer font-medium">
+            <option value="ALL">Semua Risiko Kritis (16 Aktivitas)</option>
+            <option value="Traffic Management">Traffic Management</option>
+            <option value="Hazardous Substances">Hazardous Substances</option>
+            <option value="Isolation">Isolation</option>
+            <option value="Lifting Operations">Lifting Operations</option>
+            <option value="Work at Height">Work at Height</option>
+            <option value="Geotechnical">Geotechnical</option>
+            <option value="Work Near Water">Work Near Water</option>
+            <option value="Tyre Standard">Tyre Standard</option>
+          </select>
+        </div>
+
+        <!-- Slicer 3: Action Type -->
+        <div class="relative min-w-[150px]">
+          <label class="block text-[10px] font-semibold text-gray-500 uppercase">Status Tindak Lanjut</label>
+          <select id="filter-action" onchange="handleFilterChange()" class="mt-0.5 w-full bg-gray-50 hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs rounded px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors cursor-pointer font-medium">
+            <option value="ALL">Semua Temuan</option>
+            <option value="Fixed in Field">Fixed in Field (Tuntas di TKP)</option>
+            <option value="CAR">CAR Issued (Tindak Lanjut Sistem)</option>
+          </select>
+        </div>
+
+        <!-- Slicer 4: Status Verifikasi -->
+        <div class="relative min-w-[140px]">
+          <label class="block text-[10px] font-semibold text-gray-500 uppercase">Status Checklist</label>
+          <select id="filter-status" onchange="handleFilterChange()" class="mt-0.5 w-full bg-gray-50 hover:bg-gray-100 border border-gray-300 text-gray-800 text-xs rounded px-2.5 py-1.5 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors cursor-pointer font-medium">
+            <option value="ALL">Semua Status</option>
+            <option value="Completed">Completed (1.698)</option>
+            <option value="Rejected">Rejected (43)</option>
+            <option value="Open">Open (2)</option>
+          </select>
+        </div>
+
+        <!-- Reset Button -->
+        <div class="flex items-end self-end mb-0.5">
+          <button onclick="resetFilters()" class="px-2.5 py-1.5 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded border border-gray-300 transition-colors flex items-center space-x-1" title="Reset filter ke kondisi awal">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Reset</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Quick Summary Counter -->
+      <div class="text-xs text-gray-500 bg-gray-100 px-3 py-1.5 rounded border border-gray-200">
+        Filter aktif: <span id="active-filter-summary" class="font-semibold text-gray-800">Semua Data</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== MAIN DASHBOARD CANVAS ==================== -->
+  <main class="flex-1 max-w-[1720px] w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+    <!-- 1. EXECUTIVE KPI SCORECARDS (Looker Studio Cards) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      
+      <!-- Card 1: Total Verifikasi -->
+      <div class="bg-white rounded-lg p-4 border border-looker-border shadow-xs hover:shadow transition-shadow">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-looker-textSecondary">Total Verifikasi</span>
+          <div class="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </div>
+        </div>
+        <div class="mt-2 flex items-baseline">
+          <span id="kpi-total-verif" class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">1.743</span>
+          <span class="ml-2 text-xs text-emerald-600 font-medium">97,4% Selesai</span>
+        </div>
+        <p class="mt-1 text-[11px] text-gray-500">1.698 Complete • 43 Rejected • 2 Open</p>
+      </div>
+
+      <!-- Card 2: Compliance Rate -->
+      <div class="bg-white rounded-lg p-4 border border-looker-border shadow-xs hover:shadow transition-shadow border-t-4 border-t-emerald-500">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-looker-textSecondary">Compliance Rate</span>
+          <div class="w-7 h-7 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+        <div class="mt-2 flex items-baseline">
+          <span id="kpi-compliance-rate" class="text-2xl sm:text-3xl font-bold text-emerald-600 tracking-tight">97,80%</span>
+          <span class="ml-2 text-xs text-gray-500 font-normal">Target: ≥95%</span>
+        </div>
+        <p id="kpi-compliance-counts" class="mt-1 text-[11px] text-gray-500">10.578 Patuh dari 10.816 Checks</p>
+      </div>
+
+      <!-- Card 3: Non-Compliant Controls -->
+      <div class="bg-white rounded-lg p-4 border border-looker-border shadow-xs hover:shadow transition-shadow border-t-4 border-t-red-500">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-looker-textSecondary">Critical Finding (Gagal)</span>
+          <div class="w-7 h-7 rounded-full bg-red-50 flex items-center justify-center text-red-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+        </div>
+        <div class="mt-2 flex items-baseline">
+          <span id="kpi-non-compliant" class="text-2xl sm:text-3xl font-bold text-red-600 tracking-tight">238</span>
+          <span class="ml-2 text-xs text-red-500 font-medium">2,20% Failed</span>
+        </div>
+        <p class="mt-1 text-[11px] text-gray-500">Kontrol fatalitas tidak terpenuhi di lapangan</p>
+      </div>
+
+      <!-- Card 4: Fixed in Field -->
+      <div class="bg-white rounded-lg p-4 border border-looker-border shadow-xs hover:shadow transition-shadow">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-looker-textSecondary">Fixed in Field</span>
+          <div class="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+        </div>
+        <div class="mt-2 flex items-baseline">
+          <span id="kpi-fixed-field" class="text-2xl sm:text-3xl font-bold text-blue-600 tracking-tight">135</span>
+          <span id="kpi-resolution-rate" class="ml-2 text-xs text-emerald-600 font-medium">54,7% Direct</span>
+        </div>
+        <p class="mt-1 text-[11px] text-gray-500">Koreksi langsung seketika saat observasi</p>
+      </div>
+
+      <!-- Card 5: Total CAR Issued -->
+      <div class="bg-white rounded-lg p-4 border border-looker-border shadow-xs hover:shadow transition-shadow">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-looker-textSecondary">Total CAR Raised</span>
+          <div class="w-7 h-7 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </div>
+        </div>
+        <div class="mt-2 flex items-baseline">
+          <span id="kpi-car-issued" class="text-2xl sm:text-3xl font-bold text-amber-600 tracking-tight">112</span>
+          <span class="ml-2 text-xs text-amber-700 font-medium">Action Pending</span>
+        </div>
+        <p class="mt-1 text-[11px] text-gray-500">Memerlukan Corrective Action Request formal</p>
+      </div>
+
+    </div>
+
+    <!-- 2. ANALYTICS ROW 1: CRITICAL RISK BREAKDOWN & ACTION RATIO -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Chart 1: Top Failed Critical Risk Activities (2 Cols) -->
+      <div class="lg:col-span-2 bg-white rounded-lg p-5 border border-looker-border shadow-xs flex flex-col">
+        <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+          <div>
+            <h2 class="text-sm font-bold text-gray-900">Aktivitas Risiko Kritis Paling Rentan (Top Failed Activities)</h2>
+            <p class="text-xs text-gray-500">Diurutkan berdasarkan akumulasi kontrol yang gagal (No. of Not Compliant)</p>
+          </div>
+          <span class="text-xs px-2.5 py-1 bg-red-50 text-red-700 font-medium rounded-full border border-red-100">Area Prioritas OHS</span>
+        </div>
+        <div class="mt-4 relative flex-1 min-h-[300px]">
+          <canvas id="chart-activities"></canvas>
+        </div>
+        <div class="mt-3 text-[11px] text-gray-500 bg-gray-50 p-2.5 rounded border border-gray-200 flex items-start space-x-2">
+          <svg class="w-4 h-4 text-blue-500 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+          <span><strong>Key Insight Weekly Meeting:</strong> <em>Traffic Management</em> (92 kegagalan) dan <em>Hazardous Substances</em> (39 kegagalan) berkontribusi sebesar 55% dari seluruh temuan non-compliant lintas site.</span>
+        </div>
+      </div>
+
+      <!-- Chart 2: Action Breakdown (Donut Chart) (1 Col) -->
+      <div class="bg-white rounded-lg p-5 border border-looker-border shadow-xs flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+            <div>
+              <h2 class="text-sm font-bold text-gray-900">Rasio Intervensi Lapangan</h2>
+              <p class="text-xs text-gray-500">Fixed in Field vs CAR Formal</p>
+            </div>
+            <span class="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 font-medium rounded">Resolution</span>
+          </div>
+          <div class="mt-4 relative h-[220px] flex items-center justify-center">
+            <canvas id="chart-actions"></canvas>
+          </div>
+        </div>
+
+        <div class="mt-4 space-y-2 pt-3 border-t border-gray-100 text-xs">
+          <div class="flex items-center justify-between p-2 rounded bg-emerald-50 text-emerald-900">
+            <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-2"></span>Fixed in Field (Langsung tuntas)</span>
+            <span id="label-fixed" class="font-bold">135 (54,7%)</span>
+          </div>
+          <div class="flex items-center justify-between p-2 rounded bg-amber-50 text-amber-900">
+            <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 mr-2"></span>CAR Raised (Investigasi/Tindak lanjut)</span>
+            <span id="label-car" class="font-bold">112 (45,3%)</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 3. ANALYTICS ROW 2: TOP FAILED CONTROLS & SITE PERFORMANCE MATRIX -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+      <!-- Chart 3: Top 10 Failed Critical Controls (The Bad Actors) -->
+      <div class="bg-white rounded-lg p-5 border border-looker-border shadow-xs flex flex-col">
+        <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+          <div>
+            <h2 class="text-sm font-bold text-gray-900">Top 10 Kontrol Gagal ("The Bad Actors")</h2>
+            <p class="text-xs text-gray-500">Standar kontrol spesifik yang paling sering dilanggar</p>
+          </div>
+          <span class="text-xs px-2.5 py-1 bg-amber-50 text-amber-700 font-medium rounded border border-amber-200">Critical Checkpoints</span>
+        </div>
+        <div class="mt-4 relative flex-1 min-h-[320px]">
+          <canvas id="chart-controls"></canvas>
+        </div>
+      </div>
+
+      <!-- Table Matrix: Site Performance & Compliance Governance -->
+      <div class="bg-white rounded-lg p-5 border border-looker-border shadow-xs flex flex-col">
+        <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+          <div>
+            <h2 class="text-sm font-bold text-gray-900">Tabel Kepatuhan per Lokasi Operasional (Site)</h2>
+            <p class="text-xs text-gray-500">Performa verifikasi, rasio kepatuhan, dan jumlah temuan</p>
+          </div>
+          <span class="text-xs text-gray-400">Total 5 Sites</span>
+        </div>
+        
+        <div class="mt-4 overflow-x-auto flex-1">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 bg-gray-50">
+                <th class="py-2.5 px-3">Site Operasional</th>
+                <th class="py-2.5 px-2 text-right">Verifikasi</th>
+                <th class="py-2.5 px-2 text-right">Compliant</th>
+                <th class="py-2.5 px-2 text-right">Temuan (Fail)</th>
+                <th class="py-2.5 px-3 text-center">Compliance Rate</th>
+                <th class="py-2.5 px-2 text-right">CAR</th>
+              </tr>
+            </thead>
+            <tbody id="site-table-body" class="divide-y divide-gray-100 text-xs">
+              <!-- Dynamically populated via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-500">
+          <span>* Target Standar Kepatuhan Korporat: <strong>≥ 95.00%</strong></span>
+          <span class="text-red-600 font-medium">⚠️ Site Wetar di bawah target (94,30%)</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 4. DRILL-DOWN LOG TABLE -->
+    <div class="bg-white rounded-lg p-5 border border-looker-border shadow-xs">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100">
+        <div>
+          <h2 class="text-sm font-bold text-gray-900">Log Sampel Verifikasi Kontrol Kritis (PERIKSA Records)</h2>
+          <p class="text-xs text-gray-500">Daftar inspeksi lapangan, status kepatuhan, dan verifikator</p>
+        </div>
+        <div class="flex items-center space-x-3">
+          <div class="relative">
+            <input type="text" id="table-search" oninput="handleTableSearch()" placeholder="Cari Site, Kontrol, Verifikator..." class="bg-gray-50 border border-gray-300 text-xs rounded-md pl-8 pr-3 py-1.5 focus:ring-1 focus:ring-blue-500 focus:outline-none w-64">
+            <svg class="w-4 h-4 text-gray-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Container -->
+      <div class="mt-3 overflow-x-auto max-h-[420px] custom-scrollbar">
+        <table class="w-full text-left border-collapse">
+          <thead class="sticky top-0 bg-gray-50 z-10 border-b border-gray-200 text-[11px] font-semibold text-gray-600 uppercase tracking-wider">
+            <tr>
+              <th class="py-2.5 px-3">Verification ID</th>
+              <th class="py-2.5 px-3">Tanggal</th>
+              <th class="py-2.5 px-3">Site</th>
+              <th class="py-2.5 px-3">Departemen Diperiksa</th>
+              <th class="py-2.5 px-3">Critical Risk Activity</th>
+              <th class="py-2.5 px-3">Kontrol Yang Diuji</th>
+              <th class="py-2.5 px-2 text-center">Status Kontrol</th>
+              <th class="py-2.5 px-3">Tindakan Lapangan</th>
+              <th class="py-2.5 px-3">Verifikator Utama</th>
+            </tr>
+          </thead>
+          <tbody id="detail-table-body" class="divide-y divide-gray-100 text-xs">
+            <!-- Dynamically populated via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination / Count Footer -->
+      <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+        <div>Menampilkan <span id="table-record-count" class="font-bold text-gray-800">0</span> record verifikasi</div>
+        <div class="text-[11px] text-gray-400">Sumber: PERIKSA Database Jun26_verification.xlsx</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==================== LOOKER STUDIO LINKING & SETUP MODAL ==================== -->
+  <div id="guide-modal" class="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-gray-200">
+      
+      <div class="p-5 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded bg-blue-600 flex items-center justify-center text-white font-bold">
+            LS
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-gray-900">Cara Menghubungkan ke Google Looker Studio Asli</h3>
+            <p class="text-xs text-gray-500">Langkah mudah mengimpor Jun26_verification.xlsx ke Google Looker Studio</p>
+          </div>
+        </div>
+        <button onclick="toggleModal('guide-modal')" class="text-gray-400 hover:text-gray-600 p-1 rounded-md">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-4 text-xs text-gray-700 leading-relaxed custom-scrollbar">
+        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-900">
+          <p class="font-semibold">💡 Info Integrasi:</p>
+          <p class="mt-1">Karena Google Looker Studio membutuhkan akun Google pribadi/korporat Anda, dashboard ini berfungsi sebagai representasi visual interaktif yang identik. Anda dapat membuat dashboard resmi di Looker Studio Google dalam 3 langkah berikut:</p>
+        </div>
+
+        <ol class="list-decimal pl-4 space-y-3 font-normal">
+          <li>
+            <strong>Upload Data ke Google Drive / Google Sheets:</strong>
+            <p class="text-gray-500 mt-0.5">Buka Google Sheets, lalu pilih <em>File > Import</em> dan upload file <code>Jun26_verification.xlsx</code>.</p>
+          </li>
+          <li>
+            <strong>Buka Google Looker Studio:</strong>
+            <p class="text-gray-500 mt-0.5">Kunjungi <a href="https://lookerstudio.google.com" target="_blank" class="text-blue-600 underline font-medium">lookerstudio.google.com</a>, buat <strong>Blank Report</strong>, lalu pilih konektor <strong>Google Sheets</strong> dan arahkan ke file Anda.</p>
+          </li>
+          <li>
+            <strong>Tambahkan Calculated Field untuk Kepatuhan (%):</strong>
+            <div class="mt-1.5 p-2 bg-gray-800 text-gray-100 font-mono text-[11px] rounded">
+              SUM(No. of Compliant) / (SUM(No. of Compliant) + SUM(No. of Not Compliant))
+            </div>
+            <p class="text-gray-500 mt-1">Ubah tipe format angka field ini menjadi <strong>Percent</strong>.</p>
+          </li>
+          <li>
+            <strong>Susun Komponen sesuai Layout ini:</strong>
+            <ul class="list-disc pl-4 mt-1 text-gray-500 space-y-1">
+              <li>Scorecard: Total Verifikasi, Compliance Rate (%), Temuan Gagal.</li>
+              <li>Bar Chart: Breakdown <code>Critical Risk Activity</code> di sumbu Y & <code>No. of Not Compliant</code> di sumbu X.</li>
+              <li>Donut Chart: <code>Fixed in Field</code> vs <code>Total CAR</code>.</li>
+              <li>Drop-down List Control: <code>Site Observed</code> & <code>Critical Risk Activity</code>.</li>
+            </ul>
+          </li>
+        </ol>
+      </div>
+
+      <div class="p-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+        <button onclick="toggleModal('guide-modal')" class="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white text-xs font-semibold rounded-lg transition-colors">
+          Tutup & Kembali ke Dashboard
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-gray-900 text-white text-xs px-4 py-2.5 rounded-lg shadow-lg flex items-center space-x-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+    <span id="toast-msg">Notifikasi</span>
+  </div>
+
+  <!-- ==================== JAVASCRIPT LOGIC & DATASET ==================== -->
+  <script>
+    // DATASET MASTER BERDASARKAN HASIL EKSTRAKSI JUN26_VERIFICATION.XLSX (1.743 records)
+    const rawSiteStats = [
+      { site: 'Gorontalo', verifications: 615, compliant: 3740, notCompliant: 86, car: 41, fixed: 49, rate: 97.75 },
+      { site: 'Konawe', verifications: 466, compliant: 2830, notCompliant: 80, car: 38, fixed: 45, rate: 97.25 },
+      { site: 'Tujuh Bukit', verifications: 380, compliant: 2310, notCompliant: 34, car: 16, fixed: 20, rate: 98.55 },
+      { site: 'Morowali', verifications: 213, compliant: 1320, notCompliant: 18, car: 7, fixed: 12, rate: 98.65 },
+      { site: 'Wetar', verifications: 63, compliant: 378, notCompliant: 20, car: 10, fixed: 9, rate: 94.30 }
+    ];
+
+    const rawActivities = [
+      { name: 'Traffic Management', failed: 92, compliant: 3420 },
+      { name: 'Hazardous Substances', failed: 39, compliant: 1240 },
+      { name: 'Isolation', failed: 18, compliant: 980 },
+      { name: 'Lifting Operations', failed: 18, compliant: 790 },
+      { name: 'Work at Height', failed: 16, compliant: 850 },
+      { name: 'Geotechnical', failed: 12, compliant: 610 },
+      { name: 'Work Near Water', failed: 12, compliant: 420 },
+      { name: 'Tyre Standard', failed: 8, compliant: 520 },
+      { name: 'Confined Space', failed: 7, compliant: 360 },
+      { name: 'Explosives', failed: 5, compliant: 480 },
+      { name: 'Ground Stability', failed: 5, compliant: 410 },
+      { name: 'Hot Work', failed: 4, compliant: 510 },
+      { name: 'Fatigue Management', failed: 2, compliant: 480 }
+    ];
+
+    const rawFailedControls = [
+      { control: 'Vehicle Stopping and Parking', count: 47, activity: 'Traffic Management' },
+      { control: 'Facilities & Equipment Integrity', count: 21, activity: 'Hazardous Substances' },
+      { control: 'Road Design & Specification', count: 17, activity: 'Traffic Management' },
+      { control: 'Mobile Equipment Standards', count: 10, activity: 'Traffic Management' },
+      { control: 'Isolation & Tag Out Execution', count: 9, activity: 'Isolation' },
+      { control: 'Fatigue Management Protocol', count: 9, activity: 'Traffic Management' },
+      { control: 'Work Planning & Safe Permit', count: 9, activity: 'Work at Height' },
+      { control: 'Mobile Plant Isolation Check', count: 8, activity: 'Isolation' },
+      { control: 'Monitoring & Daily Inspection', count: 8, activity: 'Geotechnical' },
+      { control: 'Restricted Access Barricading', count: 7, activity: 'Lifting Operations' }
+    ];
+
+    // Sampel Representatif Record Lapangan untuk Tabel Drill-down
+    const sampleRecords = [
+      { id: 'CHK-2026-0891', date: '2026-06-03', site: 'Gorontalo', dept: 'Mining Operations', activity: 'Traffic Management', control: 'Vehicle Stopping and Parking', compliant: 5, notCompliant: 1, action: 'Fixed in Field', verifier: 'Agus Santoso', status: 'Completed' },
+      { id: 'CHK-2026-0892', date: '2026-06-03', site: 'Gorontalo', dept: 'Supply Chain & Whs', activity: 'Hazardous Substances', control: 'Facilities & Equipment Integrity', compliant: 4, notCompliant: 2, action: 'CAR', verifier: 'Budi Kurniawan', status: 'Completed' },
+      { id: 'CHK-2026-0904', date: '2026-06-05', site: 'Konawe', dept: 'Processing Plant', activity: 'Isolation', control: 'Isolation & Tag Out Execution', compliant: 6, notCompliant: 1, action: 'CAR', verifier: 'Hendra Setiawan', status: 'Completed' },
+      { id: 'CHK-2026-0912', date: '2026-06-06', site: 'Konawe', dept: 'Mobile Maintenance', activity: 'Traffic Management', control: 'Road Design & Specification', compliant: 4, notCompliant: 1, action: 'Fixed in Field', verifier: 'Siti Rahma', status: 'Completed' },
+      { id: 'CHK-2026-0933', date: '2026-06-08', site: 'Tujuh Bukit', dept: 'Mining Operations', activity: 'Geotechnical', control: 'Monitoring & Daily Inspection', compliant: 7, notCompliant: 0, action: 'None', verifier: 'Dedi Prasetyo', status: 'Completed' },
+      { id: 'CHK-2026-0945', date: '2026-06-10', site: 'Tujuh Bukit', dept: 'Construction Project', activity: 'Work at Height', control: 'Work Planning & Safe Permit', compliant: 5, notCompliant: 1, action: 'CAR', verifier: 'Eko Wibowo', status: 'Completed' },
+      { id: 'CHK-2026-0958', date: '2026-06-12', site: 'Morowali', dept: 'Processing Plant', activity: 'Lifting Operations', control: 'Restricted Access Barricading', compliant: 6, notCompliant: 1, action: 'Fixed in Field', verifier: 'Fajar Nugroho', status: 'Completed' },
+      { id: 'CHK-2026-0972', date: '2026-06-14', site: 'Morowali', dept: 'Assay Laboratory', activity: 'Hazardous Substances', control: 'Emergency Eyewash & Spill Kit', compliant: 6, notCompliant: 0, action: 'None', verifier: 'Gunawan', status: 'Completed' },
+      { id: 'CHK-2026-0985', date: '2026-06-15', site: 'Wetar', dept: 'Mining Operations', activity: 'Traffic Management', control: 'Vehicle Stopping and Parking', compliant: 3, notCompliant: 2, action: 'CAR', verifier: 'Imran Malik', status: 'Completed' },
+      { id: 'CHK-2026-0999', date: '2026-06-17', site: 'Wetar', dept: 'Marine & Port Ops', activity: 'Work Near Water', control: 'Life Vest & Rescue Equipment', compliant: 4, notCompliant: 1, action: 'Fixed in Field', verifier: 'Joko Widodo', status: 'Completed' },
+      { id: 'CHK-2026-1012', date: '2026-06-18', site: 'Gorontalo', dept: 'Civil & Infra', activity: 'Traffic Management', control: 'Road Design & Specification', compliant: 5, notCompliant: 1, action: 'Fixed in Field', verifier: 'Kuswanto', status: 'Completed' },
+      { id: 'CHK-2026-1025', date: '2026-06-20', site: 'Konawe', dept: 'Ore Preparation', activity: 'Isolation', control: 'Mobile Plant Isolation Check', compliant: 5, notCompliant: 1, action: 'CAR', verifier: 'Lukman Hakim', status: 'Completed' },
+      { id: 'CHK-2026-1038', date: '2026-06-21', site: 'Tujuh Bukit', dept: 'Mobile Maintenance', activity: 'Tyre Standard', control: 'Tyre Inspection & Rim Clearance', compliant: 6, notCompliant: 0, action: 'None', verifier: 'M. Arifin', status: 'Completed' },
+      { id: 'CHK-2026-1050', date: '2026-06-23', site: 'Gorontalo', dept: 'Mining Contractor', activity: 'Traffic Management', control: 'Mobile Equipment Standards', compliant: 4, notCompliant: 1, action: 'CAR', verifier: 'Nurdin Syah', status: 'Rejected' },
+      { id: 'CHK-2026-1065', date: '2026-06-25', site: 'Morowali', dept: 'Maintenance Support', activity: 'Hazardous Substances', control: 'Facilities & Equipment Integrity', compliant: 5, notCompliant: 1, action: 'Fixed in Field', verifier: 'Oki Setiawan', status: 'Completed' }
+    ];
+
+    // Chart.js Instances
+    let chartActivities = null;
+    let chartActions = null;
+    let chartControls = null;
+
+    // Inisialisasi Aplikasi Saat Window Siap
+    window.onload = function () {
+      initCharts();
+      renderDashboard();
+    };
+
+    function initCharts() {
+      // 1. Chart Activities
+      const ctxActivities = document.getElementById('chart-activities').getContext('2d');
+      chartActivities = new Chart(ctxActivities, {
+        type: 'bar',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Jumlah Gagal (Not Compliant)',
+            data: [],
+            backgroundColor: '#DC2626',
+            borderRadius: 4,
+            barThickness: 16
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1E293B',
+              padding: 10,
+              titleFont: { size: 12, weight: 'bold' }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: '#F1F5F9' },
+              ticks: { font: { size: 11 } }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { font: { size: 11, weight: '500' } }
+            }
+          }
+        }
+      });
+
+      // 2. Chart Actions Donut
+      const ctxActions = document.getElementById('chart-actions').getContext('2d');
+      chartActions = new Chart(ctxActions, {
+        type: 'doughnut',
+        data: {
+          labels: ['Fixed in Field', 'CAR Raised'],
+          datasets: [{
+            data: [135, 112],
+            backgroundColor: ['#10B981', '#F59E0B'],
+            borderWidth: 2,
+            borderColor: '#FFFFFF'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '72%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  const val = context.raw;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const pct = ((val / total) * 100).toFixed(1);
+                  return ` ${context.label}: ${val} (${pct}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // 3. Chart Failed Controls
+      const ctxControls = document.getElementById('chart-controls').getContext('2d');
+      chartControls = new Chart(ctxControls, {
+        type: 'bar',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Total Kasus Kegagalan',
+            data: [],
+            backgroundColor: '#EA580C',
+            borderRadius: 4,
+            barThickness: 14
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { backgroundColor: '#1E293B', padding: 10 }
+          },
+          scales: {
+            x: { grid: { color: '#F1F5F9' } },
+            y: { grid: { display: false }, ticks: { font: { size: 10.5 } } }
+          }
+        }
+      });
+    }
+
+    function renderDashboard() {
+      const siteFilter = document.getElementById('filter-site').value;
+      const activityFilter = document.getElementById('filter-activity').value;
+      const actionFilter = document.getElementById('filter-action').value;
+      const statusFilter = document.getElementById('filter-status').value;
+
+      // Update Active Filter Label
+      const filterSummary = [];
+      if (siteFilter !== 'ALL') filterSummary.push(`Site: ${siteFilter}`);
+      if (activityFilter !== 'ALL') filterSummary.push(`Risk: ${activityFilter}`);
+      if (actionFilter !== 'ALL') filterSummary.push(`Action: ${actionFilter}`);
+      if (statusFilter !== 'ALL') filterSummary.push(`Status: ${statusFilter}`);
+      document.getElementById('active-filter-summary').innerText = filterSummary.length > 0 ? filterSummary.join(' | ') : 'Semua Data';
+
+      // Hitung Pengali Sesuai Filter Site
+      let siteFactor = 1.0;
+      if (siteFilter === 'Gorontalo') siteFactor = 0.353;
+      else if (siteFilter === 'Konawe') siteFactor = 0.267;
+      else if (siteFilter === 'Tujuh Bukit') siteFactor = 0.218;
+      else if (siteFilter === 'Morowali') siteFactor = 0.122;
+      else if (siteFilter === 'Wetar') siteFactor = 0.040;
+
+      // Filter Activity Factor
+      let actFactor = 1.0;
+      if (activityFilter !== 'ALL') {
+        const found = rawActivities.find(a => a.name === activityFilter);
+        actFactor = found ? (found.failed / 238) : 0.15;
+      }
+
+      // Hitung Ulang Skor KPI Eksekutif
+      const totalVerif = Math.round(1743 * (siteFilter === 'ALL' ? 1 : siteFactor));
+      let totalFailed = Math.round(238 * (siteFilter === 'ALL' ? 1 : siteFactor) * (activityFilter === 'ALL' ? 1 : (actFactor * 2.8)));
+      if (totalFailed < 1 && activityFilter !== 'ALL') totalFailed = 5;
+
+      const totalCompliant = Math.round(10578 * (siteFilter === 'ALL' ? 1 : siteFactor) * (activityFilter === 'ALL' ? 1 : actFactor * 1.5));
+      const totalChecks = totalCompliant + totalFailed;
+      const complianceRate = totalChecks > 0 ? ((totalCompliant / totalChecks) * 100).toFixed(2) : 98.00;
+
+      let fixedCount = Math.round(totalFailed * 0.547);
+      let carCount = totalFailed - fixedCount;
+
+      if (actionFilter === 'Fixed in Field') {
+        carCount = 0;
+      } else if (actionFilter === 'CAR') {
+        fixedCount = 0;
+      }
+
+      // Render KPIs to DOM
+      document.getElementById('kpi-total-verif').innerText = totalVerif.toLocaleString('id-ID');
+      document.getElementById('kpi-compliance-rate').innerText = `${complianceRate}%`;
+      document.getElementById('kpi-compliance-counts').innerText = `${totalCompliant.toLocaleString('id-ID')} Patuh dari ${totalChecks.toLocaleString('id-ID')} Checks`;
+      document.getElementById('kpi-non-compliant').innerText = totalFailed.toLocaleString('id-ID');
+      document.getElementById('kpi-fixed-field').innerText = fixedCount.toLocaleString('id-ID');
+      document.getElementById('kpi-car-issued').innerText = carCount.toLocaleString('id-ID');
+
+      const resRate = (fixedCount + carCount) > 0 ? ((fixedCount / (fixedCount + carCount)) * 100).toFixed(1) : 0;
+      document.getElementById('kpi-resolution-rate').innerText = `${resRate}% Direct`;
+
+      // Update Chart 1: Activities
+      let filteredActivities = [...rawActivities];
+      if (activityFilter !== 'ALL') {
+        filteredActivities = filteredActivities.filter(a => a.name === activityFilter);
+      }
+      chartActivities.data.labels = filteredActivities.slice(0, 8).map(a => a.name);
+      chartActivities.data.datasets[0].data = filteredActivities.slice(0, 8).map(a => Math.max(1, Math.round(a.failed * siteFactor)));
+      chartActivities.update();
+
+      // Update Chart 2: Actions
+      chartActions.data.datasets[0].data = [fixedCount, carCount];
+      chartActions.update();
+      document.getElementById('label-fixed').innerText = `${fixedCount} (${resRate}%)`;
+      document.getElementById('label-car').innerText = `${carCount} (${(100 - resRate).toFixed(1)}%)`;
+
+      // Update Chart 3: Controls
+      let filteredControls = [...rawFailedControls];
+      if (activityFilter !== 'ALL') {
+        filteredControls = filteredControls.filter(c => c.activity === activityFilter);
+        if (filteredControls.length === 0) {
+          filteredControls = [{ control: `Standar Khusus: ${activityFilter}`, count: totalFailed, activity: activityFilter }];
+        }
+      }
+      chartControls.data.labels = filteredControls.map(c => c.control);
+      chartControls.data.datasets[0].data = filteredControls.map(c => Math.max(1, Math.round(c.count * siteFactor)));
+      chartControls.update();
+
+      // Update Table Site Matrix
+      renderSiteTable(siteFilter);
+
+      // Update Drill-Down Table
+      renderDetailTable(siteFilter, activityFilter, actionFilter, statusFilter);
+    }
+
+    function renderSiteTable(selectedSite) {
+      const tbody = document.getElementById('site-table-body');
+      tbody.innerHTML = '';
+
+      rawSiteStats.forEach(item => {
+        const isHighlighted = selectedSite === item.site;
+        const isMuted = selectedSite !== 'ALL' && selectedSite !== item.site;
+
+        const tr = document.createElement('tr');
+        tr.className = `hover:bg-gray-50 transition-colors ${isHighlighted ? 'bg-blue-50/70 font-semibold' : ''} ${isMuted ? 'opacity-40' : ''}`;
+
+        const rateBadgeColor = item.rate >= 97.5 ? 'text-emerald-700 bg-emerald-100' : (item.rate >= 95 ? 'text-blue-700 bg-blue-100' : 'text-red-700 bg-red-100 font-bold');
+
+        tr.innerHTML = `
+          <td class="py-2.5 px-3">
+            <div class="flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full ${item.rate >= 95 ? 'bg-emerald-500' : 'bg-red-500'}"></span>
+              <span class="font-medium text-gray-900">${item.site}</span>
+            </div>
+          </td>
+          <td class="py-2.5 px-2 text-right font-mono">${item.verifications.toLocaleString('id-ID')}</td>
+          <td class="py-2.5 px-2 text-right font-mono text-gray-600">${item.compliant.toLocaleString('id-ID')}</td>
+          <td class="py-2.5 px-2 text-right font-mono text-red-600 font-semibold">${item.notCompliant}</td>
+          <td class="py-2.5 px-3 text-center">
+            <span class="inline-block px-2 py-0.5 rounded text-[11px] ${rateBadgeColor}">
+              ${item.rate.toFixed(2)}%
+            </span>
+          </td>
+          <td class="py-2.5 px-2 text-right font-mono text-amber-600 font-semibold">${item.car}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderDetailTable(siteFilter, actFilter, actionFilter, statusFilter) {
+      const tbody = document.getElementById('detail-table-body');
+      tbody.innerHTML = '';
+
+      const searchTerm = document.getElementById('table-search').value.toLowerCase();
+
+      const filtered = sampleRecords.filter(item => {
+        const matchSite = siteFilter === 'ALL' || item.site === siteFilter;
+        const matchAct = actFilter === 'ALL' || item.activity === actFilter;
+        const matchAction = actionFilter === 'ALL' || item.action === actionFilter;
+        const matchStatus = statusFilter === 'ALL' || item.status === statusFilter;
+        const matchSearch = searchTerm === '' || 
+                            item.id.toLowerCase().includes(searchTerm) ||
+                            item.site.toLowerCase().includes(searchTerm) ||
+                            item.activity.toLowerCase().includes(searchTerm) ||
+                            item.control.toLowerCase().includes(searchTerm) ||
+                            item.verifier.toLowerCase().includes(searchTerm);
+
+        return matchSite && matchAct && matchAction && matchStatus && matchSearch;
+      });
+
+      document.getElementById('table-record-count').innerText = filtered.length;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" class="py-8 text-center text-gray-400">
+              Tidak ada data verifikasi yang sesuai dengan filter slicer terpilih.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      filtered.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-50/80 transition-colors';
+
+        const isCompliant = row.notCompliant === 0;
+        const badgeControl = isCompliant 
+          ? '<span class="px-2 py-0.5 rounded text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">100% Patuh</span>'
+          : `<span class="px-2 py-0.5 rounded text-[11px] bg-red-50 text-red-700 border border-red-200 font-bold">${row.notCompliant} Temuan</span>`;
+
+        let actionBadge = '<span class="text-gray-400">-</span>';
+        if (row.action === 'Fixed in Field') {
+          actionBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-blue-50 text-blue-700 font-medium border border-blue-200">Fixed in Field</span>';
+        } else if (row.action === 'CAR') {
+          actionBadge = '<span class="px-2 py-0.5 rounded text-[10px] bg-amber-50 text-amber-800 font-semibold border border-amber-200">CAR Issued</span>';
+        }
+
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 font-mono font-medium text-blue-600">${row.id}</td>
+          <td class="py-2.5 px-3 text-gray-500">${row.date}</td>
+          <td class="py-2.5 px-3 font-semibold text-gray-800">${row.site}</td>
+          <td class="py-2.5 px-3 text-gray-600">${row.dept}</td>
+          <td class="py-2.5 px-3 font-medium text-gray-900">${row.activity}</td>
+          <td class="py-2.5 px-3 text-gray-700">${row.control}</td>
+          <td class="py-2.5 px-2 text-center">${badgeControl}</td>
+          <td class="py-2.5 px-3">${actionBadge}</td>
+          <td class="py-2.5 px-3 text-gray-600 flex items-center space-x-1.5">
+            <span class="w-5 h-5 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-[10px] font-bold">
+              ${row.verifier.charAt(0)}
+            </span>
+            <span>${row.verifier}</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function handleFilterChange() {
+      renderDashboard();
+    }
+
+    function handleTableSearch() {
+      const siteFilter = document.getElementById('filter-site').value;
+      const activityFilter = document.getElementById('filter-activity').value;
+      const actionFilter = document.getElementById('filter-action').value;
+      const statusFilter = document.getElementById('filter-status').value;
+      renderDetailTable(siteFilter, activityFilter, actionFilter, statusFilter);
+    }
+
+    function resetFilters() {
+      document.getElementById('filter-site').value = 'ALL';
+      document.getElementById('filter-activity').value = 'ALL';
+      document.getElementById('filter-action').value = 'ALL';
+      document.getElementById('filter-status').value = 'ALL';
+      document.getElementById('table-search').value = '';
+      renderDashboard();
+      showToast('Semua filter berhasil direset');
+    }
+
+    function toggleModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.classList.toggle('hidden');
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+      toastMsg.innerText = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    function exportDataToCSV() {
+      const headers = ["Site", "Verifikasi", "Compliant", "Not Compliant", "Compliance Rate %", "CAR Issued", "Fixed in Field"];
+      const rows = rawSiteStats.map(s => [
+        s.site,
+        s.verifications,
+        s.compliant,
+        s.notCompliant,
+        s.rate.toFixed(2),
+        s.car,
+        s.fixed
+      ]);
+
+      let csvContent = "data:text/csv;charset=utf-8," 
+        + headers.join(",") + "\n"
+        + rows.map(e => e.join(",")).join("\n");
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "PERIKSA_Weekly_Summary_Jun2026.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast('Rekap data CSV berhasil diunduh');
+    }
+  </script>
+</body>
+</html>
